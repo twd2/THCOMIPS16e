@@ -89,4 +89,12 @@ xst/
 _ngo/
 _xmsgs/
 
-planAhead*/
+planAhead*
+*.exe
+fuse.log
+fuse.xmsgs
+fuseRelaunch.cmd
+isim.*
+isim/
+xilinxsim.ini
+*.wdb
