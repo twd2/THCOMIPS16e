@@ -24,15 +24,13 @@ entity alu is
 end;
 
 architecture behavioral of alu is
-    signal shamt: integer range 0 to 15;
-    signal all_zero: word_t;
+    signal shamt: integer range 0 to word_msb;
     signal result_buff: word_t;
 	 
     signal adder_operand_0, adder_operand_1: word_t;
     signal adder_carry_in: std_logic;
-    signal adder_buff: std_logic_vector(16 downto 0);
+    signal adder_buff: std_logic_vector(word_msb + 1 downto 0);
 begin
-    all_zero <= (others => '0');
     shamt <= to_integer(unsigned(OPERAND_1(3 downto 0)));
 	 
     -- adder
@@ -40,24 +38,29 @@ begin
     process(OP, OPERAND_0, OPERAND_1)
     begin
         adder_operand_0 <= OPERAND_0;
-        case OP is
-            when alu_add =>
-                adder_operand_1 <= OPERAND_1;
-                adder_carry_in <= '0';
-            when alu_sub =>
-                adder_operand_1 <= not OPERAND_1;
-                adder_carry_in <= '1';
-            when others =>
-                adder_operand_1 <= (others => '-');
-                adder_carry_in <= '-';
-        end case;
+        if OP = alu_add then
+            adder_operand_1 <= OPERAND_1;
+            adder_carry_in <= '0';
+        else -- sub
+            adder_operand_1 <= not OPERAND_1;
+            adder_carry_in <= '1';
+        end if;
     end process;
     
-    process(OP, adder_buff)
+    process(OP, OPERAND_0, OPERAND_1, adder_buff)
     begin
-        if OP = alu_add or OP = alu_sub then
-            CARRY <= adder_buff(16);
-            if adder_buff(16) /= adder_buff(15) then
+        if OP = alu_add then
+            CARRY <= adder_buff(word_msb + 1);
+            if (OPERAND_0(word_msb) = '0' and OPERAND_1(word_msb) = '0' and adder_buff(word_msb) = '1')
+               or (OPERAND_0(word_msb) = '1' and OPERAND_1(word_msb) = '1' and adder_buff(word_msb) = '0') then
+                OVERFLOW <= '1';
+            else
+                OVERFLOW <= '0';
+            end if;
+        elsif OP = alu_sub then
+            CARRY <= not adder_buff(word_msb + 1);
+            if (OPERAND_0(word_msb) = '0' and OPERAND_1(word_msb) = '1' and adder_buff(word_msb) = '1')
+               or (OPERAND_0(word_msb) = '1' and OPERAND_1(word_msb) = '0' and adder_buff(word_msb) = '0') then
                 OVERFLOW <= '1';
             else
                 OVERFLOW <= '0';
@@ -70,10 +73,9 @@ begin
 
     process(OP, OPERAND_0, OPERAND_1, shamt, adder_buff)
     begin
-        result_buff <= (others => '0');
         case OP is
             when alu_add | alu_sub =>
-                result_buff <= adder_buff(15 downto 0);
+                result_buff <= adder_buff(word_msb downto 0);
             when alu_and =>
                 result_buff <= OPERAND_0 and OPERAND_1;
             when alu_or =>
@@ -98,6 +100,6 @@ begin
     RESULT <= result_buff;
     
     -- flags
-    ZERO <= '1' when result_buff = all_zero else '0';
-    SIGN <= result_buff(15);
+    ZERO <= '1' when result_buff = zero_word else '0';
+    SIGN <= result_buff(word_msb);
 end;
