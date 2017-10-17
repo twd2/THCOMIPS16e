@@ -72,11 +72,11 @@ begin
         CARRY => CARRY
     );
 
-    main : process(CLK, RST)
+    main : process(clk, rst)
     begin
-        if RST = '1' then
+        if rst = '1' then
             current_state <= s_inputA;
-        elsif rising_edge(CLK) then
+        elsif rising_edge(clk) then
             case current_state is
                 when s_inputA =>
                     OPERAND_0 <= InputSW;
