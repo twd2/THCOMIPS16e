@@ -1,0 +1,66 @@
+# alu.lpc  
+#   The constraints in this file were created simply to be viewed.  
+#   If you wish to use these constraints, please copy them into your  
+#   project's constraint file. If you do not have a project constraints  
+#   file yet, please use the "Project->New Source" menu to create one.
+
+
+
+#pin2ucf - Mon Oct 16 09:33:21 2017
+#The following constraints were newly added
+NET "OP<1>" LOC = L2;
+NET "OP<2>" LOC = K7;
+NET "OP<3>" LOC = M1;
+NET "RESULT<10>" LOC = J4;
+NET "CARRY" LOC = H4;
+NET "RESULT<11>" LOC = H1;
+NET "OPERAND_1<0>" LOC = D4;
+NET "RESULT<12>" LOC = J5;
+NET "OPERAND_1<1>" LOC = L4;
+NET "RESULT<13>" LOC = H5;
+NET "OPERAND_1<2>" LOC = M5;
+NET "OPERAND_0<10>" LOC = E4;
+NET "RESULT<14>" LOC = H6;
+NET "OPERAND_1<3>" LOC = N5;
+NET "OPERAND_0<11>" LOC = D2;
+NET "RESULT<15>" LOC = K3;
+NET "OPERAND_1<4>" LOC = M4;
+NET "OPERAND_0<12>" LOC = K4;
+NET "OPERAND_1<5>" LOC = M6;
+NET "OPERAND_0<13>" LOC = K2;
+NET "RESULT<0>" LOC = F2;
+NET "SIGN" LOC = L3;
+NET "OPERAND_0<14>" LOC = H3;
+NET "OPERAND_1<6>" LOC = L1;
+NET "RESULT<1>" LOC = E2;
+NET "OPERAND_1<7>" LOC = N4;
+NET "OPERAND_0<15>" LOC = D1;
+NET "RESULT<2>" LOC = F1;
+NET "OPERAND_1<8>" LOC = M3;
+NET "OVERFLOW" LOC = P3;
+NET "RESULT<3>" LOC = E3;
+NET "OPERAND_1<9>" LOC = L5;
+NET "RESULT<4>" LOC = K5;
+NET "RESULT<5>" LOC = K6;
+NET "OPERAND_1<10>" LOC = L6;
+NET "RESULT<6>" LOC = G3;
+NET "OPERAND_1<11>" LOC = N1;
+NET "RESULT<7>" LOC = J2;
+NET "OPERAND_1<12>" LOC = N2;
+NET "RESULT<8>" LOC = J1;
+NET "OPERAND_0<0>" LOC = D3;
+NET "OPERAND_1<13>" LOC = P2;
+NET "RESULT<9>" LOC = G5;
+NET "OPERAND_0<1>" LOC = F4;
+NET "OPERAND_1<14>" LOC = P1;
+NET "OPERAND_0<2>" LOC = F5;
+NET "OPERAND_1<15>" LOC = R4;
+NET "OPERAND_0<3>" LOC = G1;
+NET "OPERAND_0<4>" LOC = J7;
+NET "ZERO" LOC = G4;
+NET "OPERAND_0<5>" LOC = C2;
+NET "OPERAND_0<6>" LOC = H2;
+NET "OPERAND_0<7>" LOC = G6;
+NET "OPERAND_0<8>" LOC = J6;
+NET "OPERAND_0<9>" LOC = C1;
+NET "OP<0>" LOC = E1;
