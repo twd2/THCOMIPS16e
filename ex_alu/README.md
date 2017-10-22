@@ -1,3 +1,3 @@
 # ALU实验
 
-TODO
+见`report.md`。
