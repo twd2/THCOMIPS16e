@@ -1,15 +1,15 @@
-# Project 2: ALU设计与实现
+# Project 2: 16位ALU设计与实现
 
 ## 实验目的
 
 1. 熟悉THINPAD硬件环境
-2. 设计实现ALU及其控制器
+2. 设计实现16位ALU及其控制器
 3. 学习test bench写法以及仿真操作
-4. 练习硬件调试和测试能力
+4. 进一步锻炼硬件调试和测试能力
 
 ## 实验任务
 
-1. 用VHDL设计实现ALU及其控制器
+1. 用VHDL设计实现16位ALU及其控制器
 2. 使用THINPAD硬件平台测试
 
 ## 实验结果
@@ -50,15 +50,15 @@ use work.constants.all;
 entity alu is
     port
     (
-        -- input
+        -- 操作码、操作数输入
         OP: in alu_op_t;
         OPERAND_0: in word_t;
         OPERAND_1: in word_t;
 
-        -- output
+        -- 结果输出
         RESULT: out word_t;
 
-        -- flags
+        -- 标志位输出
         OVERFLOW: out std_logic;
         ZERO: out std_logic;
         SIGN: out std_logic;
@@ -74,26 +74,32 @@ architecture behavioral of alu is
     signal adder_carry_in: std_logic;
     signal adder_buff: std_logic_vector(word_msb + 1 downto 0);
 begin
+    -- 移位数量的类型转换，方便之后使用
     shamt <= to_integer(unsigned(OPERAND_1(3 downto 0)));
 	 
-    -- adder
+    -- 定义了一个加法器
     adder_buff <= ("0" & adder_operand_0) + ("0" & adder_operand_1) + adder_carry_in;
+	-- 计算输入给加法器的信号
     process(OP, OPERAND_0, OPERAND_1)
     begin
         adder_operand_0 <= OPERAND_0;
+        -- 一个小选择器，根据加减法选择不同的输入给加法器的操作数
         if OP = alu_add then
             adder_operand_1 <= OPERAND_1;
             adder_carry_in <= '0';
-        else -- sub
+        else -- 对于减法的处理
             adder_operand_1 <= not OPERAND_1;
             adder_carry_in <= '1';
         end if;
     end process;
     
+    -- 计算进位（借位）、溢出标志
     process(OP, OPERAND_0, OPERAND_1, adder_buff)
     begin
         if OP = alu_add then
+            -- 加法器的进位
             CARRY <= adder_buff(word_msb + 1);
+      		-- 如果 正+正=负，或者 负+负=正，则说明溢出了
             if (OPERAND_0(word_msb) = '0' and OPERAND_1(word_msb) = '0' and adder_buff(word_msb) = '1')
                or (OPERAND_0(word_msb) = '1' and OPERAND_1(word_msb) = '1' and adder_buff(word_msb) = '0') then
                 OVERFLOW <= '1';
@@ -101,7 +107,9 @@ begin
                 OVERFLOW <= '0';
             end if;
         elsif OP = alu_sub then
+            -- 加法器的进位取反，就是减法的借位信号
             CARRY <= not adder_buff(word_msb + 1);
+            -- 如果 正-负=负，或者 负-正=正，则说明溢出了
             if (OPERAND_0(word_msb) = '0' and OPERAND_1(word_msb) = '1' and adder_buff(word_msb) = '1')
                or (OPERAND_0(word_msb) = '1' and OPERAND_1(word_msb) = '0' and adder_buff(word_msb) = '0') then
                 OVERFLOW <= '1';
@@ -109,11 +117,13 @@ begin
                 OVERFLOW <= '0';
             end if;
         else
+            -- 其他操作进位和溢出都为0
             CARRY <= '0';
             OVERFLOW <= '0';
         end if;
     end process;
 
+    -- 大选择器，根据操作码选择对应的结果
     process(OP, OPERAND_0, OPERAND_1, shamt, adder_buff)
     begin
         case OP is
@@ -139,10 +149,11 @@ begin
                 result_buff <= (others => 'X');
         end case;
     end process;
-	 
+	
+    -- 输出结果
     RESULT <= result_buff;
     
-    -- flags
+    -- 其余标志位计算
     ZERO <= '1' when result_buff = zero_word else '0';
     SIGN <= result_buff(word_msb);
 end;
@@ -270,11 +281,17 @@ begin
 end;
 ```
 
+## 面积优化
+
+ALU中一个核心部件是加法器，虽然FPGA有硬件加法器，但是一个16位加（减）法器仍然需要比较多的资源。如果把加法和减法的结果都计算出来之后再进行选择，就会综合出两个16位加（减）法器，但是如果在计算之前对输入给加法器的操作数进行选择，那么加法和减法可以使用同一个加法器，节约了硬件资源。 
+
+有的时候逻辑电路的面积减小了，布线延迟也会变小，速度反而会快。
+
 ## 思考题
 
 **ALU是组合逻辑电路还是时序逻辑电路？**
 
-组合逻辑电路 
+是组合逻辑电路。
 
 **给定A和B初值，要求运算完毕结果写回B，再进行下一次运算，应增加什么电路？**
 
