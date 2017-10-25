@@ -87,7 +87,8 @@ begin
         if OP = alu_add then
             adder_operand_1 <= OPERAND_1;
             adder_carry_in <= '0';
-        else -- 对于减法的处理
+        -- 对于减法的处理
+	    else 
             adder_operand_1 <= not OPERAND_1;
             adder_carry_in <= '1';
         end if;
@@ -169,9 +170,11 @@ use work.constants.all;
 entity controller is
     port
     (
+      	-- 单步时钟及复位键
         nCLK: in std_logic; 
         nRST: in std_logic;
-        nInputSW: in word_t;
+        -- 输入及输出
+      	nInputSW: in word_t;
         fout: out word_t
     );
 end;
@@ -180,22 +183,21 @@ architecture behavioral of controller is
     component alu is 
         port
         (
-            -- input
+            -- 数据及操作码输入
             OP: in alu_op_t;
             OPERAND_0: in word_t;
             OPERAND_1: in word_t;
 
-            -- output
+            -- 输出
             RESULT: out word_t;
 
-            -- flags
+            -- 标志位输出
             OVERFLOW: out std_logic;
             ZERO: out std_logic;
             SIGN: out std_logic;
             CARRY: out std_logic
         );
     end component;
-
     type state is (s_inputA, s_inputB, s_inputOP, s_outputFout, s_outputFlag);
     signal current_state: state;
     
@@ -222,15 +224,15 @@ begin
     alu_inst: alu
     port map
     (
-        -- input
+        -- 数据及操作码输入
         OP => OP,
         OPERAND_0 => OPERAND_0,
         OPERAND_1 => OPERAND_1,
 
-        -- output
+        -- 输出
         RESULT => result,
 
-        -- flags
+        -- 标志位输出
         OVERFLOW => OVERFLOW,
         ZERO => ZERO,
         SIGN => SIGN,
@@ -239,21 +241,27 @@ begin
 
     main : process(clk, rst)
     begin
+        -- 复位
         if rst = '1' then
             current_state <= s_inputA;
         elsif rising_edge(clk) then
             case current_state is
+                -- 输入操作数A
                 when s_inputA =>
                     OPERAND_0 <= InputSW;
                     current_state <= s_inputB;
+                -- 输入操作数B
                 when s_inputB =>
                     OPERAND_1 <= InputSW;   
                     current_state <= s_inputOP;
+                -- 输入操作码
                 when s_inputOP =>
                     OP <= InputSW(3 downto 0);
                     current_state <= s_outputFout;
+                -- 输出操作结果
                 when s_outputFout =>
                     current_state <= s_outputFlag;
+                -- 输出标志位
                 when s_outputFlag =>
                     OPERAND_0 <= InputSW;
                     current_state <= s_inputB;
@@ -263,11 +271,14 @@ begin
         end if;
     end process;
 
+    -- 输出操作结果及标志位
     output_proc : process(current_state, result, OVERFLOW, ZERO, SIGN, CARRY)
     begin
         case current_state is
+            -- 输出操作结果
             when s_outputFout =>
                 output <= result;
+            -- 输出标志位
             when s_outputFlag =>
                 output <= (others => '0');
                 output(0) <= OVERFLOW;
