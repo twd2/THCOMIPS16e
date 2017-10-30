@@ -88,7 +88,7 @@ begin
             adder_operand_1 <= OPERAND_1;
             adder_carry_in <= '0';
         -- 对于减法的处理
-	    else 
+        else
             adder_operand_1 <= not OPERAND_1;
             adder_carry_in <= '1';
         end if;
@@ -245,6 +245,7 @@ begin
         if rst = '1' then
             current_state <= s_inputA;
         elsif rising_edge(clk) then
+            -- 状态转移的组合逻辑
             case current_state is
                 -- 输入操作数A
                 when s_inputA =>
@@ -271,7 +272,7 @@ begin
         end if;
     end process;
 
-    -- 输出操作结果及标志位
+    -- 根据当前状态，输出操作结果及标志位的组合逻辑
     output_proc : process(current_state, result, OVERFLOW, ZERO, SIGN, CARRY)
     begin
         case current_state is
@@ -294,9 +295,9 @@ end;
 
 ## 面积优化
 
-ALU中一个核心部件是加法器，虽然FPGA有硬件加法器，但是一个16位加（减）法器仍然需要比较多的资源。如果把加法和减法的结果都计算出来之后再进行选择，就会综合出两个16位加（减）法器，但是如果在计算之前对输入给加法器的操作数进行选择，那么加法和减法可以使用同一个加法器，节约了硬件资源，同时减少了电路的面积。 
+ALU中一个核心部件是加法器，虽然FPGA有硬件对加法器进行优化，但是一个16位加（减）法器仍然需要比较多的资源。如果把加法和减法的结果都计算出来之后再进行选择，就会综合出两个16位加（减）法器，考虑到我们目前并不需要同时知道加法和减法的结果，如果在计算之前对输入给加法器的操作数进行选择，那么加法和减法可以使用同一个加法器，这节约了硬件资源，同时减少了电路的面积。
 
-有的时候逻辑电路的面积减小了，布线延迟也会变小，速度反而会快。
+虽然这个例子中我们在操作数之前额外加了一个选择器，但有的时候逻辑电路的面积减小了，布线延迟也会变小，速度反而会快。
 
 ## 思考题
 
