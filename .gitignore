@@ -71,6 +71,7 @@ impact.xsl
 impact_impact.xwbt
 ise_impact.cmd
 webtalk_impact.xml
+_impact.*
 
 # Core Generator generated files
 xaw2verilog.log
