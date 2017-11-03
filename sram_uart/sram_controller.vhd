@@ -7,7 +7,7 @@ entity sram_controller is
     (
         CLK: in std_logic;
         RST: in std_logic;
-        InputSW ：in std_logic_vector(WORD_WIDTH - 1 downto 0);
+        InputSW : in std_logic_vector(WORD_WIDTH - 1 downto 0);
         OutputLED : out std_logic_vector(WORD_WIDTH - 1 downto 0);
         
         -- connect to sram1
@@ -22,8 +22,7 @@ entity sram_controller is
         RAM2_DQ: inout std_logic_vector(WORD_WIDTH - 1 downto 0);
         RAM2_nWE: out std_logic;
         RAM2_nOE: out std_logic;
-        RAM2_EN: out std_logic;
-        
+        RAM2_EN: out std_logic
     );
 end;
 

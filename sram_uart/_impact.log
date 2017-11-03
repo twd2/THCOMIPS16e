@@ -1,0 +1,77 @@
+iMPACT Version: 14.7
+
+iMPACT log file Started on Fri Nov 03 14:27:12 2017
+
+Welcome to iMPACT
+iMPACT Version: 14.7
+// *** BATCH CMD : setMode -bs
+GUI --- Auto connect to cable...
+// *** BATCH CMD : setCable -port auto
+INFO:iMPACT - Digilent Plugin: Plugin Version: 2.4.4
+INFO:iMPACT - Digilent Plugin: no JTAG device was found.
+AutoDetecting cable. Please wait.
+*** WARNING ***: When port is set to auto detect mode, cable speed is set todefault 6 MHz regardless of explicit arguments supplied for setting the baudrates
+PROGRESS_START - Starting Operation.
+Connecting to cable (Usb Port - USB21).
+Checking cable driver.
+ Driver file xusb_xlp.sys found.
+ Driver version: src=1029, dest=1029.
+ Driver windrvr6.sys version = 10.2.1.0. WinDriver v10.21 Jungo (c) 1997 - 2010 Build Date: Aug 31 2010 x86_64 64bit SYS14:14:44, version = 1021.
+ Cable PID = 0008.
+ Max current requested during enumeration is 74 mA.
+Type = 0x0004.
+ Cable Type = 3, Revision = 0.
+ Setting cable speed to 6 MHz.
+Cable connection established.
+Firmware version = 1029.
+File version of C:/Xilinx/14.7/ISE_DS/ISE/data/xusb_xlp.hex = 1303.
+Firmware hex file version = 1303.
+Downloading C:/Xilinx/14.7/ISE_DS/ISE/data/xusb_xlp.hex.
+Downloaded firmware version = 1303.
+PLD file version = 0012h.
+ PLD version = 0012h.
+PROGRESS_END - End Operation.
+Elapsed time =      1 sec.
+Type = 0x0004.
+ESN option: 0000151EE1D401.
+Attempting to identify devices in the boundary-scan chain configuration...
+INFO:iMPACT - Current time: 2017/11/3 14:27:24
+// *** BATCH CMD : Identify -inferir 
+PROGRESS_START - Starting Operation.
+Identifying chain contents...'0': : Manufacturer's ID = Xilinx xc3s1200e, Version : 2
+INFO:iMPACT:1777 - 
+   Reading C:/Xilinx/14.7/ISE_DS/ISE/spartan3e/data/xc3s1200e.bsd...
+INFO:iMPACT:501 - '1': Added Device xc3s1200e successfully.
+----------------------------------------------------------------------
+done.
+PROGRESS_END - End Operation.
+Elapsed time =      1 sec.
+// *** BATCH CMD : identifyMPM 
+// *** BATCH CMD : assignFile -p 1 -file"C:/Users/twd2/Desktop/thco/sram_uart/sram_uart.bit"
+'1': Loading file 'C:/Users/twd2/Desktop/thco/sram_uart/sram_uart.bit' ...
+done.
+INFO:iMPACT:2257 - Startup Clock has been changed to 'JtagClk' in the bitstream   stored in memory,
+   but the original bitstream file remains unchanged.
+UserID read from the bitstream file = 0xFFFFFFFF.
+INFO:iMPACT:501 - '1': Added Device xc3s1200e successfully.
+----------------------------------------------------------------------
+INFO:iMPACT - Current time: 2017/11/3 14:27:45
+// *** BATCH CMD : Program -p 1 
+Maximum TCK operating frequency for this device chain: 10000000.
+Validating chain...
+Boundary-scan chain validated successfully.
+PROGRESS_START - Starting Operation.
+'1': Programming device...
+ LCK_cycle = NoWait.
+LCK cycle: NoWait
+done.
+INFO:iMPACT:2219 - Status register values:
+INFO:iMPACT - 0011 0111 1111 1000 0000 0000 0000 0000 
+INFO:iMPACT:579 - '1': Completed downloading bit file to device.
+INFO:iMPACT:188 - '1': Programming completed successfully.
+ LCK_cycle = NoWait.
+LCK cycle: NoWait
+INFO:iMPACT - '1': Checking done pin....done.
+'1': Programmed successfully.
+PROGRESS_END - End Operation.
+Elapsed time =      1 sec.
