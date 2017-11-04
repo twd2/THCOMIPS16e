@@ -1,7 +1,7 @@
 
 # PlanAhead Launch Script for Post-Synthesis pin planning, created by Project Navigator
 
-create_project -name sram_uart -dir "C:/Users/twd2/Desktop/thco/sram_uart/planAhead_run_1" -part xc3s1200efg320-4
+create_project -name sram_uart -dir "C:/Users/twd2/Desktop/thco/sram_uart/planAhead_run_3" -part xc3s1200efg320-4
 set_property design_mode GateLvl [get_property srcset [current_run -impl]]
 set_property edif_top_file "C:/Users/twd2/Desktop/thco/sram_uart/sram_uart.ngc" [ get_property srcset [ current_run ] ]
 add_files -norecurse { {C:/Users/twd2/Desktop/thco/sram_uart} }
