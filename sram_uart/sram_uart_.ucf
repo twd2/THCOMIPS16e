@@ -45,6 +45,7 @@ NET "UART_READY" LOC = A16;
 NET "UART_TBRE" LOC = D14;
 NET "UART_TSRE" LOC = N9;
 
+# PlanAhead Generated physical constraints 
 
 NET "KEY0" LOC = U11;
 NET "KEY0" CLOCK_DEDICATED_ROUTE = FALSE;
@@ -103,22 +104,3 @@ NET "nInputSW[12]" LOC = K7;
 NET "nInputSW[14]" LOC = J7;
 NET "nInputSW[15]" LOC = J6;
 NET "nInputSW[13]" LOC = K2;
-
-# PlanAhead Generated physical constraints 
-
-NET "LEDOutput[15]" LOC = A14;
-NET "LEDOutput[14]" LOC = E13;
-NET "LEDOutput[13]" LOC = D13;
-NET "LEDOutput[12]" LOC = B13;
-NET "LEDOutput[11]" LOC = A13;
-NET "LEDOutput[10]" LOC = F12;
-NET "LEDOutput[9]" LOC = E12;
-NET "LEDOutput[8]" LOC = A12;
-NET "LEDOutput[7]" LOC = F11;
-NET "LEDOutput[6]" LOC = E11;
-NET "LEDOutput[5]" LOC = D11;
-NET "LEDOutput[4]" LOC = C11;
-NET "LEDOutput[3]" LOC = B11;
-NET "LEDOutput[2]" LOC = A11;
-NET "LEDOutput[1]" LOC = E10;
-NET "LEDOutput[0]" LOC = D10;
