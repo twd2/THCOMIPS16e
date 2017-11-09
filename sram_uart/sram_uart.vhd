@@ -35,7 +35,7 @@ end;
 
 architecture behavioral of sram_uart is
     type state_t is (st_init, st_read_init, st_read_wait, st_read,
-                     st_write_sram1, st_clear_bus_11, st_clear_bus_12, st_read_sram1, st_read_sram_wait1
+                     st_write_sram1, st_clear_bus_11, st_clear_bus_12, st_read_sram1, st_read_sram_wait1,
                      st_write_sram2, st_clear_bus_21, st_clear_bus_22, st_read_sram2, st_read_sram_wait2,
                      st_write_init, st_write, st_write_wait);
     signal current_state: state_t;
@@ -99,7 +99,7 @@ begin
                 when st_read =>
                     data <= SYSBUS_DIN;
                     UART_nRE <= '1';
-                    current_state <= st_write_sram;
+                    current_state <= st_write_sram1;
                 when st_write_sram1 =>
                     -- sram 1
                     RAM1_nWE <= '0';
