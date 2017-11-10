@@ -31,30 +31,33 @@ entity sram_uart is
     port
     (
         CLK: in std_logic;
-        KEY0: in std_logic;
+        KEY0: in std_logic;   --input address with KEY0
         nRST: in std_logic;
-        nInputSW: in std_logic_vector(WORD_WIDTH - 1 downto 0);
-        LEDOutput: out std_logic_vector(WORD_WIDTH - 1 downto 0);
+        nInputSW: in std_logic_vector(WORD_WIDTH - 1 downto 0);   --input address
+        LEDOutput: out std_logic_vector(WORD_WIDTH - 1 downto 0);  --output data to LED
 
+        --SRAM1
         SYSBUS_ADDR: out std_logic_vector(ADDR_WIDTH - 1 downto 0);
         SYSBUS_DQ: inout std_logic_vector(WORD_WIDTH - 1 downto 0);
         RAM1_nWE: out std_logic;
         RAM1_nOE: out std_logic;
         RAM1_nCE: out std_logic;
         
+      	--SRAM2
         EXTBUS_ADDR: out std_logic_vector(ADDR_WIDTH - 1 downto 0);
         EXTBUS_DQ: inout std_logic_vector(WORD_WIDTH - 1 downto 0);
         RAM2_nWE: out std_logic;
         RAM2_nOE: out std_logic;
         RAM2_nCE: out std_logic;
         
+      	--UART
         UART_nRE: out std_logic;
         UART_READY: in std_logic;
         
         UART_nWE: out std_logic;
         UART_TBRE: in std_logic;
         UART_TSRE: in std_logic
-    );
+    ); 
 end;
 
 architecture behavioral of sram_uart is
@@ -66,8 +69,10 @@ architecture behavioral of sram_uart is
     
     signal InputSW: std_logic_vector(WORD_WIDTH - 1 downto 0);
     signal RST: std_logic;
+    -- SYSBUS
     signal SYSBUS_DIN, SYSBUS_DOUT: std_logic_vector(WORD_WIDTH - 1 downto 0);
     signal SYSBUS_DEN: std_logic;
+	-- EXTBUS
     signal EXTBUS_DIN, EXTBUS_DOUT: std_logic_vector(WORD_WIDTH - 1 downto 0);
     signal EXTBUS_DEN: std_logic;
     signal addr: std_logic_vector(ADDR_WIDTH - 1 downto 0);
@@ -83,6 +88,8 @@ begin
     RAM2_nCE <= '0';
     LEDOutput <= data;
 
+
+	-- get address
     process(KEY0, RST)
     begin
         if RST = '1' then
@@ -99,10 +106,10 @@ begin
             RAM1_nOE <= '1';
             UART_nRE <= '1'; -- disable uart
             SYSBUS_ADDR <= (others =>'0');
-            SYSBUS_DEN <= '0'; -- disable fpga
+            SYSBUS_DEN <= '0'; -- disable sysbus
             SYSBUS_DOUT <= (others => '0');
             EXTBUS_ADDR <= (others =>'0');
-            EXTBUS_DEN <= '0';
+            EXTBUS_DEN <= '0'; -- disable extbus
             EXTBUS_DOUT <= (others => '0');
             current_state <= st_init;
         elsif rising_edge(CLK) then
@@ -113,48 +120,43 @@ begin
                     RAM1_nWE <= '1'; -- disable sram
                     RAM1_nOE <= '1';
                     UART_nRE <= '1'; -- disable uart
-                    SYSBUS_DEN <= '0'; -- disable fpga
+                    SYSBUS_DEN <= '0'; -- disable sysbus
                     current_state <= st_read_wait;
-                when st_read_wait =>
-                    if UART_READY = '1' then
+                when st_read_wait => -- wait uart ready
+                    if UART_READY = '1' then  
                         UART_nRE <= '0';
                         current_state <= st_read;
                     end if;
-                when st_read =>
+                when st_read => -- read from uart 
                     data <= SYSBUS_DIN;
                     UART_nRE <= '1';
                     current_state <= st_write_sram1;
-                when st_write_sram1 =>
-                    -- sram 1
+                when st_write_sram1 => -- write to sram1
                     RAM1_nWE <= '0';
                     RAM1_nOE <= '1';
                     SYSBUS_ADDR <= addr;
                     SYSBUS_DEN <= '1';
                     SYSBUS_DOUT <= data + 1;
                     current_state <= st_clear_bus_11;
-                when st_clear_bus_11 =>
-                    -- sram 1
+                when st_clear_bus_11 => 
                     RAM1_nWE <= '1';
-                    SYSBUS_DOUT <= x"05AF";
+                    SYSBUS_DOUT <= x"05AF"; -- ensure correctness of checking results
                     current_state <= st_clear_bus_12;
                 when st_clear_bus_12 =>
                     SYSBUS_DEN <= '0';
                     current_state <= st_read_sram1;
-                when st_read_sram1 =>
-                    -- sram 1
+                when st_read_sram1 =>  -- read from sram1
                     RAM1_nWE <= '1';
                     RAM1_nOE <= '0';
                     SYSBUS_ADDR <= addr;
                     SYSBUS_DEN <= '0';
                     current_state <= st_read_sram_wait1;
-                when st_read_sram_wait1 =>
-                    -- sram 1
+                when st_read_sram_wait1 => -- get results
                     RAM1_nOE <= '1';
                     SYSBUS_DEN <= '0';
                     data <= SYSBUS_DIN;
                     current_state <= st_write_sram2;
-                when st_write_sram2 =>
-                    -- sram 2
+                when st_write_sram2 =>  -- write to sram2
                     RAM2_nWE <= '0';
                     RAM2_nOE <= '1';
                     EXTBUS_ADDR <= addr;
@@ -162,27 +164,24 @@ begin
                     EXTBUS_DOUT <= data + 1;
                     current_state <= st_clear_bus_21;
                 when st_clear_bus_21 =>
-                    -- sram 2
                     RAM2_nWE <= '1';
-                    EXTBUS_DOUT <= x"FA50";
+                    EXTBUS_DOUT <= x"FA50"; -- ensure correctness of checking results
                     current_state <= st_clear_bus_22;
                 when st_clear_bus_22 =>
                     EXTBUS_DEN <= '0';
                     current_state <= st_read_sram2;
-                when st_read_sram2 =>
-                    -- sram 2
+                when st_read_sram2 => -- read from sram2
                     RAM2_nWE <= '1';
                     RAM2_nOE <= '0';
                     EXTBUS_ADDR <= addr;
                     EXTBUS_DEN <= '0';
                     current_state <= st_read_sram_wait2;
-                when st_read_sram_wait2 =>
-                    -- sram 2
+                when st_read_sram_wait2 => -- get results
                     RAM2_nOE <= '1';
                     EXTBUS_DEN <= '0';
                     data <= EXTBUS_DIN;
                     current_state <= st_write_init;
-                when st_write_init =>
+                when st_write_init => -- write to uart
                     SYSBUS_DEN <= '1';
                     UART_nWE <= '1';
                     SYSBUS_DOUT <= data + 1;
@@ -190,7 +189,7 @@ begin
                 when st_write =>
                     UART_nWE <= '0';
                     current_state <= st_write_wait;
-                when st_write_wait =>
+                when st_write_wait => -- wait for done
                     UART_nWE <= '1';
                     if UART_TBRE = '1' and UART_TSRE = '1' then
                         current_state <= st_read_init;
