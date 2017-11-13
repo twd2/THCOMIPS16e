@@ -31,29 +31,31 @@ entity sram_uart is
     port
     (
         CLK: in std_logic;
-        KEY0: in std_logic;   --input address with KEY0
+        KEY0: in std_logic;   -- 锁存输入地址的按钮
         nRST: in std_logic;
-        nInputSW: in std_logic_vector(WORD_WIDTH - 1 downto 0);   --input address
-        LEDOutput: out std_logic_vector(WORD_WIDTH - 1 downto 0);  --output data to LED
+        nInputSW: in std_logic_vector(WORD_WIDTH - 1 downto 0);   -- 输入的地址
+        LEDOutput: out std_logic_vector(WORD_WIDTH - 1 downto 0);  -- 将data显示到LED
 
-        --SRAM1
+        -- 基本总线（系统总线）
         SYSBUS_ADDR: out std_logic_vector(ADDR_WIDTH - 1 downto 0);
         SYSBUS_DQ: inout std_logic_vector(WORD_WIDTH - 1 downto 0);
+        -- SRAM1的控制信号
         RAM1_nWE: out std_logic;
         RAM1_nOE: out std_logic;
         RAM1_nCE: out std_logic;
         
-      	--SRAM2
+      	-- 扩展总线
         EXTBUS_ADDR: out std_logic_vector(ADDR_WIDTH - 1 downto 0);
         EXTBUS_DQ: inout std_logic_vector(WORD_WIDTH - 1 downto 0);
+        -- SRAM2的控制信号
         RAM2_nWE: out std_logic;
         RAM2_nOE: out std_logic;
         RAM2_nCE: out std_logic;
         
-      	--UART
+      	-- UART的控制信号（读端）
         UART_nRE: out std_logic;
         UART_READY: in std_logic;
-        
+        -- UART的控制信号（写端）
         UART_nWE: out std_logic;
         UART_TBRE: in std_logic;
         UART_TSRE: in std_logic
@@ -69,10 +71,8 @@ architecture behavioral of sram_uart is
     
     signal InputSW: std_logic_vector(WORD_WIDTH - 1 downto 0);
     signal RST: std_logic;
-    -- SYSBUS
     signal SYSBUS_DIN, SYSBUS_DOUT: std_logic_vector(WORD_WIDTH - 1 downto 0);
     signal SYSBUS_DEN: std_logic;
-	-- EXTBUS
     signal EXTBUS_DIN, EXTBUS_DOUT: std_logic_vector(WORD_WIDTH - 1 downto 0);
     signal EXTBUS_DEN: std_logic;
     signal addr: std_logic_vector(ADDR_WIDTH - 1 downto 0);
@@ -84,12 +84,11 @@ begin
     SYSBUS_DIN <= SYSBUS_DQ;
     EXTBUS_DQ <= EXTBUS_DOUT when EXTBUS_DEN = '1' else (others => 'Z');
     EXTBUS_DIN <= EXTBUS_DQ;
-    RAM1_nCE <= '0';
+    RAM1_nCE <= '0'; -- 将SRAM的片选都选中，下面用/WE、/OE控制
     RAM2_nCE <= '0';
     LEDOutput <= data;
 
-
-	-- get address
+	-- 地址触发器
     process(KEY0, RST)
     begin
         if RST = '1' then
@@ -102,14 +101,14 @@ begin
     process(CLK, RST)
     begin
         if RST = '1' then
-            RAM1_nWE <= '1'; -- disable sram
+            RAM1_nWE <= '1'; -- 关闭SRAM
             RAM1_nOE <= '1';
-            UART_nRE <= '1'; -- disable uart
+            UART_nRE <= '1'; -- 关闭UART
             SYSBUS_ADDR <= (others =>'0');
-            SYSBUS_DEN <= '0'; -- disable sysbus
+            SYSBUS_DEN <= '0'; -- 不驱动系统总线
             SYSBUS_DOUT <= (others => '0');
             EXTBUS_ADDR <= (others =>'0');
-            EXTBUS_DEN <= '0'; -- disable extbus
+            EXTBUS_DEN <= '0'; -- 不驱动扩展总线
             EXTBUS_DOUT <= (others => '0');
             current_state <= st_init;
         elsif rising_edge(CLK) then
@@ -117,71 +116,71 @@ begin
                 when st_init =>
                     current_state <= st_read_init;
                 when st_read_init =>
-                    RAM1_nWE <= '1'; -- disable sram
+                    RAM1_nWE <= '1';
                     RAM1_nOE <= '1';
-                    UART_nRE <= '1'; -- disable uart
-                    SYSBUS_DEN <= '0'; -- disable sysbus
+                    UART_nRE <= '1';
+                    SYSBUS_DEN <= '0';
                     current_state <= st_read_wait;
-                when st_read_wait => -- wait uart ready
+                when st_read_wait => -- 等待，直到UART有数据可读取
                     if UART_READY = '1' then  
                         UART_nRE <= '0';
                         current_state <= st_read;
                     end if;
-                when st_read => -- read from uart 
+                when st_read => -- 从UART读取数据
                     data <= SYSBUS_DIN;
                     UART_nRE <= '1';
                     current_state <= st_write_sram1;
-                when st_write_sram1 => -- write to sram1
+                when st_write_sram1 => -- 写入SRAM1
                     RAM1_nWE <= '0';
                     RAM1_nOE <= '1';
                     SYSBUS_ADDR <= addr;
                     SYSBUS_DEN <= '1';
                     SYSBUS_DOUT <= data + 1;
                     current_state <= st_clear_bus_11;
-                when st_clear_bus_11 => 
+                when st_clear_bus_11 => -- 该状态解释见下
                     RAM1_nWE <= '1';
-                    SYSBUS_DOUT <= x"05AF"; -- ensure correctness of checking results
+                    SYSBUS_DOUT <= x"05AF";
                     current_state <= st_clear_bus_12;
-                when st_clear_bus_12 =>
+                when st_clear_bus_12 => -- 该状态解释见下
                     SYSBUS_DEN <= '0';
                     current_state <= st_read_sram1;
-                when st_read_sram1 =>  -- read from sram1
+                when st_read_sram1 => -- 发送地址给SRAM1
                     RAM1_nWE <= '1';
                     RAM1_nOE <= '0';
                     SYSBUS_ADDR <= addr;
                     SYSBUS_DEN <= '0';
                     current_state <= st_read_sram_wait1;
-                when st_read_sram_wait1 => -- get results
+                when st_read_sram_wait1 => -- 读取SRAM1
                     RAM1_nOE <= '1';
                     SYSBUS_DEN <= '0';
                     data <= SYSBUS_DIN;
                     current_state <= st_write_sram2;
-                when st_write_sram2 =>  -- write to sram2
+                when st_write_sram2 => -- 写入SRAM2
                     RAM2_nWE <= '0';
                     RAM2_nOE <= '1';
                     EXTBUS_ADDR <= addr;
                     EXTBUS_DEN <= '1';
                     EXTBUS_DOUT <= data + 1;
                     current_state <= st_clear_bus_21;
-                when st_clear_bus_21 =>
+                when st_clear_bus_21 => -- 该状态解释见下
                     RAM2_nWE <= '1';
-                    EXTBUS_DOUT <= x"FA50"; -- ensure correctness of checking results
+                    EXTBUS_DOUT <= x"FA50";
                     current_state <= st_clear_bus_22;
-                when st_clear_bus_22 =>
+                when st_clear_bus_22 => -- 该状态解释见下
                     EXTBUS_DEN <= '0';
                     current_state <= st_read_sram2;
-                when st_read_sram2 => -- read from sram2
+                when st_read_sram2 => -- 发送地址给SRAM1
                     RAM2_nWE <= '1';
                     RAM2_nOE <= '0';
                     EXTBUS_ADDR <= addr;
                     EXTBUS_DEN <= '0';
                     current_state <= st_read_sram_wait2;
-                when st_read_sram_wait2 => -- get results
+                when st_read_sram_wait2 => -- 读取SRAM2
                     RAM2_nOE <= '1';
                     EXTBUS_DEN <= '0';
                     data <= EXTBUS_DIN;
                     current_state <= st_write_init;
-                when st_write_init => -- write to uart
+                when st_write_init => -- 写入串口
                     SYSBUS_DEN <= '1';
                     UART_nWE <= '1';
                     SYSBUS_DOUT <= data + 1;
@@ -189,7 +188,7 @@ begin
                 when st_write =>
                     UART_nWE <= '0';
                     current_state <= st_write_wait;
-                when st_write_wait => -- wait for done
+                when st_write_wait => -- 等待直到串口发送完成
                     UART_nWE <= '1';
                     if UART_TBRE = '1' and UART_TSRE = '1' then
                         current_state <= st_read_init;
@@ -204,17 +203,23 @@ end;
 
 ## SRAM测试问题
 
-这直接反映在几个奇怪的状态——`st_clear_bus_11`、`st_clear_bus_12`、`st_clear_bus_21`和`st_clear_bus_22`中。
+在我们的测试中，我们发现FPGA驱动完总线后，再将FPGA设置为高阻态，FPGA刚刚向总线写的值会留在总线上，如果此时没有其他设备驱动总线，FPGA再尝试读取总线的话，会读出相同的值。因此，如果SRAM损坏或者`/CE`或`/OE`信号设置错误而导致SRAM根本没有驱动总线，是检测不出错误的。为了解决这个问题，在FPGA向总线写入正确的值后，需要将SRAM设置为不写入（`/WE = '1'`），然后让FPGA向总线写入一些错误的值，之后再读取。
+
+这直接反映在几个“奇怪”的状态——`st_clear_bus_11`、`st_clear_bus_12`、`st_clear_bus_21`和`st_clear_bus_22`中。
+
+## 跨时钟域问题
+
+我们注意到，UART的三个输入到FPGA的信号，`UART_READY`、`UART_TBRE`以及`UART_TSRE`，所在时钟域和FPGA的时钟不同，直接输入到FPGA的触发器中可能会产生跨时钟域相关问题，导致触发器进入亚稳态，从而导致状态机异常甚至卡死。为了解决这个问题，可以将这三个输入信号用FPGA的时钟延迟两个周期再传给需要的地方。不过，由于本次实验我们考虑到演示的方便性，将FPGA的时钟设置为手动控制的微动开关，这个问题不是十分明显，所以代码中也就没有处理。
 
 ## 思考题
 
 **SRAM读写特点**
 
-SRAM读取的时序要求更加严格，因为读取操作需要FPGA先将地址发送到总线，等待SRAM内部逻辑稳定之后，再从总线中把数据取出。假设FPGA向总线发送地址的时间为$t_{addr}$，SRAM最小读访问时间为$t_{read}$，FPGA读取总线的时间为$t_{in}$，则一次操作的时间$t$满足：
+SRAM读取的时序要求更加严格，因为读取操作需要FPGA先将地址发送到总线，等待SRAM内部逻辑稳定之后，再从总线中把数据取出。假设FPGA向总线发送地址的时间为$t_{addr}$，SRAM最小读访问时间为$t_{read}$，FPGA读取总线的时间为$t_{in}$，实际留给SRAM进行读访问的时间为$t_{real}$，则一次操作的时间$t$满足：
 
 $$t = t_{addr} + t_{real} + t_{in} \ge  t_{addr} + t_{read} + t_{in}$$
 
-写操作稍好一些，因为FPGA只需将地址和数据同时发送到SRAM，等待SRAM稳定后即可。假设FPGA向总线发送地址的时间为$t_{addr}$，FPGA将数据发送到总线的时间为$t_{out}$，SRAM最小写访问时间为$t_{write}$，则一次操作的时间$t$满足：
+写操作稍好一些，因为FPGA只需将地址和数据同时发送到SRAM，等待SRAM稳定后即可。假设FPGA向总线发送地址的时间为$t_{addr}$，FPGA将数据发送到总线的时间为$t_{out}$，SRAM最小写访问时间为$t_{write}$，实际留给SRAM进行写访问的时间为$t_{real}$，则一次操作的时间$t$满足：
 
 $$t = \max\{t_{addr}, t_{out}\} + t_{real} \ge  \max\{t_{addr}, t_{out}\} + t_{write}$$
 
