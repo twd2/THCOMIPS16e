@@ -49,6 +49,7 @@ architecture behavioral of instruction_decode is
     signal ins_addr: std_logic_vector(25 downto 0);
     
     signal read_addr_0_buff, read_addr_1_buff: reg_addr_t;
+    signal read_en_0_buff, read_en_1_buff: std_logic;
     
     -- for branch instrutions
     signal pc_offset_imm, cb_target: word_t;
@@ -84,6 +85,8 @@ begin
         if RST = '1' then
             read_addr_0_buff <= (others => '0');
             read_addr_1_buff <= (others => '0');
+            read_en_0_buff <= '0';
+            read_en_1_buff <= '0';
             PC_O <= (others => '0');
             OP <= (others => '0');
             FUNCT <= (others => '0');
@@ -99,6 +102,8 @@ begin
         else
             read_addr_0_buff <= rs;
             read_addr_1_buff <= rt;
+            read_en_0_buff <= '1'; -- TODO
+            read_en_1_buff <= '1';
             PC_O <= PC;
             OP <= op_buff;
             FUNCT <= funct_buff;
@@ -210,6 +215,7 @@ begin
     
     -- load hazard
     STALL_REQ <= '1' when EX_IS_LOAD = '1' and 
-                          (EX_WRITE_ADDR = read_addr_0_buff or EX_WRITE_ADDR = read_addr_1_buff) else '0';
-                          -- check zero reg here?
+                          ((read_en_0_buff = '1' and EX_WRITE_ADDR = read_addr_0_buff) or
+                           (read_en_1_buff = '1' and EX_WRITE_ADDR = read_addr_1_buff)) else '0';
+                          -- TODO: check zero reg here?
 end;
