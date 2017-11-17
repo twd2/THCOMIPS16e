@@ -338,7 +338,7 @@ def asm(code):
     # pass 4: generate binary
     buffer = b''
     for c in mc:
-        buffer += struct.pack('<H', c) # big-endian
+        buffer += struct.pack('<H', c) # little-endian
     return buffer, syms
 
 def main():
