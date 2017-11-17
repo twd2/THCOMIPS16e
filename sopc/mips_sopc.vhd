@@ -83,7 +83,7 @@ begin
         douta => data_bus_res.data
     );
     
-    wea(0) <= data_bus_req.nread_write;
+    wea(0) <= data_bus_req.en and data_bus_req.nread_write;
 
     -- TODO: real bus
     data_bus_res.done <= '1';

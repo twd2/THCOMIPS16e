@@ -4,7 +4,7 @@ use IEEE.std_logic_unsigned.all;
 use work.constants.all;
 use work.types.all;
 
-entity if_id is
+entity if_id_reg is
     port
     (
         CLK: in std_logic;
@@ -21,7 +21,7 @@ entity if_id is
     );
 end;
 
-architecture behavioral of if_id is
+architecture behavioral of if_id_reg is
 begin
     process(CLK, RST)
     begin
