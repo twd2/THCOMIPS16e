@@ -342,10 +342,17 @@ def asm(code):
     return buffer, syms
 
 def main():
-    buffer, syms = asm(sys.stdin.read())
-    with open('a.out', 'wb') as f:
+    if len(sys.argv) < 2:
+        print('Usage: {} <asm file> [<output file>]'.format(sys.argv[0]))
+        exit(1)
+    with open(sys.argv[1], 'r', encoding='utf-8') as f:
+        buffer, syms = asm(f.read())
+    out_filename = 'a.out'
+    if len(sys.argv) >= 3:
+        out_filename = sys.argv[2]
+    with open(out_filename, 'wb') as f:
         f.write(buffer)
-    with open('a.sym', 'w') as f:
+    with open(out_filename + '.sym', 'w', encoding='utf-8') as f:
         for k, v in sorted(syms.items(), key=lambda t: t[1]):
             f.write('0x{:04x} {}\n'.format(v, k))
 
