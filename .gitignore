@@ -99,3 +99,6 @@ isim.*
 isim/
 xilinxsim.ini
 *.wdb
+
+*.out
+*.sym

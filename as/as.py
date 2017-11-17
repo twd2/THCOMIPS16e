@@ -323,7 +323,7 @@ def asm(code):
                 arg = inst[i].lower()
                 if arg[0] in list('-0123456789'):
                     inst[i] = parse_imm(arg)
-    print(inst_list)
+    # print(inst_list)
 
     # pass 3: generate target code
     mc = []
@@ -342,11 +342,12 @@ def asm(code):
     return buffer, syms
 
 def main():
-    pass
+    buffer, syms = asm(sys.stdin.read())
+    with open('a.out', 'wb') as f:
+        f.write(buffer)
+    with open('a.sym', 'w') as f:
+        for k, v in sorted(syms.items(), key=lambda t: t[1]):
+            f.write('0x{:04x} {}\n'.format(v, k))
 
 if __name__ == '__main__':
     main()
-
-buffer, syms = asm(sys.stdin.read())
-with open('a.out', 'wb') as f:
-    f.write(buffer)
