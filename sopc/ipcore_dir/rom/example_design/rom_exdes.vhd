@@ -90,7 +90,7 @@ ENTITY rom_exdes IS
       --Inputs - Port A
     ADDRA          : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
   
-    DOUTA          : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+    DOUTA          : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     CLKA       : IN STD_LOGIC
 
 
@@ -113,7 +113,7 @@ ARCHITECTURE xilinx OF rom_exdes IS
       --Port A
     ADDRA      : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
   
-    DOUTA      : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+    DOUTA      : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
 
     CLKA       : IN STD_LOGIC
 

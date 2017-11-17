@@ -12,6 +12,6 @@ PINATTR PinName clka
 PINATTR Polarity IN
 LINE Wide 576 80 544 80
 PIN 576 80 RIGHT 36
-PINATTR PinName douta[31:0]
+PINATTR PinName douta[15:0]
 PINATTR Polarity OUT
 

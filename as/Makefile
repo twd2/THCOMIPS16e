@@ -1,5 +1,5 @@
 .PHONY: all
-all: kernel.coe
+all: rom.coe kernel.coe
 	
 
 %.coe: %.asm

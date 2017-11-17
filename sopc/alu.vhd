@@ -32,7 +32,7 @@ architecture behavioral of alu is
     signal adder_carry_in: std_logic;
     signal adder_buff: std_logic_vector(word_msb + 1 downto 0);
 begin
-    shamt <= to_integer(unsigned(OPERAND_1(4 downto 0)));
+    shamt <= to_integer(unsigned(OPERAND_1(3 downto 0)));
 
     -- adder
     adder_buff <= ("0" & adder_operand_0) + ("0" & adder_operand_1) + adder_carry_in;

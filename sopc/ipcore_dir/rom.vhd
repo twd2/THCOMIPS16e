@@ -44,7 +44,7 @@ ENTITY rom IS
   PORT (
     clka : IN STD_LOGIC;
     addra : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
-    douta : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+    douta : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
   );
 END rom;
 
@@ -54,7 +54,7 @@ COMPONENT wrapped_rom
   PORT (
     clka : IN STD_LOGIC;
     addra : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
-    douta : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+    douta : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
   );
 END COMPONENT;
 
@@ -99,8 +99,8 @@ END COMPONENT;
       c_prim_type => 1,
       c_read_depth_a => 1024,
       c_read_depth_b => 1024,
-      c_read_width_a => 32,
-      c_read_width_b => 32,
+      c_read_width_a => 16,
+      c_read_width_b => 16,
       c_rst_priority_a => "CE",
       c_rst_priority_b => "CE",
       c_rst_type => "SYNC",
@@ -110,7 +110,7 @@ END COMPONENT;
       c_use_bram_block => 0,
       c_use_byte_wea => 0,
       c_use_byte_web => 0,
-      c_use_default_data => 0,
+      c_use_default_data => 1,
       c_use_ecc => 0,
       c_use_softecc => 0,
       c_wea_width => 1,
@@ -119,8 +119,8 @@ END COMPONENT;
       c_write_depth_b => 1024,
       c_write_mode_a => "WRITE_FIRST",
       c_write_mode_b => "WRITE_FIRST",
-      c_write_width_a => 32,
-      c_write_width_b => 32,
+      c_write_width_a => 16,
+      c_write_width_b => 16,
       c_xdevicefamily => "spartan3e"
     );
 -- synthesis translate_on

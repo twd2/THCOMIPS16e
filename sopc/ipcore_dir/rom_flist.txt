@@ -1,4 +1,5 @@
 # Output products list for <rom>
+_xmsgs\pn_parser.xmsgs
 rom.asy
 rom.gise
 rom.mif

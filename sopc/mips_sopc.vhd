@@ -50,8 +50,8 @@ architecture behavioral of mips_sopc is
         clka : IN STD_LOGIC;
         wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
         addra : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
-        dina : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        douta : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+        dina : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+        douta : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
       );
     END component;
 
@@ -76,7 +76,7 @@ begin
     memory_inst: memory
     port map
     (
-        addra => data_bus_req.addr(11 downto 2),
+        addra => data_bus_req.addr(9 downto 0),
         clka => not CLK,
         dina => data_bus_req.data,
         wea => wea,

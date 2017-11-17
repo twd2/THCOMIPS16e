@@ -1,0 +1,1 @@
+li r0, 0xbeef

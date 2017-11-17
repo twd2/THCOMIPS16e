@@ -8,7 +8,7 @@ PINATTR PinName addra[9:0]
 PINATTR Polarity IN
 LINE Wide 0 112 32 112
 PIN 0 112 LEFT 36
-PINATTR PinName dina[31:0]
+PINATTR PinName dina[15:0]
 PINATTR Polarity IN
 LINE Wide 0 208 32 208
 PIN 0 208 LEFT 36
@@ -20,6 +20,6 @@ PINATTR PinName clka
 PINATTR Polarity IN
 LINE Wide 576 80 544 80
 PIN 576 80 RIGHT 36
-PINATTR PinName douta[31:0]
+PINATTR PinName douta[15:0]
 PINATTR Polarity OUT
 

@@ -28,7 +28,7 @@ architecture behavioral of program_counter is
     signal pc_reg: word_t;
 begin
     PC <= pc_reg;
-    pc_4_buff <= pc_reg + 4;
+    pc_4_buff <= pc_reg + 1;
     PC_4 <= pc_4_buff;
 
     process(CLK, RST)

@@ -110,44 +110,7 @@ begin
             DIV_SIGN <= 'X';
             DIV_EN <= '0';
 
-            -- TODO(twd2): address of load/store
-            case COMMON.op is
-                when op_special =>
-                    case COMMON.funct is
-                        when func_mfhi =>
-                            WB_O.write_data <= HI;
-                        when func_mflo =>
-                            WB_O.write_data <= LO;
-                        when func_mthi =>
-                            WB_O.hi_write_en <= '1';
-                            WB_O.hi_write_data <= EX.operand_0;
-                        when func_mtlo =>
-                            WB_O.lo_write_en <= '1';
-                            WB_O.lo_write_data <= EX.operand_0;
-                        when func_div =>
-                            STALL_REQ <= not DIV_DONE;
-                            DIV_DIVIDEND <= EX.operand_0;
-                            DIV_DIV <= EX.operand_1;
-                            DIV_SIGN <= '1';
-                            DIV_EN <= '1';
-                            WB_O.lo_write_en <= '1';
-                            WB_O.lo_write_data <= DIV_QUOTIENT;
-                            WB_O.hi_write_en <= '1';
-                            WB_O.hi_write_data <= DIV_REMAINDER;
-                        when func_divu =>
-                            STALL_REQ <= not DIV_DONE;
-                            DIV_DIVIDEND <= EX.operand_0;
-                            DIV_DIV <= EX.operand_1;
-                            DIV_SIGN <= '0';
-                            DIV_EN <= '1';
-                            WB_O.lo_write_en <= '1';
-                            WB_O.lo_write_data <= DIV_QUOTIENT;
-                            WB_O.hi_write_en <= '1';
-                            WB_O.hi_write_data <= DIV_REMAINDER;
-                        when others =>
-                    end case;
-                when others =>
-            end case;
+            -- TODO(twd2)
         end if;
     end process;
 end;

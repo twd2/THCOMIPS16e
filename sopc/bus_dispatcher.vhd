@@ -22,7 +22,7 @@ end;
 architecture behavioral of bus_dispatcher is
     signal slave_sel: std_logic;
 begin
-    slave_sel <= BUS_REQ.addr(31); -- TODO
+    slave_sel <= BUS_REQ.addr(15); -- TODO
 
     process(all)
     begin

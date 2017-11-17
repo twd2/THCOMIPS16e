@@ -4,10 +4,10 @@ use work.constants.all;
 
 package types is
     subtype word_t is std_logic_vector(word_length - 1 downto 0);
-    subtype byte_mask_t is std_logic_vector(3 downto 0);
-    subtype op_t is std_logic_vector(5 downto 0);
+    subtype byte_mask_t is std_logic_vector(1 downto 0);
+    subtype op_t is std_logic_vector(4 downto 0);
     subtype funct_t is std_logic_vector(5 downto 0);
-    subtype reg_addr_t is std_logic_vector(4 downto 0);
+    subtype reg_addr_t is std_logic_vector(2 downto 0);
     subtype stall_t is std_logic_vector(5 downto 0);
     type reg_file_t is array(reg_count - 1 downto 0) of word_t;
     

@@ -18,14 +18,14 @@ architecture behavioral of ram is
       PORT (
         clka : IN STD_LOGIC;
         addra : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
-        douta : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+        douta : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
       );
     END component;
 begin
     rom_inst: rom
     port map
     (
-        ADDRA => BUS_REQ.addr(11 downto 2),
+        ADDRA => BUS_REQ.addr(9 downto 0),
         CLKA => not CLK,
         DOUTA => BUS_RES.data
     );

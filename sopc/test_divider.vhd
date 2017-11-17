@@ -96,8 +96,8 @@ begin
         wait for 1 ns;
         SIGN <= '0';
         EN <= '1';
-        DIVIDEND <= x"F0000001";
-        DIV <= x"10000000";
+        DIVIDEND <= x"F001";
+        DIV <= x"1000";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -271,8 +271,8 @@ begin
         wait for 1 ns;
         SIGN <= '0';
         EN <= '1';
-        DIVIDEND <= x"12345678";
-        DIV <= x"00000123";
+        DIVIDEND <= x"1278";
+        DIV <= x"0123";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -446,8 +446,8 @@ begin
         wait for 1 ns;
         SIGN <= '0';
         EN <= '1';
-        DIVIDEND <= x"82345678";
-        DIV <= x"00000123";
+        DIVIDEND <= x"8678";
+        DIV <= x"0123";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -621,188 +621,8 @@ begin
         wait for 1 ns;
         SIGN <= '1';
         EN <= '1';
-        DIVIDEND <= x"82345678";
-        DIV <= x"00000123";
-        wait for 4 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 5 ns;
-        CLK <= '0';
-        wait for 5 ns;
-        
-        CLK <= '1';
-        wait for 1 ns;
-        SIGN <= '1';
-        EN <= '1';
-        DIVIDEND <= x"12345678";
-        DIV <= x"FFFFFE23";
+        DIVIDEND <= x"8678";
+        DIV <= x"0023";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -981,8 +801,8 @@ begin
         wait for 1 ns;
         SIGN <= '1';
         EN <= '1';
-        DIVIDEND <= x"12345678";
-        DIV <= x"00000123";
+        DIVIDEND <= x"1278";
+        DIV <= x"FE23";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -1161,8 +981,188 @@ begin
         wait for 1 ns;
         SIGN <= '1';
         EN <= '1';
-        DIVIDEND <= x"82345678";
-        DIV <= x"FFFFFE23";
+        DIVIDEND <= x"1278";
+        DIV <= x"0123";
+        wait for 4 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 5 ns;
+        CLK <= '0';
+        wait for 5 ns;
+        
+        CLK <= '1';
+        wait for 1 ns;
+        SIGN <= '1';
+        EN <= '1';
+        DIVIDEND <= x"8278";
+        DIV <= x"FE23";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -1342,8 +1342,8 @@ begin
         wait for 1 ns;
         SIGN <= '0';
         EN <= '1';
-        DIVIDEND <= x"F0000001";
-        DIV <= x"10000000";
+        DIVIDEND <= x"F001";
+        DIV <= x"1000";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -1385,8 +1385,8 @@ begin
         CANCEL <= '0';
         SIGN <= '1';
         EN <= '1';
-        DIVIDEND <= x"82345678";
-        DIV <= x"FFFFFE23";
+        DIVIDEND <= x"8678";
+        DIV <= x"FE23";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -1565,8 +1565,8 @@ begin
         wait for 1 ns;
         SIGN <= '1';
         EN <= '1';
-        DIVIDEND <= x"80000000";
-        DIV <= x"FFFFFFFF";
+        DIVIDEND <= x"8000";
+        DIV <= x"FFFF";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -1745,8 +1745,8 @@ begin
         wait for 1 ns;
         SIGN <= '0';
         EN <= '1';
-        DIVIDEND <= x"FFFFFFFF";
-        DIV <= x"00000001";
+        DIVIDEND <= x"FFFF";
+        DIV <= x"0001";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -1920,8 +1920,8 @@ begin
         wait for 1 ns;
         SIGN <= '0';
         EN <= '1';
-        DIVIDEND <= x"FFFFFFFF";
-        DIV <= x"00000007";
+        DIVIDEND <= x"FFFF";
+        DIV <= x"0007";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
@@ -2100,8 +2100,8 @@ begin
         wait for 1 ns;
         SIGN <= '0';
         EN <= '1';
-        DIVIDEND <= x"FFFFFFFF";
-        DIV <= x"00000007";
+        DIVIDEND <= x"FFFF";
+        DIV <= x"0007";
         wait for 4 ns;
         CLK <= '0';
         wait for 5 ns;
