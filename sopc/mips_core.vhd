@@ -132,24 +132,38 @@ architecture behavioral of mips_core is
             STALL: out stall_t
         );
     end component;
-    
-    component instruction_fetch is
+
+    component program_counter is
         port
         (
             CLK: in std_logic;
             RST: in std_logic;
-            
-            STALL_REQ: out std_logic;
+
             STALL: in stall_t;
             
             FLUSH: in std_logic;
             FLUSH_PC: in word_t;
             
             PC: out word_t;
-            INS: out word_t;
+            PC_4: out word_t;
             
             BRANCH_EN: in std_logic;
-            BRANCH_PC: in word_t;
+            BRANCH_PC: in word_t
+        );
+    end component;
+    
+    component instruction_fetch is
+        port
+        (
+            RST: in std_logic;
+            
+            STALL_REQ: out std_logic;
+            
+            PC: in word_t;
+            PC_4: in word_t;
+            
+            PC_O: out word_t;
+            INS: out word_t;
             
             -- bus
             BUS_REQ: out bus_request_t;
@@ -432,8 +446,8 @@ architecture behavioral of mips_core is
     signal ex_stall_req: std_logic;
     signal mem_stall_req: std_logic;
     signal stall: stall_t;
-    
-    signal if_pc, if_ins: word_t;
+
+    signal if_pc, if_pc_4, if_pc_o, if_ins: word_t;
     
     signal id_pc, id_ins, id_pc_o: word_t;
     
@@ -633,23 +647,37 @@ begin
         STALL => stall
     );
     
-    instruction_fetch_inst: instruction_fetch
+    program_counter_inst: program_counter
     port map
     (
         CLK => CLK,
-        RST => RST,
-        
-        STALL_REQ => if_stall_req,
+        RST => RST, 
+
         STALL => stall,
         
-        FLUSH => '0', -- TODO
+        FLUSH => '0',
         FLUSH_PC => (others => '0'),
         
         PC => if_pc,
-        INS => if_ins,
+        PC_4 => if_pc_4,
         
         BRANCH_EN => id_branch_en,
-        BRANCH_PC => id_branch_pc,
+        BRANCH_PC => id_branch_pc
+    );
+
+    
+    instruction_fetch_inst: instruction_fetch
+    port map
+    (
+        RST => RST,
+        
+        STALL_REQ => if_stall_req,
+        
+        PC => if_pc,
+        PC_4 => if_pc_4,
+        
+        PC_O => if_pc_o,
+        INS => if_ins,
         
         BUS_REQ => INS_BUS_REQ,
         BUS_RES => INS_BUS_RES
@@ -664,7 +692,7 @@ begin
         STALL => stall,
         FLUSH => '0', -- TODO
         
-        IF_PC => if_pc,
+        IF_PC => if_pc_o,
         IF_INS => if_ins,
         
         ID_PC => id_pc,
