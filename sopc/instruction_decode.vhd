@@ -150,16 +150,36 @@ begin
                     read_en_1_buff <= '0';
                     BRANCH_EN <= '1';
                     BRANCH_PC <= b_pc;
+                when "00100" => -- beqz
+                    read_en_1_buff <= '0';
+                    BRANCH_EN <= reg_0_eq_0;
+                    BRANCH_PC <= cb_pc;
                 when "00101" => -- bnez
-                    read_en_0_buff <= '0';
                     read_en_1_buff <= '0';
                     BRANCH_EN <= not reg_0_eq_0;
                     BRANCH_PC <= cb_pc;
-                when "01100" => -- bteqz
-                    read_en_0_buff <= '0';
-                    read_en_1_buff <= '0';
-                    BRANCH_EN <= not T;
-                    BRANCH_PC <= cb_pc;
+                when "01100" => 
+                    case INS(10 downto 8) is
+                        when "000" => -- bteqz
+                            read_en_0_buff <= '0';
+                            read_en_1_buff <= '0';
+                            BRANCH_EN <= not T;
+                            BRANCH_PC <= cb_pc;
+                        when "011" => -- addsp
+                            read_en_0_buff <= '0';
+                            read_en_1_buff <= '0';
+                            EX.alu_op <= alu_addu;
+                            EX.operand_0 <= SP;
+                            EX.operand_1 <= imm8se;
+                            WB.sp_write_en <= '1';
+                        when "100" => -- mtsp
+                            read_en_0_buff <= '0';
+                            EX.alu_op <= alu_or;
+                            EX.operand_0 <= READ_DATA_1;
+                            EX.operand_1 <= zero_word;
+                            WB.sp_write_en <= '1';
+                        when others =>
+                    end case;
                 when "01001" => -- addiu
                     read_en_1_buff <= '0';
                     EX.alu_op <= alu_addu;
@@ -174,6 +194,22 @@ begin
                     EX.operand_1 <= imm4se;
                     WB.write_en <= '1';
                     WB.write_addr <= ry;
+                when "11100" =>
+                    case INS(1 downto 0) is
+                        when "01" => -- addu
+                            EX.alu_op <= alu_addu;
+                            EX.operand_0 <= READ_DATA_0;
+                            EX.operand_1 <= READ_DATA_1;
+                            WB.write_en <= '1';
+                            WB.write_addr <= rz;
+                        when "11" => -- subu
+                            EX.alu_op <= alu_subu;
+                            EX.operand_0 <= READ_DATA_0;
+                            EX.operand_1 <= READ_DATA_1;
+                            WB.write_en <= '1';
+                            WB.write_addr <= rz;
+                        when others =>
+                    end case;
                 when "01101" => -- li
                     read_en_0_buff <= '0';
                     read_en_1_buff <= '0';
@@ -189,6 +225,12 @@ begin
                     EX.operand_1 <= zero_word;
                     WB.write_en <= '1';
                     WB.write_addr <= rx;
+                when "01110" => -- cmpi
+                    read_en_1_buff <= '0';
+                    EX.alu_op <= alu_cmp;
+                    EX.operand_0 <= READ_DATA_0;
+                    EX.operand_1 <= imm8se;
+                    WB.t_write_en <= '1';
                 when "00110" =>
                     case INS(1 downto 0) is
                         when "00" => -- sll
@@ -198,12 +240,32 @@ begin
                             EX.operand_1 <= shamt_buff;
                             WB.write_en <= '1';
                             WB.write_addr <= rx;
+                        when "11" => -- sra
+                            read_en_0_buff <= '0';
+                            EX.alu_op <= alu_sra;
+                            EX.operand_0 <= READ_DATA_1;
+                            EX.operand_1 <= shamt_buff;
+                            WB.write_en <= '1';
+                            WB.write_addr <= rx;
                         when others =>
                     end case;
                 when "11101" =>
                     case INS(4 downto 0) is
+                        when "01111" => -- not
+                            read_en_0_buff <= '0';
+                            EX.alu_op <= alu_nor;
+                            EX.operand_0 <= READ_DATA_1;
+                            EX.operand_1 <= zero_word;
+                            WB.write_en <= '1';
+                            WB.write_addr <= rx;
                         when "00100" => -- sllv
                             EX.alu_op <= alu_sll;
+                            EX.operand_0 <= READ_DATA_1;
+                            EX.operand_1 <= READ_DATA_0;
+                            WB.write_en <= '1';
+                            WB.write_addr <= ry;
+                        when "00111" => -- srav
+                            EX.alu_op <= alu_sra;
                             EX.operand_0 <= READ_DATA_1;
                             EX.operand_1 <= READ_DATA_0;
                             WB.write_en <= '1';
@@ -225,6 +287,22 @@ begin
                             EX.operand_0 <= READ_DATA_0;
                             EX.operand_1 <= READ_DATA_1;
                             WB.t_write_en <= '1';
+                        when "00000" =>
+                            case INS(7 downto 5) is
+                                when "000" => -- jr
+                                    read_en_1_buff <= '0';
+                                    BRANCH_EN <= '1';
+                                    BRANCH_PC <= READ_DATA_0;
+                                when "010" => -- mfpc
+                                    read_en_0_buff <= '0';
+                                    read_en_1_buff <= '0';
+                                    EX.alu_op <= alu_or;
+                                    EX.operand_0 <= PC;
+                                    EX.operand_1 <= zero_word;
+                                    WB.write_en <= '1';
+                                    WB.write_addr <= rx;
+                                when others =>
+                            end case;                        
                         when others =>
                     end case;
                 when "00001" => -- nop
@@ -238,6 +316,17 @@ begin
                     WB.write_en <= '1';
                     WB.write_addr <= ry;
                     IS_LOAD <= '1';
+                when "10010" => -- lwsp
+                    read_en_0_buff <= '0';
+                    read_en_1_buff <= '0';
+                    EX.alu_op <= alu_addu;
+                    EX.operand_0 <= SP;
+                    EX.operand_1 <= imm8se;
+                    MEM.mem_en <= '1';
+                    MEM.mem_write_en <= '0';
+                    WB.write_en <= '1';
+                    WB.write_addr <= rx;
+                    IS_LOAD <= '1';
                 when "11011" => -- sw
                     EX.alu_op <= alu_addu;
                     EX.operand_0 <= READ_DATA_0;
@@ -245,6 +334,14 @@ begin
                     MEM.mem_en <= '1';
                     MEM.mem_write_en <= '1';
                     MEM.write_mem_data <= READ_DATA_1;
+                when "11010" => -- swsp
+                    read_en_1_buff <= '0';
+                    EX.alu_op <= alu_addu;
+                    EX.operand_0 <= SP;
+                    EX.operand_1 <= imm8se;
+                    MEM.mem_en <= '1';
+                    MEM.mem_write_en <= '1';
+                    MEM.write_mem_data <= READ_DATA_0;
                 when others =>
             end case;
         end if;
