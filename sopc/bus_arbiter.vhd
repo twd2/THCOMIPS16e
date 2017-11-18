@@ -21,7 +21,7 @@ end;
 
 architecture behavioral of bus_arbiter is
 begin
-    process(all)
+    process(BUS_REQ_0, BUS_REQ_1, BUS_RES)
     begin
         BUS_RES_0 <= BUS_RES;
         BUS_RES_1 <= BUS_RES;

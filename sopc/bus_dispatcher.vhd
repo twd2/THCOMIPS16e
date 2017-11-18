@@ -24,7 +24,7 @@ architecture behavioral of bus_dispatcher is
 begin
     slave_sel <= BUS_REQ.addr(15); -- TODO
 
-    process(all)
+    process(slave_sel, BUS_REQ, BUS_RES_0, BUS_RES_1)
     begin
         BUS_REQ_0 <= BUS_REQ;
         BUS_REQ_1 <= BUS_REQ;
