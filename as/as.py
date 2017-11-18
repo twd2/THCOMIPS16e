@@ -58,6 +58,9 @@ def pseudo_li(rx, imm):
             return [['li', rx, str((hi + 1) & 0xff)],
                     ['sll', rx, rx, str(8)],
                     ['addiu', rx, str(lo)]]
+        elif lo == 0:
+            return [['li', rx, str(hi)],
+                    ['sll', rx, rx, str(8)]]
         else:
             return [['li', rx, str(hi)],
                     ['sll', rx, rx, str(8)],
