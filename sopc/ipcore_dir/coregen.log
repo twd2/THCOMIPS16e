@@ -1,5 +1,9 @@
 INFO:sim:172 - Generating IP...
+Applying current project options...
+Finished applying current project options.
 Resolving generics for 'rom'...
+WARNING:sim - A core named 'rom' already exists in the project. Output products
+   for this core may be overwritten.
 Applying external generics to 'rom'...
 Delivering associated files for 'rom'...
 Delivering EJava files for 'rom'...
@@ -10,10 +14,10 @@ Running ngcbuild...
 Writing VHO instantiation template for 'rom'...
 Writing VHDL behavioral simulation model for 'rom'...
 WARNING:sim - Overwriting existing file
-   G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom/doc/blk_mem_gen_
-   v7_3_vinfo.html with file from view xilinx_documentation
+   C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom/doc/blk_me
+   m_gen_v7_3_vinfo.html with file from view xilinx_documentation
 Delivered 1 file into directory
-G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom
+C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom
 Generating ASY schematic symbol...
 INFO:sim:949 - Finished generation of ASY schematic symbol.
 Generating SYM schematic symbol for 'rom'...
@@ -22,24 +26,25 @@ Regenerating ISE project file for 'rom'...
 Generating ISE project...
 XCO file found: rom.xco
 XMDF file found: rom_xmdf.tcl
-Adding G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.asy -view
-all -origin_type imported
-Adding G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.ngc -view
-all -origin_type created
-Checking file "G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.ngc"
-for project device match ...
-File "G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.ngc" device
-information matches project device.
-Adding G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.sym -view
-all -origin_type imported
-Adding G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.vhd -view
-all -origin_type created
+Adding C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.asy
+-view all -origin_type imported
+Adding C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.ngc
+-view all -origin_type created
+Checking file
+"C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.ngc" for
+project device match ...
+File "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.ngc"
+device information matches project device.
+Adding C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.sym
+-view all -origin_type imported
+Adding C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.vhd
+-view all -origin_type created
 INFO:HDLCompiler:1061 - Parsing VHDL file
-   "G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.vhd" into
+   "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.vhd" into
    library work
 INFO:ProjectMgmt - Parsing design hierarchy completed successfully.
-Adding G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.vho -view
-all -origin_type imported
+Adding C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/rom.vho
+-view all -origin_type imported
 INFO:TclTasksC:2116 - The automatic calculation of top has been turned-off.
    Please set the new top explicitly by running the "project set top" command.
    To re-calculate the new top automatically, set the "Auto Implementation Top"
@@ -48,7 +53,6 @@ Top level has been set to "/rom"
 Generating README file...
 Generating FLIST file...
 INFO:sim:948 - Finished FLIST file generation.
-Launching README viewer...
 Moving files to output directory...
 Finished moving files to output directory
 Wrote CGP file for project 'rom'.

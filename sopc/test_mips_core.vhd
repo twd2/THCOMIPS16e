@@ -18,7 +18,26 @@ architecture behavioral of test_mips_sopc is
         (
             CLK: in std_logic;
             nRST: in std_logic;
+
+            SYSBUS_ADDR: out word_t;
+            SYSBUS_DQ: inout word_t;
+            RAM1_nWE: out std_logic;
+            RAM1_nOE: out std_logic;
+            RAM1_nCE: out std_logic;
             
+            EXTBUS_ADDR: out word_t;
+            EXTBUS_DQ: inout word_t;
+            RAM2_nWE: out std_logic;
+            RAM2_nOE: out std_logic;
+            RAM2_nCE: out std_logic;
+            
+            UART_nRE: out std_logic;
+            UART_READY: in std_logic;
+            
+            UART_nWE: out std_logic;
+            UART_TBRE: in std_logic;
+            UART_TSRE: in std_logic;
+
             testen: out std_logic;
             test_0: out reg_addr_t;
             test_1: out word_t
@@ -37,6 +56,11 @@ begin
     (
         CLK => CLK,
         nRST => nRST,
+        
+        UART_READY => '1',
+        
+        UART_TBRE => '1',
+        UART_TSRE => '1',
 
         testen => testen,
         test_0 => test_0,

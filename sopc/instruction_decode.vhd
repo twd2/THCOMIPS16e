@@ -261,6 +261,12 @@ begin
                             EX.operand_1 <= READ_DATA_0;
                             WB.write_en <= '1';
                             WB.write_addr <= ry;
+                        when "01100" => -- and
+                            EX.alu_op <= alu_and;
+                            EX.operand_0 <= READ_DATA_0;
+                            EX.operand_1 <= READ_DATA_1;
+                            WB.write_en <= '1';
+                            WB.write_addr <= rx;
                         when "01101" => -- or
                             EX.alu_op <= alu_or;
                             EX.operand_0 <= READ_DATA_0;
@@ -291,6 +297,23 @@ begin
                         when others =>
                     end case;
                 when "00001" => -- nop
+                when "10011" => -- lw
+                    read_en_1_buff <= '0';
+                    EX.alu_op <= alu_addu;
+                    EX.operand_0 <= READ_DATA_0;
+                    EX.operand_1 <= imm5se;
+                    MEM.mem_en <= '1';
+                    MEM.mem_write_en <= '0';
+                    WB.write_en <= '1';
+                    WB.write_addr <= ry;
+                    IS_LOAD <= '1';
+                when "11011" => -- sw
+                    EX.alu_op <= alu_addu;
+                    EX.operand_0 <= READ_DATA_0;
+                    EX.operand_1 <= imm5se;
+                    MEM.mem_en <= '1';
+                    MEM.mem_write_en <= '1';
+                    MEM.write_mem_data <= READ_DATA_1;
                 when others =>
             end case;
         end if;

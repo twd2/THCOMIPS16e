@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 14.7
-# Date: Fri Nov 17 19:13:25 2017
+# Date: Sat Nov 18 10:38:59 2017
 #
 ##############################################################
 #
@@ -46,7 +46,7 @@ CSET axi_id_width=4
 CSET axi_slave_type=Memory_Slave
 CSET axi_type=AXI4_Full
 CSET byte_size=9
-CSET coe_file=G:\Program\cpld_fpga\THCOMIPS16e\sopc\rom.coe
+CSET coe_file=C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\rom.coe
 CSET collision_warnings=ALL
 CSET component_name=memory
 CSET disable_collision_warnings=false
@@ -105,4 +105,4 @@ CSET write_width_b=16
 MISC pkg_timestamp=2012-11-19T16:22:25Z
 # END Extra information
 GENERATE
-# CRC: cc6c8b0d
+# CRC: 8705fc31
