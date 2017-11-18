@@ -4,7 +4,7 @@ use IEEE.std_logic_unsigned.all;
 use work.constants.all;
 use work.types.all;
 
-entity bus_controller is
+entity sysbus_controller is
     port
     (
         CLK: in std_logic;
@@ -31,7 +31,7 @@ entity bus_controller is
     );
 end;
 
-architecture behavioral of bus_controller is
+architecture behavioral of sysbus_controller is
     signal uart_read_ready_buff, uart_write_ready_buff: std_logic_vector(1 downto 0);
     signal uart_control_reg: word_t;
     signal uart_nwe_buff: std_logic;
