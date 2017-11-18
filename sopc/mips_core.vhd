@@ -118,6 +118,55 @@ architecture behavioral of mips_core is
             EX_LO: out word_t
         );
     end component;
+    
+    component special_reg is
+        port
+        (
+            CLK: in std_logic;
+            RST: in std_logic;
+            
+            T_WRITE_EN: in std_logic;
+            T_WRITE_DATA: in std_logic;
+            SP_WRITE_EN: in std_logic;
+            SP_WRITE_DATA: in word_t;
+            
+            T: out std_logic;
+            SP: out word_t
+        );
+    end component;
+    
+    component special_reg_forward is
+        port
+        (
+            RST: in std_logic;
+            
+            -- read from sreg
+            SREG_T: in std_logic;
+            SREG_SP: in word_t;
+
+            -- ex
+            EX_T_WRITE_EN: in std_logic;
+            EX_T_WRITE_DATA: in std_logic;
+            EX_SP_WRITE_EN: in std_logic;
+            EX_SP_WRITE_DATA: in word_t;
+
+            -- mem
+            MEM_T_WRITE_EN: in std_logic;
+            MEM_T_WRITE_DATA: in std_logic;
+            MEM_SP_WRITE_EN: in std_logic;
+            MEM_SP_WRITE_DATA: in word_t;
+            
+            -- wb
+            WB_T_WRITE_EN: in std_logic;
+            WB_T_WRITE_DATA: in std_logic;
+            WB_SP_WRITE_EN: in std_logic;
+            WB_SP_WRITE_DATA: in word_t;
+            
+            -- sreg content for id
+            ID_T: out std_logic;
+            ID_SP: out word_t
+        );
+    end component;
 
     component controller is
         port
@@ -204,6 +253,9 @@ architecture behavioral of mips_core is
             
             READ_ADDR_1: out reg_addr_t;
             READ_DATA_1: in word_t;
+            
+            T: in std_logic;
+            SP: in word_t;
             
             COMMON: out common_signal_t;
             EX: out ex_signal_t;
@@ -363,6 +415,8 @@ architecture behavioral of mips_core is
     signal reg_read_data_1: word_t;
     
     signal hilo_hi, hilo_lo: word_t;
+    signal sreg_t: std_logic;
+    signal sreg_sp: word_t;
     
     signal if_stall_req: std_logic;
     signal id_stall_req: std_logic;
@@ -377,12 +431,15 @@ architecture behavioral of mips_core is
     
     -- ID inputs
     signal id_pc, id_ins: word_t;
-    -- ID outputs
+    -- reg for ID
     signal id_read_addr_0: reg_addr_t;
     signal id_read_data_0: word_t;
     signal id_read_addr_1: reg_addr_t;
     signal id_read_data_1: word_t;
+    signal id_t: std_logic;
+    signal id_sp: word_t;
     
+    -- ID outputs
     signal id_common: common_signal_t;
     signal id_ex: ex_signal_t;
     signal id_mem: mem_signal_t;
@@ -521,6 +578,53 @@ begin
         EX_LO => ex_lo
     );
     
+    special_reg_inst: special_reg
+    port map
+    (
+        CLK => CLK,
+        RST => RST,
+        
+        T_WRITE_EN => wb_wb.t_write_en,
+        T_WRITE_DATA => wb_wb.t_write_data,
+        SP_WRITE_EN => wb_wb.sp_write_en,
+        SP_WRITE_DATA => wb_wb.sp_write_data,
+        
+        T => sreg_t,
+        SP => sreg_sp
+    );
+    
+    special_reg_forward_inst: special_reg_forward
+    port map
+    (
+        RST => comb_rst,
+        
+        -- read from sreg
+        SREG_T => sreg_t,
+        SREG_SP => sreg_sp,
+
+        -- ex
+        EX_T_WRITE_EN => ex_wb.t_write_en,
+        EX_T_WRITE_DATA => ex_wb.t_write_data,
+        EX_SP_WRITE_EN => ex_wb.sp_write_en,
+        EX_SP_WRITE_DATA => ex_wb.sp_write_data,
+
+        -- mem
+        MEM_T_WRITE_EN => mem_wb.t_write_en,
+        MEM_T_WRITE_DATA => mem_wb.t_write_data,
+        MEM_SP_WRITE_EN => mem_wb.sp_write_en,
+        MEM_SP_WRITE_DATA => mem_wb.sp_write_data,
+        
+        -- wb
+        WB_T_WRITE_EN => wb_wb.t_write_en,
+        WB_T_WRITE_DATA => wb_wb.t_write_data,
+        WB_SP_WRITE_EN => wb_wb.sp_write_en,
+        WB_SP_WRITE_DATA => wb_wb.sp_write_data,
+        
+        -- sreg content for id
+        ID_T => id_t,
+        ID_SP => id_sp
+    );
+    
     controller_inst: controller
     port map
     (
@@ -600,6 +704,9 @@ begin
         READ_DATA_0 => id_read_data_0,
         READ_ADDR_1 => id_read_addr_1,
         READ_DATA_1 => id_read_data_1,
+        
+        T => id_t,
+        SP => id_sp,
         
         COMMON => id_common,
         EX => id_ex,

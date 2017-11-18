@@ -55,5 +55,9 @@ package types is
         hi_write_data: word_t;
         lo_write_en: std_logic;
         lo_write_data: word_t;
+        t_write_en: std_logic;
+        t_write_data: std_logic;
+        sp_write_en: std_logic;
+        sp_write_data: word_t;
     end record;
 end;

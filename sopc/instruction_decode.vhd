@@ -21,6 +21,9 @@ entity instruction_decode is
         READ_ADDR_1: out reg_addr_t;
         READ_DATA_1: in word_t;
         
+        T: in std_logic;
+        SP: in word_t;
+        
         COMMON: out common_signal_t;
         EX: out ex_signal_t;
         MEM: out mem_signal_t;
@@ -77,7 +80,7 @@ begin
     READ_ADDR_0 <= read_addr_0_buff;
     READ_ADDR_1 <= read_addr_1_buff;
     
-    process(RST, INS, op_buff, rx, ry, rz, PC, READ_DATA_0, READ_DATA_1,
+    process(RST, INS, op_buff, rx, ry, rz, PC, READ_DATA_0, READ_DATA_1, T, SP,
             reg_0_eq_0,
             imm4se, imm5se, imm8se, imm8ze, imm11se)
     begin
@@ -103,6 +106,10 @@ begin
             WB.hi_write_data <= (others => '0');
             WB.lo_write_en <= '0';
             WB.lo_write_data <= (others => '0');
+            WB.t_write_en <= '0';
+            WB.t_write_data <= '0';
+            WB.sp_write_en <= '0';
+            WB.sp_write_data <= (others => '0');
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => '0');
             IS_LOAD <= '0';
@@ -128,6 +135,10 @@ begin
             WB.hi_write_data <= (others => 'X');
             WB.lo_write_en <= 'X';
             WB.lo_write_data <= (others => 'X');
+            WB.t_write_en <= '0';
+            WB.t_write_data <= 'X';
+            WB.sp_write_en <= '0';
+            WB.sp_write_data <= (others => 'X');
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => 'X');
             IS_LOAD <= '0';
@@ -143,6 +154,11 @@ begin
                     read_en_0_buff <= '0';
                     read_en_1_buff <= '0';
                     BRANCH_EN <= not reg_0_eq_0;
+                    BRANCH_PC <= cb_pc;
+                when "01100" => -- bteqz
+                    read_en_0_buff <= '0';
+                    read_en_1_buff <= '0';
+                    BRANCH_EN <= not T;
                     BRANCH_PC <= cb_pc;
                 when "01001" => -- addiu
                     read_en_1_buff <= '0';
@@ -198,6 +214,11 @@ begin
                             EX.operand_1 <= READ_DATA_1;
                             WB.write_en <= '1';
                             WB.write_addr <= rx;
+                        when "01010" => -- cmp
+                            EX.alu_op <= alu_cmp;
+                            EX.operand_0 <= READ_DATA_0;
+                            EX.operand_1 <= READ_DATA_1;
+                            WB.t_write_en <= '1';
                         when others =>
                     end case;
                 when "00001" => -- nop

@@ -72,6 +72,7 @@ begin
         end if;
     end process;
 
+    -- TODO: reduce fanout of OP
     process(RST, OP, OPERAND_0, OPERAND_1, shamt, adder_buff)
     begin
         if RST = '1' then
@@ -94,6 +95,12 @@ begin
                     result_buff <= to_stdlogicvector(to_bitvector(OPERAND_0) srl shamt);
                 when alu_sra =>
                     result_buff <= to_stdlogicvector(to_bitvector(OPERAND_0) sra shamt);
+                when alu_cmp =>
+                    if OPERAND_0 = OPERAND_1 then
+                        result_buff <= (word_msb downto 1 => 'X') & "0";
+                    else
+                        result_buff <= (word_msb downto 1 => 'X') & "1";
+                    end if;
                 when others =>
                     result_buff <= (others => 'X');
             end case;

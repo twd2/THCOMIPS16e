@@ -40,6 +40,10 @@ begin
             WB_O.hi_write_data <= (others => '0');
             WB_O.lo_write_en <= '0';
             WB_O.lo_write_data <= (others => '0');
+            WB_O.t_write_en <= '0';
+            WB_O.t_write_data <= '0';
+            WB_O.sp_write_en <= '0';
+            WB_O.sp_write_data <= (others => '0');
             BUS_REQ.addr <= (others => '0');
             BUS_REQ.data <= (others => '0');
             BUS_REQ.byte_mask <= (others => '0');
@@ -72,6 +76,7 @@ begin
                     BUS_REQ.data <= MEM.write_mem_data;
                     
                     STALL_REQ <= not BUS_RES.done; -- wait BUS_RES.done
+                    WB_O.write_data <= (others => 'X');
                 end if;
             end if;
             -- TODO(twd2): check BUS_RES.tlb_miss, page_fault or error
