@@ -34,7 +34,7 @@ end;
 architecture behavioral of sysbus_controller is
     signal uart_read_ready_buff, uart_write_ready_buff: std_logic_vector(1 downto 0);
     signal uart_control_reg: word_t;
-    signal uart_nwe_buff: std_logic;
+    signal uart_nre_buff, uart_nwe_buff: std_logic;
 begin
     RAM1_nCE <= '0';
 
@@ -44,7 +44,11 @@ begin
         if RST = '1' then
             uart_read_ready_buff <= "00";
         elsif rising_edge(CLK) then
-            uart_read_ready_buff <= uart_read_ready_buff(0) & UART_READY;
+            if uart_nre_buff = '0' then
+                uart_read_ready_buff <= "00";
+            else
+                uart_read_ready_buff <= uart_read_ready_buff(0) & UART_READY;
+            end if;
         end if;
     end process;
     
@@ -54,11 +58,17 @@ begin
         if RST = '1' then
             uart_write_ready_buff <= "00";
         elsif rising_edge(CLK) then
-            uart_write_ready_buff <= uart_write_ready_buff(0) & (UART_TBRE and UART_TSRE);
+            if uart_nwe_buff = '0' then
+                uart_write_ready_buff <= "00";
+            else
+                uart_write_ready_buff <= uart_write_ready_buff(0) & (UART_TBRE and UART_TSRE);
+            end if;
         end if;
     end process;
     
     uart_control_reg <= (13 downto 0 => '0') & uart_read_ready_buff(1) & uart_write_ready_buff(1);
+    
+    UART_nRE <= uart_nre_buff;
     
     process(CLK, RST)
     begin
@@ -73,7 +83,7 @@ begin
     begin
         RAM1_nOE <= '1';
         RAM1_nWE <= '1';
-        UART_nRE <= '1';
+        uart_nre_buff <= '1';
         uart_nwe_buff <= '1';
 
         SYSBUS_ADDR <= "0" & BUS_REQ.addr(word_msb - 1 downto 0);
@@ -96,7 +106,7 @@ begin
                 end if;
             elsif BUS_REQ.addr = x"BF00" then -- UART data reg
                 if BUS_REQ.nread_write = '0' then -- read
-                    UART_nRE <= '0';
+                    uart_nre_buff <= '0';
                 else -- write
                     uart_nwe_buff <= '0';
                 end if;
