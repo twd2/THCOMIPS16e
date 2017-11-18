@@ -278,12 +278,19 @@ def reg(r):
         raise BadOperandError(r) from None
 
 def parse_imm(imm):
-    if len(imm) >= 2 and imm[0:2] == '0x':
+    if imm[0] == "'":
+        return parse_char(imm)
+    elif len(imm) >= 2 and (imm[0:2] == '0x' or imm[0:2] == '0X'):
         return int(imm, 16)
-    elif len(imm) >= 2 and imm[0:2] == '0b':
+    elif len(imm) >= 2 and (imm[0:2] == '0b' or imm[0:2] == '0B'):
         return int(imm, 2)
     else:
         return int(imm)
+
+def parse_char(imm):
+    if imm[0] != "'" or len(imm) != 3 or imm[2] != "'":
+        raise BadOperandError(imm)
+    return ord(imm[1])
 
 def asm(code):
     code = '\n'.join([l.split(';')[0] for l in code.split('\n')])
@@ -323,10 +330,10 @@ def asm(code):
             inst[2] = syms[sym] - (pc + 1)
         else:
             for i in range(len(inst)):
-                arg = inst[i].lower()
-                if arg[0] in list('-0123456789'):
+                arg = inst[i]
+                if arg[0] in list("'-0123456789"):
                     inst[i] = parse_imm(arg)
-    # print(inst_list)
+    print(inst_list)
 
     # pass 3: generate target code
     mc = []
