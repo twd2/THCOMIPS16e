@@ -172,12 +172,14 @@ begin
                             EX.operand_0 <= SP;
                             EX.operand_1 <= imm8se;
                             WB.sp_write_en <= '1';
-                        when "100" => --mtsp
+                        when "100" => -- mtsp
                             read_en_0_buff <= '0';
                             EX.alu_op <= alu_or;
                             EX.operand_0 <= READ_DATA_1;
                             EX.operand_1 <= zero_word;
                             WB.sp_write_en <= '1';
+                        when others =>
+                    end case;
                 when "01001" => -- addiu
                     read_en_1_buff <= '0';
                     EX.alu_op <= alu_addu;
@@ -208,13 +210,6 @@ begin
                             WB.write_addr <= rz;
                         when others =>
                     end case;
-                when "11101" => -- not
-                    read_en_0_buff <= '0';
-                    EX.alu_op <= alu_nor;
-                    EX.operand_0 <= READ_DATA_1;
-                    EX.operand_1 <= zero_word;
-                    WB.write_en <= '1';
-                    WB.write_addr <= rx;
                 when "01101" => -- li
                     read_en_0_buff <= '0';
                     read_en_1_buff <= '0';
@@ -230,12 +225,6 @@ begin
                     EX.operand_1 <= zero_word;
                     WB.write_en <= '1';
                     WB.write_addr <= rx;
-                when "01100" => -- mtsp
-                    read_en_0_buff <= '0';
-                    EX.alu_op <= alu_or;
-                    EX.operand_0 <= READ_DATA_1;
-                    EX.operand_1 <= zero_word;
-                    WB.sp_write_en <= '1';
                 when "01110" => -- cmpi
                     read_en_1_buff <= '0';
                     EX.alu_op <= alu_cmp;
@@ -262,6 +251,13 @@ begin
                     end case;
                 when "11101" =>
                     case INS(4 downto 0) is
+                        when "01111" => -- not
+                            read_en_0_buff <= '0';
+                            EX.alu_op <= alu_nor;
+                            EX.operand_0 <= READ_DATA_1;
+                            EX.operand_1 <= zero_word;
+                            WB.write_en <= '1';
+                            WB.write_addr <= rx;
                         when "00100" => -- sllv
                             EX.alu_op <= alu_sll;
                             EX.operand_0 <= READ_DATA_1;
@@ -321,10 +317,10 @@ begin
                     WB.write_addr <= ry;
                     IS_LOAD <= '1';
                 when "10010" => -- lwsp
-                    read_en_1_buff <= '0';
                     read_en_0_buff <= '0';
+                    read_en_1_buff <= '0';
                     EX.alu_op <= alu_addu;
-                    EX.operand_0 <= READ_DATA_0;
+                    EX.operand_0 <= SP;
                     EX.operand_1 <= imm8se;
                     MEM.mem_en <= '1';
                     MEM.mem_write_en <= '0';
