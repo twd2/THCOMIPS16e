@@ -603,16 +603,16 @@ begin
         SREG_SP => sreg_sp,
 
         -- ex
-        EX_T_WRITE_EN => ex_wb.t_write_en,
-        EX_T_WRITE_DATA => ex_wb.t_write_data,
-        EX_SP_WRITE_EN => ex_wb.sp_write_en,
-        EX_SP_WRITE_DATA => ex_wb.sp_write_data,
+        EX_T_WRITE_EN => ex_wb_o.t_write_en,
+        EX_T_WRITE_DATA => ex_wb_o.t_write_data,
+        EX_SP_WRITE_EN => ex_wb_o.sp_write_en,
+        EX_SP_WRITE_DATA => ex_wb_o.sp_write_data,
 
         -- mem
-        MEM_T_WRITE_EN => mem_wb.t_write_en,
-        MEM_T_WRITE_DATA => mem_wb.t_write_data,
-        MEM_SP_WRITE_EN => mem_wb.sp_write_en,
-        MEM_SP_WRITE_DATA => mem_wb.sp_write_data,
+        MEM_T_WRITE_EN => mem_wb_o.t_write_en,
+        MEM_T_WRITE_DATA => mem_wb_o.t_write_data,
+        MEM_SP_WRITE_EN => mem_wb_o.sp_write_en,
+        MEM_SP_WRITE_DATA => mem_wb_o.sp_write_data,
         
         -- wb
         WB_T_WRITE_EN => wb_wb.t_write_en,
