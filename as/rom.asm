@@ -1,3 +1,29 @@
+start:
+li r0, 0xbf00 ; uart base address
+li r2, 0x0002
+
+wait:
+lw r0, r1, 0x01
+and r1, r2
+bnez r1, wait_out
+nop
+b wait
+nop
+wait_out:
+
+lw r0, r1, 0x00
+sw r0, r1, 0x00
+
+li r2, 0x0001
+wait0:
+lw r0, r1, 0x01
+and r1, r2
+bnez r1, wait0_out
+nop
+b wait0
+nop
+wait0_out:
+
 li r0, 0x05af
 li r1, 0xfa50
 sw r0, r1, 0x00
@@ -7,8 +33,9 @@ li r1, 0x00
 lw r0, r1, 0x00
 lw r0, r1, 0x01
 
-li r0, 0xbf00 ; uart base address
+li r0, 0xbf00
 li r2, 0x0001
+
 li r1, 'h'
 sw r0, r1, 0x00 ; data = r1
 wait1:
@@ -163,6 +190,5 @@ b wait14
 nop
 wait14_out:
 
-$:
-b $
+b start
 nop

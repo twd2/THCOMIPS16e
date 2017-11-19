@@ -1,7 +1,7 @@
 
 # PlanAhead Generated physical constraints 
 
-NET "CLK" LOC = U9;
+NET "CLK" LOC = B8;
 NET "nRST" LOC = U10;
 
 NET "test_1[15]" LOC = A14;
