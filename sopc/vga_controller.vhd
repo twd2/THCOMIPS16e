@@ -25,7 +25,6 @@ entity vga_controller is
         RST: in std_logic;
 
         -- outputs
-        READY: out std_logic;
         HSYNC: out std_logic;
         VSYNC: out std_logic;
         RED: out std_logic_vector(2 downto 0);
@@ -47,7 +46,7 @@ architecture behavorial of vga_controller is
     signal data: std_logic_vector(8 downto 0);
     signal h_counter: std_logic_vector(12 downto 0);
     signal v_counter: std_logic_vector(12 downto 0);
-    signal OUT_EN, next_en: std_logic;
+    signal next_en: std_logic;
     signal full, almost_full, empty, almost_empty: std_logic;
     signal next_read_addr: std_logic_vector(word_length - 1 downto 0);
     
@@ -83,12 +82,10 @@ begin
         almost_empty => almost_empty
       );
 
-
-    OUT_EN <= '1' when (h_counter < h_active) and (v_counter < v_active) and RST = '0' else '0';
     next_en <= '1' when (next_x < h_active) and (next_y < v_active) and RST = '0' else '0';
 
     -- prefetch
-    BUS_REQ.en <= not almost_full;
+    BUS_REQ.en <= not almost_full and not RST;
     BUS_REQ.nread_write <= 0;
     BUS_REQ.addr <= next_read_addr;
 
@@ -108,18 +105,14 @@ begin
         end if;
     end process;
     
-    -- done
-    DONE <= '1' when next_y >= v_active else '0';
-
     -- starts at h_active and v_active
     HSYNC <= '0' when (h_counter >= h_active + h_front_porch) and (h_counter < h_active + h_front_porch + h_sync_pulse) else '1';
     VSYNC <= '0' when (v_counter >= v_active + v_front_porch) and (v_counter < v_active + v_front_porch + v_sync_pulse) else '1';
 
-
     process(WR_CLK)
     begin
         if rising_edge(WR_CLK) then
-            if BUS_RES.done = '1' and almost_full = '0' then
+            if BUS_RES.done = '1' and almost_full = '0' and and RST = '0' then
                 if next_read_addr = BASE_ADDR + h_active * v_active - 1 then
                     next_read_addr <= BASE_ADDR;
                 else 
@@ -143,9 +136,9 @@ begin
                 h_counter <= next_x;
                 v_counter <= next_y;
                 if next_en = '1' then
-                    RED <= data(9 downto 7);
-                    GREEN <= data(6 downto 4);
-                    BLUE <= data(3 downto 1);
+                    RED <= data(8 downto 6);
+                    GREEN <= data(5 downto 3);
+                    BLUE <= data(2 downto 0);
                 else
                     RED <= "000";
                     GREEN <= "000";
