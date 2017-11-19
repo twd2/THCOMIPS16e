@@ -35,7 +35,7 @@ entity vga_controller is
         -- bus
         BUS_REQ: out bus_request_t;
         BUS_RES: in bus_response_t;
-        BASE_ADDR: in std_logic_vector(word_length - 1 downto 0);
+        BASE_ADDR: in std_logic_vector(word_length - 1 downto 0)
     );
 end;
 
