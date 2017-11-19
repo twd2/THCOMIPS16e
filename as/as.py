@@ -67,6 +67,12 @@ def pseudo_li(rx, imm):
                     ['addiu', rx, str(lo)]]
 PSEUDO['li'] = pseudo_li
 
+def pseudo_la(rx, sym):
+    return [['_lahi', rx, sym],
+            ['sll', rx, rx, str(8)],
+            ['_lalo', rx, sym]]
+PSEUDO['la'] = pseudo_la
+
 def pseudo_push(rx):
     return [['addsp', '-1'],
             ['sw_sp', rx, '0']]
@@ -269,6 +275,30 @@ def make_sw_sp(rx, imm):
 ACT['sw_sp'] = make_sw_sp
 ACT['swsp'] = make_sw_sp
 
+def make__word(imm):
+    if not -32768 <= imm <= 65535:
+        raise ImmOutOfRangeError(imm)
+    return imm & 0xffff
+ACT['.word'] = make__word
+
+def make__lahi(rx, imm):
+    if not -32768 <= imm <= 65535:
+        raise ImmOutOfRangeError(imm)
+    hi = (imm >> 8) & 0xff
+    lo = imm & 0xff
+    if lo >= 0x80:
+        hi += 1
+    return make_li(rx, hi)
+ACT['_lahi'] = make__lahi
+
+def make__lalo(rx, imm):
+    if not -32768 <= imm <= 65535:
+        raise ImmOutOfRangeError(imm)
+    hi = (imm >> 8) & 0xff
+    lo = imm & 0xff
+    return make_addiu(rx, lo)
+ACT['_lalo'] = make__lalo
+
 def reg(r):
     if r[0] not in list('$Rr'):
         raise BadOperandError(r)
@@ -328,6 +358,11 @@ def asm(code):
             if sym not in syms:
                 raise SymbolNotFoundError(sym)
             inst[2] = syms[sym] - (pc + 1)
+        elif op in ['_lahi', '_lalo']:
+            sym = inst[2]
+            if sym not in syms:
+                raise SymbolNotFoundError(sym)
+            inst[2] = syms[sym]
         else:
             for i in range(len(inst)):
                 arg = inst[i]
