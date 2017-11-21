@@ -24,7 +24,7 @@ architecture behavioral of controller is
     signal ex_stall: stall_t;
     signal mem_stall: stall_t;
 begin
-    if_stall <= (stage_if downto 0 => '1', others => '0') when IF_STALL_REQ = '1' else (others => '0');
+    if_stall <= (stage_id downto 0 => '1', others => '0') when IF_STALL_REQ = '1' else (others => '0');
     id_stall <= (stage_id downto 0 => '1', others => '0') when ID_STALL_REQ = '1' else (others => '0');
     ex_stall <= (stage_ex downto 0 => '1', others => '0') when EX_STALL_REQ = '1' else (others => '0');
     mem_stall <= (stage_mem downto 0 => '1', others => '0') when MEM_STALL_REQ = '1' else (others => '0');

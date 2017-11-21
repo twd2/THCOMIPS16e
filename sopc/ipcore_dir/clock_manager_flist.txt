@@ -1,0 +1,2 @@
+# Output products list for <clock_manager>
+clock_manager_flist.txt

@@ -24,24 +24,24 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
-use work.signals.all;
+use work.constants.all;
+use work.types.all;
 
 entity sd_controller is
     generic
     (
-        WORD_WIDTH: integer := 32; -- word width of SRAM
-        LOG2_WORD_WIDTH_DIV_8: integer := 2; -- log2(32 / 8)
-        RAM_SIZE: integer := 1024 * 1024 * 32 / 8 -- SRAM size (bytes)
+        WORD_WIDTH: integer := word_length; -- word width of SRAM
+        RAM_SIZE: integer := 32 * 1024 * 16 / 8 -- SRAM size (bytes)
     );
     port
     (
-        CLK: in std_logic; -- 25MHz
+        CLK: in std_logic;
         RST: in std_logic;
 
-        BL_REQ: out RAM_REQ;
-        BL_RES: in RAM_RES;
+        BUS_REQ: out bus_request_t;
+        BUS_RES: in bus_response_t;
 
-        SD_CS_n: out std_logic; -- SD_NCS, SD_DATA3_CD
+        SD_nCS: out std_logic; -- SD_NCS, SD_DATA3_CD
         SD_SCLK: out std_logic; -- SD_CLK
         SD_MISO: in std_logic;  -- SD_DOUT, SD_DATA0_DO
         SD_MOSI: out std_logic; -- SD_DIN, SD_CMD
@@ -82,7 +82,7 @@ architecture behavioral of sd_controller is
                      st_cmd17_req, st_cmd17_res, st_cmd17_r1,
                      st_cmd17_read_token, st_cmd17_read_data, st_cmd17_read_crc,
                      st_cmd17_write_ram, st_cmd17_write_ram_done, st_cmd17_done,
-                     st_wait_spi, st_send_cmd, st_read_wait, st_read_byte, st_read_dword,
+                     st_wait_spi, st_send_cmd, st_read_wait, st_read_byte, st_read_4_bytes,
                      st_finish_delay,
                      st_reject, st_done);
 
@@ -141,437 +141,437 @@ begin
             wait_counter <= 0;
             counter <= 0;
             sd_sclk_buff <= '0';
-            SD_CS_n <= '1';
+            SD_nCS <= '1';
             SD_MOSI <= '1';
-            byte_buff <= x"00";
-            dword_buff <= x"00000000";
-            DBG <= x"0";
+            byte_buff <= (others => '0');
+            dword_buff <= (others => '0');
+            DBG <= (others => '0');
             retry_counter <= 0;
             is_sdc2 <= '0';
             is_sdhc <= '0';
             finish_delay <= '1';
             sector_counter <= 0;
             byte_counter <= 0;
-            BL_REQ.DEN <= '0';
-            BL_REQ.WE_n <= '1';
-            BL_REQ.OE_n <= '1';
-            BL_REQ.ADDR <= x"00000";
-        else
-            if rising_edge(CLK) then
-                case current_state is
-                    ------------------------------------------------------------------------------
-                    -- SD card initialization
-                    -- ref:
-                    -- SD Specifications Part 1 Physical Layer Simplified Specification
-                    --     7.2.1 Mode Selection and Initialization
-                    --     Figure 7-2 : SPI Mode Initialization Flow
-                    -- 1. wait 1+ ms
-                    when st_poweron_wait =>
-                        sd_sclk_buff <= '1';
-                        if wait_counter = POWERON_WAIT_CYCLES - 1 then
-                            current_state <= st_dummy_clock;
-                            wait_counter <= 0;
+            BUS_REQ.en <= '1';
+            BUS_REQ.nread_write <= '0';
+            BUS_REQ.byte_mask <= (others => '1');
+            BUS_REQ.addr <= (others => '0');
+        elsif rising_edge(CLK) then
+            case current_state is
+                ------------------------------------------------------------------------------
+                -- SD card initialization
+                -- ref:
+                -- SD Specifications Part 1 Physical Layer Simplified Specification
+                --     7.2.1 Mode Selection and Initialization
+                --     Figure 7-2 : SPI Mode Initialization Flow
+                -- 1. wait 1+ ms
+                when st_poweron_wait =>
+                    sd_sclk_buff <= '1';
+                    if wait_counter = POWERON_WAIT_CYCLES - 1 then
+                        current_state <= st_dummy_clock;
+                        wait_counter <= 0;
+                    else
+                        wait_counter <= wait_counter + 1;
+                    end if;
+                -- 2. 74+ dummy clocks
+                when st_dummy_clock =>
+                    SD_nCS <= '1';
+                    SD_MOSI <= '1';
+                    sd_sclk_buff <= not sd_sclk_buff;
+                    if counter = DUMMY_CLOCKS * 2 - 1 then
+                        wait_return_state <= st_cmd0_req;
+                        current_state <= st_wait_spi;
+                        counter <= 0;
+                    else
+                        wait_return_state <= st_dummy_clock;
+                        current_state <= st_wait_spi;
+                        counter <= counter + 1;
+                    end if;
+                -- 3. CMD0 GO_IDLE_STATE
+                when st_cmd0_req =>
+                    SD_nCS <= '0';
+                    cmd <= 0;
+                    arg <= x"00000000";
+                    crc <= "1001010"; -- CRC is needed.
+                    cmd_return_state <= st_cmd0_res;
+                    current_state <= st_send_cmd;
+                    counter <= 0;
+                when st_cmd0_res =>
+                    finish_delay <= '0';
+                    cmd_return_state <= st_cmd0_done;
+                    current_state <= st_read_wait;
+                when st_cmd0_done =>
+                    if byte_buff = R1_NO_ERROR_IDLE then
+                        current_state <= st_cmd8_req;
+                    else
+                        DBG <= x"0";
+                        current_state <= st_reject;
+                    end if;
+                -- 4. CMD8 SEND_IF_COND
+                when st_cmd8_req =>
+                    SD_nCS <= '0';
+                    cmd <= 8;
+                    arg <= x"000001AA";
+                    crc <= "1000011"; -- CRC is needed.
+                    cmd_return_state <= st_cmd8_res;
+                    current_state <= st_send_cmd;
+                    counter <= 0;
+                when st_cmd8_res =>
+                    finish_delay <= '0';
+                    cmd_return_state <= st_cmd8_read_r1;
+                    current_state <= st_read_wait;
+                when st_cmd8_read_r1 =>
+                    if byte_buff = R1_NO_ERROR_IDLE then
+                        -- This card supports CMD8, so it is SDC2+.
+                        is_sdc2 <= '1';
+                        finish_delay <= '1';
+                        cmd_return_state <= st_cmd8_done;
+                        current_state <= st_read_4_bytes;
+                    elsif byte_buff = R1_ILLIGAL_CMD_IDLE then
+                        -- Otherwise, it is SDC1.
+                        is_sdc2 <= '0';
+                        cmd_return_state <= st_cmd55_req;
+                        current_state <= st_finish_delay;
+                    else
+                        -- TODO: retry count
+                        DBG <= x"8";
+                        current_state <= st_cmd8_req;
+                    end if;
+                when st_cmd8_done =>
+                    if dword_buff(11 downto 0) = x"1AA" then
+                        -- magic number matches
+                        current_state <= st_cmd55_req;
+                    else
+                        DBG <= x"8";
+                        current_state <= st_reject;
+                    end if;
+                -- 5.1 CMD55 APP_CMD
+                when st_cmd55_req =>
+                    SD_nCS <= '0';
+                    cmd <= 55; -- well, it's decimal.
+                    arg <= x"00000000";
+                    crc <= "0110010"; -- actually, don't care
+                    cmd_return_state <= st_cmd55_res;
+                    current_state <= st_send_cmd;
+                    counter <= 0;
+                when st_cmd55_res =>
+                    finish_delay <= '1';
+                    cmd_return_state <= st_cmd55_done;
+                    current_state <= st_read_wait;
+                when st_cmd55_done =>
+                    if byte_buff = R1_NO_ERROR_IDLE then
+                        -- SD_nCS <= '1';
+                        current_state <= st_acmd41_req;
+                    else
+                        -- TODO: retry count
+                        current_state <= st_cmd55_req; -- ???
+                        DBG <= x"5";
+                        -- current_state <= st_reject;
+                    end if;
+                -- 5.2 ACMD41 APP_SEND_OP_COND
+                when st_acmd41_req =>
+                    SD_nCS <= '0';
+                    cmd <= 41;
+                    if is_sdc2 = '1' then
+                        -- HCS = 1, declares this controller supports high capacity cards.
+                        arg <= x"40000000";
+                        crc <= "0111011"; -- actually, don't care
+                    else
+                        arg <= x"00000000"; -- HCS = 0
+                        crc <= "1110010"; -- actually, don't care
+                    end if;
+                    cmd_return_state <= st_acmd41_res;
+                    current_state <= st_send_cmd;
+                    counter <= 0;
+                when st_acmd41_res =>
+                    finish_delay <= '1';
+                    cmd_return_state <= st_acmd41_done;
+                    current_state <= st_read_wait;
+                when st_acmd41_done =>
+                    if byte_buff = R1_NO_ERROR_IDLE then
+                        -- loop until the card responses R1_NO_ERROR_NO_IDLE
+                        --                                           ~~~~~~~
+                        current_state <= st_cmd55_req;
+                    elsif byte_buff = R1_NO_ERROR_NO_IDLE then
+                        -- the card is initialized.
+                        current_state <= st_cmd58_req;
+                    else
+                        -- current_state <= st_cmd55_req; -- ???
+                        DBG <= x"4";
+                        current_state <= st_reject;
+                    end if;
+                -- 6. CMD58 READ_OCR
+                when st_cmd58_req =>
+                    SD_nCS <= '0';
+                    cmd <= 58;
+                    arg <= x"00000000";
+                    crc <= "1111110"; -- actually, don't care
+                    cmd_return_state <= st_cmd58_res;
+                    current_state <= st_send_cmd;
+                    counter <= 0;
+                when st_cmd58_res =>
+                    finish_delay <= '0';
+                    cmd_return_state <= st_cmd58_read_r1;
+                    current_state <= st_read_wait;
+                when st_cmd58_read_r1 =>
+                    if byte_buff = R1_NO_ERROR_NO_IDLE then
+                        finish_delay <= '1';
+                        cmd_return_state <= st_cmd58_done;
+                        current_state <= st_read_4_bytes;
+                    else
+                        -- TODO: retry count
+                        DBG <= x"8";
+                        current_state <= st_reject;
+                    end if;
+                when st_cmd58_done =>
+                    -- read CCS bit.
+                    -- ref: SD Specifications Part 1 Physical Layer Simplified Specification
+                    --     Table 5-1 : OCR Register Definition
+                    --     30 Card Capacity Status (CCS)1
+                    --     1) This bit is valid only when the card power up status bit is set.
+                    is_sdhc <= dword_buff(30); -- CCS, '1' represents high capacity card
+                    current_state <= st_cmd16_req;
+                -- 7. CMD16 SET_BLOCKLEN
+                -- This command ensures block length 512 bytes for SDSC. 
+                -- In case of SDHC and SDXC Cards,
+                -- block length of the memory access commands are fixed to 512 bytes.
+                when st_cmd16_req =>
+                    SD_nCS <= '0';
+                    cmd <= 16;
+                    arg <= x"00000200"; -- 512 bytes per block
+                    crc <= "0001010"; -- actually, don't care
+                    cmd_return_state <= st_cmd16_res;
+                    current_state <= st_send_cmd;
+                    counter <= 0;
+                when st_cmd16_res =>
+                    finish_delay <= '1';
+                    cmd_return_state <= st_cmd16_done;
+                    current_state <= st_read_wait;
+                when st_cmd16_done =>
+                    if byte_buff = R1_NO_ERROR_NO_IDLE then
+                        current_state <= st_cmd17_req;
+                    else
+                        DBG <= x"6";
+                        current_state <= st_reject;
+                    end if;
+                ------------------------------------------------------------------------------
+                -- Bootloader: CMD17 READ_SINGLE_BLOCK
+                when st_cmd17_req =>
+                    SD_nCS <= '0';
+                    cmd <= 17;
+                    arg <= sector_as_arg;
+                    crc <= "1111111"; -- actually, don't care
+                    cmd_return_state <= st_cmd17_res;
+                    current_state <= st_send_cmd;
+                    counter <= 0;
+                when st_cmd17_res =>
+                    finish_delay <= '0';
+                    cmd_return_state <= st_cmd17_r1;
+                    current_state <= st_read_wait;
+                when st_cmd17_r1 =>
+                    DBG <= x"C";
+                    if byte_buff = R1_NO_ERROR_NO_IDLE then
+                        cmd_return_state <= st_cmd17_read_token;
+                        current_state <= st_read_byte;
+                    else
+                        DBG <= x"7";
+                        current_state <= st_reject;
+                    end if;
+                when st_cmd17_read_token =>
+                    DBG <= x"D";
+                    if byte_buff = x"FF" then -- not a token, wait
+                        cmd_return_state <= st_cmd17_read_token;
+                        current_state <= st_read_byte;
+                    elsif byte_buff = x"FE" then -- data token
+                        cmd_return_state <= st_cmd17_read_data;
+                        current_state <= st_read_byte;
+                        byte_counter <= 0;
+                    elsif byte_buff(7 downto 5) = "000" then -- error token
+                        DBG <= x"7";
+                        cmd_return_state <= st_reject;
+                        current_state <= st_finish_delay;
+                    else
+                        DBG <= x"7";
+                        cmd_return_state <= st_reject;
+                    end if;
+                when st_cmd17_read_data =>
+                    -- next byte
+                    DBG <= x"E";
+                    word_buff <= byte_buff & word_buff(WORD_WIDTH - 1 downto 8); -- little-endian
+                    if byte_counter = SECTOR_SIZE - 1 then
+                        -- assert byte_counter mod WORD_SIZE = WORD_SIZE - 1
+                        BUS_REQ.addr <= conv_std_logic_vector(
+                            (sector_counter * SECTOR_SIZE + byte_counter) / WORD_SIZE,
+                            BUS_REQ.addr'length
+                        );
+                        cmd_return_state <= st_cmd17_read_crc;
+                        ram_return_state <= st_read_byte;
+                        current_state <= st_cmd17_write_ram;
+                        byte_counter <= 0;
+                    else
+                        if byte_counter mod WORD_SIZE = WORD_SIZE - 1 then
+                            BUS_REQ.addr <= conv_std_logic_vector(
+                                (sector_counter * SECTOR_SIZE + byte_counter) / WORD_SIZE,
+                                BUS_REQ.addr'length
+                            );
+                            cmd_return_state <= st_cmd17_read_data;
+                            ram_return_state <= st_read_byte;
+                            current_state <= st_cmd17_write_ram;
                         else
-                            wait_counter <= wait_counter + 1;
+                            cmd_return_state <= st_cmd17_read_data;
+                            current_state <= st_read_byte;
                         end if;
-                    -- 2. 74+ dummy clocks
-                    when st_dummy_clock =>
-                        SD_CS_n <= '1';
-                        SD_MOSI <= '1';
-                        sd_sclk_buff <= not sd_sclk_buff;
-                        if counter = DUMMY_CLOCKS * 2 - 1 then
-                            wait_return_state <= st_cmd0_req;
+                        byte_counter <= byte_counter + 1;
+                    end if;
+                when st_cmd17_write_ram =>
+                    BUS_REQ.en <= '1';
+                    BUS_REQ.nread_write <= '1';
+                    BUS_REQ.data <= word_buff;
+                    current_state <= st_cmd17_write_ram_done;
+                when st_cmd17_write_ram_done =>
+                    if BUS_RES.done = '1' then
+                        -- keep BUS_REQ.en = '1' to block IF.
+                        BUS_REQ.nread_write <= '0';
+                        current_state <= ram_return_state;
+                    end if;
+                when st_cmd17_read_crc =>
+                    -- eats dummy CRC bytes
+                    DBG <= x"F";
+                    if byte_counter = 2 - 1 then
+                        cmd_return_state <= st_cmd17_done;
+                        current_state <= st_finish_delay;
+                        byte_counter <= 0;
+                    else
+                        cmd_return_state <= st_cmd17_read_crc;
+                        current_state <= st_read_byte;
+                        byte_counter <= byte_counter + 1;
+                    end if;
+                when st_cmd17_done =>
+                    -- next sector
+                    if sector_counter = RAM_SIZE / SECTOR_SIZE - 1 then
+                        current_state <= st_done;
+                        sector_counter <= 0;
+                    else
+                        sector_counter <= sector_counter + 1;
+                        current_state <= st_cmd17_req;
+                    end if;
+                ------------------------------------------------------------------------------
+                -- Subroutines --
+                -- delay for low speed SPI.
+                when st_wait_spi =>
+                    if wait_counter = SPI_WAIT_CYCLES - 1 then
+                        current_state <= wait_return_state;
+                        wait_counter <= 0;
+                    else
+                        wait_counter <= wait_counter + 1;
+                    end if;
+                -- send a command to SPI bus
+                when st_send_cmd =>
+                    if counter mod 2 = 0 then
+                        SD_MOSI <= packet(CMD_BITS - 1 - counter / 2);
+                        sd_sclk_buff <= '0';
+                    else
+                        sd_sclk_buff <= '1';
+                    end if;
+                    if counter = (CMD_BITS * 2) - 1 then
+                        wait_return_state <= cmd_return_state;
+                        current_state <= st_wait_spi;
+                        counter <= 0;
+                    else
+                        wait_return_state <= st_send_cmd;
+                        current_state <= st_wait_spi;
+                        counter <= counter + 1;
+                    end if;
+                -- wait until SD_MISO is low, and read a byte from SPI bus
+                when st_read_wait =>
+                    if sd_sclk_buff = '0' then
+                        if SD_MISO = '0' then
+                            current_state <= st_read_byte;
+                            counter <= 0;
+                        else
+                            wait_return_state <= st_read_wait;
+                            current_state <= st_wait_spi;
+                            sd_sclk_buff <= '1';
+                        end if;
+                    else
+                        sd_sclk_buff <= '0';
+                        wait_return_state <= st_read_wait;
+                        current_state <= st_wait_spi;
+                    end if;
+                -- read a byte from SPI bus
+                when st_read_byte =>
+                    if sd_sclk_buff = '0' then
+                        byte_buff(R1_BITS - 1 - counter) <= SD_MISO;
+                        if counter = R1_BITS - 1 then
+                            if finish_delay = '1' then
+                                wait_return_state <= st_finish_delay;
+                            else
+                                wait_return_state <= cmd_return_state;
+                            end if;
                             current_state <= st_wait_spi;
                             counter <= 0;
                         else
-                            wait_return_state <= st_dummy_clock;
+                            wait_return_state <= st_read_byte;
                             current_state <= st_wait_spi;
                             counter <= counter + 1;
                         end if;
-                    -- 3. CMD0 GO_IDLE_STATE
-                    when st_cmd0_req =>
-                        SD_CS_n <= '0';
-                        cmd <= 0;
-                        arg <= x"00000000";
-                        crc <= "1001010"; -- CRC is needed.
-                        cmd_return_state <= st_cmd0_res;
-                        current_state <= st_send_cmd;
-                        counter <= 0;
-                    when st_cmd0_res =>
-                        finish_delay <= '0';
-                        cmd_return_state <= st_cmd0_done;
-                        current_state <= st_read_wait;
-                    when st_cmd0_done =>
-                        if byte_buff = R1_NO_ERROR_IDLE then
-                            current_state <= st_cmd8_req;
-                        else
-                            DBG <= x"0";
-                            current_state <= st_reject;
-                        end if;
-                    -- 4. CMD8 SEND_IF_COND
-                    when st_cmd8_req =>
-                        SD_CS_n <= '0';
-                        cmd <= 8;
-                        arg <= x"000001AA";
-                        crc <= "1000011"; -- CRC is needed.
-                        cmd_return_state <= st_cmd8_res;
-                        current_state <= st_send_cmd;
-                        counter <= 0;
-                    when st_cmd8_res =>
-                        finish_delay <= '0';
-                        cmd_return_state <= st_cmd8_read_r1;
-                        current_state <= st_read_wait;
-                    when st_cmd8_read_r1 =>
-                        if byte_buff = R1_NO_ERROR_IDLE then
-                            -- This card supports CMD8, so it is SDC2+.
-                            is_sdc2 <= '1';
-                            finish_delay <= '1';
-                            cmd_return_state <= st_cmd8_done;
-                            current_state <= st_read_dword;
-                        elsif byte_buff = R1_ILLIGAL_CMD_IDLE then
-                            -- Otherwise, it is SDC1.
-                            is_sdc2 <= '0';
-                            cmd_return_state <= st_cmd55_req;
-                            current_state <= st_finish_delay;
-                        else
-                            -- TODO: retry count
-                            DBG <= x"8";
-                            current_state <= st_cmd8_req;
-                        end if;
-                    when st_cmd8_done =>
-                        if dword_buff(11 downto 0) = x"1AA" then
-                            -- magic number matches
-                            current_state <= st_cmd55_req;
-                        else
-                            DBG <= x"8";
-                            current_state <= st_reject;
-                        end if;
-                    -- 5.1 CMD55 APP_CMD
-                    when st_cmd55_req =>
-                        SD_CS_n <= '0';
-                        cmd <= 55; -- well, it's decimal.
-                        arg <= x"00000000";
-                        crc <= "0110010"; -- actually, don't care
-                        cmd_return_state <= st_cmd55_res;
-                        current_state <= st_send_cmd;
-                        counter <= 0;
-                    when st_cmd55_res =>
-                        finish_delay <= '1';
-                        cmd_return_state <= st_cmd55_done;
-                        current_state <= st_read_wait;
-                    when st_cmd55_done =>
-                        if byte_buff = R1_NO_ERROR_IDLE then
-                            -- SD_CS_n <= '1';
-                            current_state <= st_acmd41_req;
-                        else
-                            -- TODO: retry count
-                            current_state <= st_cmd55_req; -- ???
-                            DBG <= x"5";
-                            -- current_state <= st_reject;
-                        end if;
-                    -- 5.2 ACMD41 APP_SEND_OP_COND
-                    when st_acmd41_req =>
-                        SD_CS_n <= '0';
-                        cmd <= 41;
-                        if is_sdc2 = '1' then
-                            -- HCS = 1, declares this controller supports high capacity cards.
-                            arg <= x"40000000";
-                            crc <= "0111011"; -- actually, don't care
-                        else
-                            arg <= x"00000000"; -- HCS = 0
-                            crc <= "1110010"; -- actually, don't care
-                        end if;
-                        cmd_return_state <= st_acmd41_res;
-                        current_state <= st_send_cmd;
-                        counter <= 0;
-                    when st_acmd41_res =>
-                        finish_delay <= '1';
-                        cmd_return_state <= st_acmd41_done;
-                        current_state <= st_read_wait;
-                    when st_acmd41_done =>
-                        if byte_buff = R1_NO_ERROR_IDLE then
-                            -- loop until the card responses R1_NO_ERROR_NO_IDLE
-                            --                                           ~~~~~~~
-                            current_state <= st_cmd55_req;
-                        elsif byte_buff = R1_NO_ERROR_NO_IDLE then
-                            -- the card is initialized.
-                            current_state <= st_cmd58_req;
-                        else
-                            -- current_state <= st_cmd55_req; -- ???
-                            DBG <= x"4";
-                            current_state <= st_reject;
-                        end if;
-                    -- 6. CMD58 READ_OCR
-                    when st_cmd58_req =>
-                        SD_CS_n <= '0';
-                        cmd <= 58;
-                        arg <= x"00000000";
-                        crc <= "1111110"; -- actually, don't care
-                        cmd_return_state <= st_cmd58_res;
-                        current_state <= st_send_cmd;
-                        counter <= 0;
-                    when st_cmd58_res =>
-                        finish_delay <= '0';
-                        cmd_return_state <= st_cmd58_read_r1;
-                        current_state <= st_read_wait;
-                    when st_cmd58_read_r1 =>
-                        if byte_buff = R1_NO_ERROR_NO_IDLE then
-                            finish_delay <= '1';
-                            cmd_return_state <= st_cmd58_done;
-                            current_state <= st_read_dword;
-                        else
-                            -- TODO: retry count
-                            DBG <= x"8";
-                            current_state <= st_reject;
-                        end if;
-                    when st_cmd58_done =>
-                        -- read CCS bit.
-                        -- ref: SD Specifications Part 1 Physical Layer Simplified Specification
-                        --     Table 5-1 : OCR Register Definition
-                        --     30 Card Capacity Status (CCS)1
-                        --     1) This bit is valid only when the card power up status bit is set.
-                        is_sdhc <= dword_buff(30); -- CCS, '1' represents high capacity card
-                        current_state <= st_cmd16_req;
-                    -- 7. CMD16 SET_BLOCKLEN
-                    -- This command ensures block length 512 bytes for SDSC. 
-                    -- In case of SDHC and SDXC Cards,
-                    -- block length of the memory access commands are fixed to 512 bytes.
-                    when st_cmd16_req =>
-                        SD_CS_n <= '0';
-                        cmd <= 16;
-                        arg <= x"00000200"; -- 512 bytes per block
-                        crc <= "0001010"; -- actually, don't care
-                        cmd_return_state <= st_cmd16_res;
-                        current_state <= st_send_cmd;
-                        counter <= 0;
-                    when st_cmd16_res =>
-                        finish_delay <= '1';
-                        cmd_return_state <= st_cmd16_done;
-                        current_state <= st_read_wait;
-                    when st_cmd16_done =>
-                        if byte_buff = R1_NO_ERROR_NO_IDLE then
-                            current_state <= st_cmd17_req;
-                        else
-                            DBG <= x"6";
-                            current_state <= st_reject;
-                        end if;
-                    ------------------------------------------------------------------------------
-                    -- Bootloader: CMD17 READ_SINGLE_BLOCK
-                    when st_cmd17_req =>
-                        SD_CS_n <= '0';
-                        cmd <= 17;
-                        arg <= sector_as_arg;
-                        crc <= "1111111"; -- actually, don't care
-                        cmd_return_state <= st_cmd17_res;
-                        current_state <= st_send_cmd;
-                        counter <= 0;
-                    when st_cmd17_res =>
-                        finish_delay <= '0';
-                        cmd_return_state <= st_cmd17_r1;
-                        current_state <= st_read_wait;
-                    when st_cmd17_r1 =>
-                        DBG <= x"C";
-                        if byte_buff = R1_NO_ERROR_NO_IDLE then
-                            cmd_return_state <= st_cmd17_read_token;
-                            current_state <= st_read_byte;
-                        else
-                            DBG <= x"7";
-                            current_state <= st_reject;
-                        end if;
-                    when st_cmd17_read_token =>
-                        DBG <= x"D";
-                        if byte_buff = x"FF" then -- not a token, wait
-                            cmd_return_state <= st_cmd17_read_token;
-                            current_state <= st_read_byte;
-                        elsif byte_buff = x"FE" then -- data token
-                            cmd_return_state <= st_cmd17_read_data;
-                            current_state <= st_read_byte;
-                            byte_counter <= 0;
-                        elsif byte_buff(7 downto 5) = "000" then -- error token
-                            DBG <= x"7";
-                            cmd_return_state <= st_reject;
-                            current_state <= st_finish_delay;
-                        else
-                            DBG <= x"7";
-                            cmd_return_state <= st_reject;
-                        end if;
-                    when st_cmd17_read_data =>
-                        -- next byte
-                        DBG <= x"E";
-                        word_buff <= byte_buff & word_buff(WORD_WIDTH - 1 downto 8); -- little-endian
-                        if byte_counter = SECTOR_SIZE - 1 then
-                            -- assert byte_counter mod WORD_SIZE = WORD_SIZE - 1
-                            BL_REQ.ADDR <= conv_std_logic_vector(
-                                (sector_counter * SECTOR_SIZE + byte_counter) / WORD_SIZE,
-                                BL_REQ.ADDR'length
-                            );
-                            cmd_return_state <= st_cmd17_read_crc;
-                            ram_return_state <= st_read_byte;
-                            current_state <= st_cmd17_write_ram;
-                            byte_counter <= 0;
-                        else
-                            if byte_counter mod WORD_SIZE = WORD_SIZE - 1 then
-                                BL_REQ.ADDR <= conv_std_logic_vector(
-                                    (sector_counter * SECTOR_SIZE + byte_counter) / WORD_SIZE,
-                                    BL_REQ.ADDR'length
-                                );
-                                cmd_return_state <= st_cmd17_read_data;
-                                ram_return_state <= st_read_byte;
-                                current_state <= st_cmd17_write_ram;
+                        sd_sclk_buff <= '1';
+                    else
+                        sd_sclk_buff <= '0';
+                        wait_return_state <= st_read_byte;
+                        current_state <= st_wait_spi;
+                    end if;
+                -- read 4 bytes from SPI bus
+                when st_read_4_bytes =>
+                    if sd_sclk_buff = '0' then
+                        dword_buff(DWORD_BUFF_BITS - 1 - counter) <= SD_MISO;
+                        if counter = DWORD_BUFF_BITS - 1 then
+                            if finish_delay = '1' then
+                                wait_return_state <= st_finish_delay;
                             else
-                                cmd_return_state <= st_cmd17_read_data;
-                                current_state <= st_read_byte;
+                                wait_return_state <= cmd_return_state;
                             end if;
-                            byte_counter <= byte_counter + 1;
-                        end if;
-                    when st_cmd17_write_ram =>
-                        BL_REQ.DEN <= '1';
-                        BL_REQ.WE_n <= '0';
-                        BL_REQ.OE_n <= '1';
-                        BL_REQ.DOUT <= word_buff;
-                        current_state <= st_cmd17_write_ram_done;
-                    when st_cmd17_write_ram_done =>
-                        BL_REQ.DEN <= '0';
-                        BL_REQ.WE_n <= '1';
-                        current_state <= ram_return_state;
-                    when st_cmd17_read_crc =>
-                        -- eats dummy CRC bytes
-                        DBG <= x"F";
-                        if byte_counter = 2 - 1 then
-                            cmd_return_state <= st_cmd17_done;
-                            current_state <= st_finish_delay;
-                            byte_counter <= 0;
+                            current_state <= st_wait_spi;
+                            counter <= 0;
                         else
-                            cmd_return_state <= st_cmd17_read_crc;
-                            current_state <= st_read_byte;
-                            byte_counter <= byte_counter + 1;
+                            wait_return_state <= st_read_4_bytes;
+                            current_state <= st_wait_spi;
+                            counter <= counter + 1;
                         end if;
-                    when st_cmd17_done =>
-                        -- next sector
-                        if sector_counter = RAM_SIZE / SECTOR_SIZE - 1 then
-                            current_state <= st_done;
-                            sector_counter <= 0;
-                        else
-                            sector_counter <= sector_counter + 1;
-                            current_state <= st_cmd17_req;
-                        end if;
-                    ------------------------------------------------------------------------------
-                    -- Subroutines --
-                    -- delay for low speed SPI.
-                    when st_wait_spi =>
-                        if wait_counter = SPI_WAIT_CYCLES - 1 then
-                            current_state <= wait_return_state;
-                            wait_counter <= 0;
-                        else
-                            wait_counter <= wait_counter + 1;
-                        end if;
-                    -- send a command to SPI bus
-                    when st_send_cmd =>
-                        if counter mod 2 = 0 then
-                            SD_MOSI <= packet(CMD_BITS - 1 - counter / 2);
-                            sd_sclk_buff <= '0';
-                        else
-                            sd_sclk_buff <= '1';
-                        end if;
-                        if counter = (CMD_BITS * 2) - 1 then
+                        sd_sclk_buff <= '1';
+                    else
+                        sd_sclk_buff <= '0';
+                        wait_return_state <= st_read_4_bytes;
+                        current_state <= st_wait_spi;
+                    end if;
+                -- delay several clocks after an operation
+                when st_finish_delay =>
+                    SD_nCS <= '1';
+                    if sd_sclk_buff = '0' then
+                        if counter = 8 - 1 then
                             wait_return_state <= cmd_return_state;
                             current_state <= st_wait_spi;
                             counter <= 0;
                         else
-                            wait_return_state <= st_send_cmd;
+                            wait_return_state <= st_finish_delay;
                             current_state <= st_wait_spi;
                             counter <= counter + 1;
                         end if;
-                    -- wait until SD_MISO is low, and read a byte from SPI bus
-                    when st_read_wait =>
-                        if sd_sclk_buff = '0' then
-                            if SD_MISO = '0' then
-                                current_state <= st_read_byte;
-                                counter <= 0;
-                            else
-                                wait_return_state <= st_read_wait;
-                                current_state <= st_wait_spi;
-                                sd_sclk_buff <= '1';
-                            end if;
-                        else
-                            sd_sclk_buff <= '0';
-                            wait_return_state <= st_read_wait;
-                            current_state <= st_wait_spi;
-                        end if;
-                    -- read a byte from SPI bus
-                    when st_read_byte =>
-                        if sd_sclk_buff = '0' then
-                            byte_buff(R1_BITS - 1 - counter) <= SD_MISO;
-                            if counter = R1_BITS - 1 then
-                                if finish_delay = '1' then
-                                    wait_return_state <= st_finish_delay;
-                                else
-                                    wait_return_state <= cmd_return_state;
-                                end if;
-                                current_state <= st_wait_spi;
-                                counter <= 0;
-                            else
-                                wait_return_state <= st_read_byte;
-                                current_state <= st_wait_spi;
-                                counter <= counter + 1;
-                            end if;
-                            sd_sclk_buff <= '1';
-                        else
-                            sd_sclk_buff <= '0';
-                            wait_return_state <= st_read_byte;
-                            current_state <= st_wait_spi;
-                        end if;
-                    -- read 4 bytes from SPI bus
-                    when st_read_dword =>
-                        if sd_sclk_buff = '0' then
-                            dword_buff(DWORD_BUFF_BITS - 1 - counter) <= SD_MISO;
-                            if counter = DWORD_BUFF_BITS - 1 then
-                                if finish_delay = '1' then
-                                    wait_return_state <= st_finish_delay;
-                                else
-                                    wait_return_state <= cmd_return_state;
-                                end if;
-                                current_state <= st_wait_spi;
-                                counter <= 0;
-                            else
-                                wait_return_state <= st_read_dword;
-                                current_state <= st_wait_spi;
-                                counter <= counter + 1;
-                            end if;
-                            sd_sclk_buff <= '1';
-                        else
-                            sd_sclk_buff <= '0';
-                            wait_return_state <= st_read_dword;
-                            current_state <= st_wait_spi;
-                        end if;
-                    -- delay several clocks after an operation
-                    when st_finish_delay =>
-                        SD_CS_n <= '1';
-                        if sd_sclk_buff = '0' then
-                            if counter = 8 - 1 then
-                                wait_return_state <= cmd_return_state;
-                                current_state <= st_wait_spi;
-                                counter <= 0;
-                            else
-                                wait_return_state <= st_finish_delay;
-                                current_state <= st_wait_spi;
-                                counter <= counter + 1;
-                            end if;
-                            sd_sclk_buff <= '1';
-                        else
-                            sd_sclk_buff <= '0';
-                            wait_return_state <= st_finish_delay;
-                            current_state <= st_wait_spi;
-                        end if;
-                    ------------------------------------------------------------------------------
-                    when st_reject => -- do nothing
-                    when st_done => -- do nothing
-                    when others =>
-                        current_state <= st_poweron_wait;
-                        wait_counter <= 0;
-                        counter <= 0;
-                end case;
-            end if;
+                        sd_sclk_buff <= '1';
+                    else
+                        sd_sclk_buff <= '0';
+                        wait_return_state <= st_finish_delay;
+                        current_state <= st_wait_spi;
+                    end if;
+                ------------------------------------------------------------------------------
+                when st_reject => -- do nothing
+                when st_done => -- do nothing
+                    BUS_REQ.en <= '0';
+                when others =>
+                    current_state <= st_poweron_wait;
+                    wait_counter <= 0;
+                    counter <= 0;
+            end case;
         end if;
     end process;
 

@@ -1,13 +1,18 @@
 
 # PlanAhead Generated physical constraints 
 
-NET "CLK" LOC = B8;
+NET "CLK_50M" LOC = B9;
 NET "nRST" LOC = U10;
 
-NET "test_1[15]" LOC = A14;
-NET "test_1[14]" LOC = E13;
-NET "test_1[13]" LOC = D13;
-NET "test_1[12]" LOC = B13;
+NET "SD_nCS" LOC = A14;
+NET "SD_SCLK" LOC = E13;
+NET "SD_MOSI" LOC = D13;
+NET "SD_MISO" LOC = B13;
+
+# NET "test_1[15]" LOC = A14;
+# NET "test_1[14]" LOC = E13;
+# NET "test_1[13]" LOC = D13;
+# NET "test_1[12]" LOC = B13;
 NET "test_1[11]" LOC = A13;
 NET "test_1[10]" LOC = F12;
 NET "test_1[9]" LOC = E12;

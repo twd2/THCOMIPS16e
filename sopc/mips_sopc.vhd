@@ -6,7 +6,7 @@ use work.types.all;
 entity mips_sopc is
     port
     (
-        CLK: in std_logic;
+        CLK_50M: in std_logic;
         nRST: in std_logic;
 
         SYSBUS_ADDR: out std_logic_vector(17 downto 0);
@@ -29,6 +29,11 @@ entity mips_sopc is
         UART_TSRE: in std_logic;
         
         GPIO: inout word_t;
+        
+        SD_nCS: out std_logic;
+        SD_SCLK: out std_logic;
+        SD_MISO: in std_logic;
+        SD_MOSI: out std_logic;
 
         testen: out std_logic;
         test_0: out reg_addr_t;
@@ -37,6 +42,16 @@ entity mips_sopc is
 end;
 
 architecture behavioral of mips_sopc is
+    component clock_manager is
+       port ( CLKIN_IN        : in    std_logic; 
+              RST_IN          : in    std_logic; 
+              CLKFX_OUT       : out   std_logic; 
+              CLKFX180_OUT    : out   std_logic; 
+              CLKIN_IBUFG_OUT : out   std_logic; 
+              CLK0_OUT        : out   std_logic; 
+              LOCKED_OUT      : out   std_logic);
+    end component;
+
     component sysbus_controller is
         port
         (
@@ -93,7 +108,27 @@ architecture behavioral of mips_sopc is
             GPIO: inout word_t
         );
     end component;
-    
+
+    component sd_controller is
+        port
+        (
+            CLK: in std_logic;
+            RST: in std_logic;
+
+            BUS_REQ: out bus_request_t;
+            BUS_RES: in bus_response_t;
+
+            SD_nCS: out std_logic; -- SD_NCS, SD_DATA3_CD
+            SD_SCLK: out std_logic; -- SD_CLK
+            SD_MISO: in std_logic;  -- SD_DOUT, SD_DATA0_DO
+            SD_MOSI: out std_logic; -- SD_DIN, SD_CMD
+
+            DONE: out std_logic;
+            REJECTED: out std_logic;
+            DBG: out std_logic_vector(3 downto 0)
+        );
+    end component;
+
     component ins_bus_dispatcher is
         port
         (
@@ -226,15 +261,36 @@ architecture behavioral of mips_sopc is
     
     signal gpio_bus_req: bus_request_t;
     signal gpio_bus_res: bus_response_t;
+    signal sd_dma_bus_req: bus_request_t;
+    signal sd_dma_bus_res: bus_response_t;
 
     signal wea: std_logic_vector(0 downto 0);
+    signal sd_dbg: std_logic_vector(3 downto 0);
+    
+    signal core_testen: std_logic;
+    signal core_test_0: reg_addr_t;
+    signal core_test_1: word_t;
+    
+    signal CLK, CLK_180, locked: std_logic;
 begin
-    RST <= not nRST;
+    RST <= not locked or not nRST;
 
     SYSBUS_DQ <= SYSBUS_DOUT when SYSBUS_DEN = '1' else (others => 'Z');
     SYSBUS_DIN <= SYSBUS_DQ;
     EXTBUS_DQ <= EXTBUS_DOUT when EXTBUS_DEN = '1' else (others => 'Z');
     EXTBUS_DIN <= EXTBUS_DQ;
+    
+    clock_manager_inst: clock_manager
+    port map
+    (
+        CLKIN_IN => CLK_50M,
+        RST_IN => not nRST,
+        CLKFX_OUT => CLK,
+        CLKFX180_OUT => CLK_180,
+        --CLKIN_IBUFG_OUT
+        --CLK0_OUT
+        LOCKED_OUT => locked
+    );
     
     sysbus_controller_inst: sysbus_controller
     port map
@@ -264,42 +320,44 @@ begin
 
     SYSBUS_ADDR(17 downto 16) <= "00"; -- TODO
     
-    rom_inst: rom
+    -- use external instruction memory
+    extbus_interface_inst: extbus_interface
     port map
     (
-        addra => extbus_req.addr(9 downto 0),
-        clka => not CLK,
-        douta => extbus_res.data
-    );
-
-    extbus_res.grant <= '1';
-    extbus_res.done <= '1';
-    extbus_res.tlb_miss <= '0';
-    extbus_res.page_fault <= '0';
-    extbus_res.error <= '1' when extbus_req.nread_write = '1' else '0';
+        EXTBUS_ADDR => EXTBUS_ADDR(15 downto 0),
+        EXTBUS_DIN => EXTBUS_DIN,
+        EXTBUS_DEN => EXTBUS_DEN,
+        EXTBUS_DOUT => EXTBUS_DOUT,
     
-    --extbus_interface_inst: extbus_interface
+        RAM2_nWE => RAM2_nWE,
+        RAM2_nOE => RAM2_nOE,
+        RAM2_nCE => RAM2_nCE,
+    
+        BUS_REQ => extbus_req,
+        BUS_RES => extbus_res
+    );
+    
+    -- use built-in rom as instruction memory
+    --rom_inst: rom
     --port map
     --(
-    --    EXTBUS_ADDR => EXTBUS_ADDR(15 downto 0),
-    --    EXTBUS_DIN => EXTBUS_DIN,
-    --    EXTBUS_DEN => EXTBUS_DEN,
-    --    EXTBUS_DOUT => EXTBUS_DOUT,
-    --
-    --    RAM2_nWE => RAM2_nWE,
-    --    RAM2_nOE => RAM2_nOE,
-    --    RAM2_nCE => RAM2_nCE,
-    --
-    --    BUS_REQ => extbus_req,
-    --    BUS_RES => extbus_res
+    --    addra => extbus_req.addr(9 downto 0),
+    --    clka => not CLK,
+    --    douta => extbus_res.data
     --);
-    
-    RAM2_nWE <= '1';
-    RAM2_nOE <= '1';
-    RAM2_nCE <= '1';
-    EXTBUS_ADDR(15 downto 0) <= (others => '0');
-    EXTBUS_DEN <= '0';
-    EXTBUS_DOUT <= (others => 'X');
+
+    --extbus_res.grant <= '1';
+    --extbus_res.done <= '1';
+    --extbus_res.tlb_miss <= '0';
+    --extbus_res.page_fault <= '0';
+    --extbus_res.error <= '1' when extbus_req.nread_write = '1' else '0';
+
+    --RAM2_nWE <= '1';
+    --RAM2_nOE <= '1';
+    --RAM2_nCE <= '1';
+    --EXTBUS_ADDR(15 downto 0) <= (others => '0');
+    --EXTBUS_DEN <= '0';
+    --EXTBUS_DOUT <= (others => 'X');
     
     EXTBUS_ADDR(17 downto 16) <= "00"; -- TODO
     
@@ -313,6 +371,39 @@ begin
         BUS_RES => gpio_bus_res,
 
         GPIO => GPIO
+    );
+    
+    sd_controller_inst: sd_controller
+    port map
+    (
+        CLK => CLK,
+        RST => RST,
+
+        BUS_REQ => sd_dma_bus_req,
+        BUS_RES => sd_dma_bus_res,
+
+        SD_nCS => SD_nCS,
+        SD_SCLK => SD_SCLK,
+        SD_MISO => SD_MISO,
+        SD_MOSI => SD_MOSI,
+
+        -- DONE: out std_logic;
+        -- REJECTED: out std_logic;
+        DBG => sd_dbg
+    );
+    
+    sd_dma_bus_dispatcher_inst: ins_bus_dispatcher
+    port map
+    (
+        -- host
+        BUS_REQ => sd_dma_bus_req,
+        BUS_RES => sd_dma_bus_res,
+        
+        -- devices
+        EXTBUS_REQ => extbus_req_2,
+        EXTBUS_RES => extbus_res_2,
+        SYSBUS_REQ => sysbus_req_2,
+        SYSBUS_RES => sysbus_res_2
     );
 
     ins_bus_dispatcher_inst: ins_bus_dispatcher
@@ -402,8 +493,12 @@ begin
         
         IRQ => (others => '0'),
         
-        testen => testen,
-        test_0 => test_0,
-        test_1 => test_1
+        testen => core_testen,
+        test_0 => core_test_0,
+        test_1 => core_test_1
     );
+    
+    testen <= core_testen;
+    test_0 <= core_test_0;
+    test_1 <= core_test_1(15 downto 4) & sd_dbg;
 end;

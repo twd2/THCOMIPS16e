@@ -660,7 +660,7 @@ begin
     instruction_fetch_inst: instruction_fetch
     port map
     (
-        RST => RST,
+        RST => comb_rst,
         
         STALL_REQ => if_stall_req,
         

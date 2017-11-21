@@ -30,7 +30,7 @@ begin
     EXTBUS_DOUT <= BUS_REQ.data;
     BUS_RES.data <= EXTBUS_DIN;
     
-    RAM2_nWE <= not BUS_REQ.nread_write;
+    RAM2_nWE <= not (BUS_REQ.en and BUS_REQ.nread_write);
     RAM2_nOE <= BUS_REQ.nread_write;
     
     BUS_RES.grant <= '1';
