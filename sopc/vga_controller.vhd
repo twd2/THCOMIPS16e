@@ -34,7 +34,7 @@ entity vga_controller is
         -- bus
         BUS_REQ: out bus_request_t;
         BUS_RES: in bus_response_t;
-        BASE_ADDR: in std_logic_vector(word_length - 1 downto 0)
+        BASE_ADDR: in word_t
     );
 end;
 
@@ -46,9 +46,10 @@ architecture behavorial of vga_controller is
     signal data: std_logic_vector(8 downto 0);
     signal h_counter: std_logic_vector(12 downto 0);
     signal v_counter: std_logic_vector(12 downto 0);
-    signal next_en: std_logic;
+    signal done_buffer: std_logic_vector(1 downto 0);
+    signal next_en, req_en, sync: std_logic;
     signal full, almost_full, empty, almost_empty: std_logic;
-    signal next_read_addr: std_logic_vector(word_length - 1 downto 0);
+    signal next_read_addr: word_t;
     
     COMPONENT fifo
       PORT (
@@ -69,11 +70,11 @@ architecture behavorial of vga_controller is
 begin
     fifo_ins : fifo
       PORT MAP (
-        rst => RST,
+        rst => RST or sync,
         wr_clk => WR_CLK,
         rd_clk => VGA_CLK,
         din => BUS_RES.data(8 downto 0),
-        wr_en => BUS_RES.done,
+        wr_en => BUS_RES.done and req_en,
         rd_en => next_en,
         dout => data,
         full => full,
@@ -83,11 +84,10 @@ begin
       );
 
     next_en <= '1' when (next_x < h_active) and (next_y < v_active) and RST = '0' else '0';
-
-    -- prefetch
-    BUS_REQ.en <= not almost_full and not RST;
-    BUS_REQ.nread_write <= 0;
-    BUS_REQ.addr <= next_read_addr;
+    
+    -- starts at h_active and v_active
+    HSYNC <= '0' when (h_counter >= h_active + h_front_porch) and (h_counter < h_active + h_front_porch + h_sync_pulse) else '1';
+    VSYNC <= '0' when (v_counter >= v_active + v_front_porch) and (v_counter < v_active + v_front_porch + v_sync_pulse) else '1';
 
     -- next (x, y)
     process(h_counter, v_counter)
@@ -104,28 +104,10 @@ begin
             next_y <= v_counter;
         end if;
     end process;
-    
-    -- starts at h_active and v_active
-    HSYNC <= '0' when (h_counter >= h_active + h_front_porch) and (h_counter < h_active + h_front_porch + h_sync_pulse) else '1';
-    VSYNC <= '0' when (v_counter >= v_active + v_front_porch) and (v_counter < v_active + v_front_porch + v_sync_pulse) else '1';
-
-    process(WR_CLK)
-    begin
-        if rising_edge(WR_CLK) then
-            if BUS_RES.done = '1' and almost_full = '0' and and RST = '0' then
-                if next_read_addr = BASE_ADDR + h_active * v_active - 1 then
-                    next_read_addr <= BASE_ADDR;
-                else 
-                    next_read_addr <= next_read_addr + 1;
-                end if;
-            end if;
-        end if;
-    end process;
 
     process(VGA_CLK, RST)
     begin
         if RST = '1' then
-            next_read_addr <= BASE_ADDR;
             h_counter <= conv_std_logic_vector(0, h_counter'length);
             v_counter <= conv_std_logic_vector(0, v_counter'length);
             RED <= "000";
@@ -145,6 +127,44 @@ begin
                     BLUE <= "000";
                 end if;
             end if;
+        end if;
+    end process;
+
+    -- prefetch
+    DONE <= '1' when next_y >= v_active else '0';
+    req_en <= not almost_full and not RST;
+    BUS_REQ.en <= req_en;
+    BUS_REQ.nread_write <= '0';
+    BUS_REQ.addr <= next_read_addr;
+
+    process(WR_CLK, RST, sync)
+    begin
+        if RST = '1' or sync = '1' then
+            next_read_addr <= BASE_ADDR;
+        else
+            if rising_edge(WR_CLK) then
+                done_buffer[0] <= done;
+                done_buffer[1] <= done_buffer[0];
+                if BUS_RES.done = '1' and req_en then
+                    if next_read_addr = BASE_ADDR + h_active * v_active - 1 then
+                        next_read_addr <= BASE_ADDR;
+                    else 
+                        next_read_addr <= next_read_addr + 1;
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process;
+
+    process(WR_CLK, RST)
+    begin
+        if RST = '1' then
+            done_buffer <= "00";
+            sync <= '0';
+        elsif rising_edge(WR_CLK) then
+            done_buffer(0) <= done;
+            done_buffer(1) <= done_buffer(0);
+            sync <= done_buffer(0) and not done_buffer(1);
         end if;
     end process;
 end;
