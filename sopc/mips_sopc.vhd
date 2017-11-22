@@ -51,6 +51,15 @@ architecture behavioral of mips_sopc is
               CLK0_OUT        : out   std_logic; 
               LOCKED_OUT      : out   std_logic);
     end component;
+    
+    component clock_4x is
+       port ( CLKIN_IN        : in    std_logic; 
+              RST_IN          : in    std_logic; 
+              CLKFX_OUT       : out   std_logic; 
+              CLKFX180_OUT    : out   std_logic;
+              CLK0_OUT        : out   std_logic; 
+              LOCKED_OUT      : out   std_logic);
+    end component;
 
     component sysbus_controller is
         port
@@ -82,6 +91,9 @@ architecture behavioral of mips_sopc is
     component extbus_interface is
         port
         (
+            CLK: in std_logic;
+            RST: in std_logic;
+
             EXTBUS_ADDR: out word_t;
             EXTBUS_DIN: in word_t;
             EXTBUS_DEN: out std_logic;
@@ -271,7 +283,7 @@ architecture behavioral of mips_sopc is
     signal core_test_0: reg_addr_t;
     signal core_test_1: word_t;
     
-    signal CLK, CLK_180, locked: std_logic;
+    signal CLK, CLK_180, locked, CLK_NX, CLK_NX_180, locked_nx: std_logic;
 begin
     RST <= not locked or not nRST;
 
@@ -290,6 +302,17 @@ begin
         --CLKIN_IBUFG_OUT
         --CLK0_OUT
         LOCKED_OUT => locked
+    );
+    
+    clock_nx_inst: clock_4x
+    port map
+    (
+        CLKIN_IN => CLK,
+        RST_IN => not nRST,
+        CLKFX_OUT => CLK_NX,
+        CLKFX180_OUT => CLK_NX_180,
+        --CLK0_OUT
+        LOCKED_OUT => locked_nx
     );
     
     sysbus_controller_inst: sysbus_controller
@@ -324,6 +347,9 @@ begin
     extbus_interface_inst: extbus_interface
     port map
     (
+        CLK => CLK,
+        RST => RST,
+    
         EXTBUS_ADDR => EXTBUS_ADDR(15 downto 0),
         EXTBUS_DIN => EXTBUS_DIN,
         EXTBUS_DEN => EXTBUS_DEN,

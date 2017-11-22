@@ -70,16 +70,18 @@ begin
     
     UART_nRE <= uart_nre_buff;
     
-    process(CLK, RST)
-    begin
-        if RST = '1' then
-            UART_nWE <= '1';
-        elsif falling_edge(CLK) then -- FIXME: gated clock
-            UART_nWE <= uart_nwe_buff; -- delay 0.5 clock
-        end if;
-    end process;
+    --process(CLK, RST)
+    --begin
+    --    if RST = '1' then
+    --        UART_nWE <= '1';
+    --    elsif falling_edge(CLK) then -- FIXME: gated clock
+    --        UART_nWE <= uart_nwe_buff; -- delay 0.5 clock
+    --    end if;
+    --end process;
+    
+    UART_nWE <= CLK or uart_nwe_buff;
 
-    process(BUS_REQ, SYSBUS_DIN, uart_control_reg)
+    process(CLK, BUS_REQ, SYSBUS_DIN, uart_control_reg)
     begin
         RAM1_nOE <= '1';
         RAM1_nWE <= '1';
@@ -116,7 +118,7 @@ begin
                     RAM1_nWE <= '1';
                 else -- write
                     RAM1_nOE <= '1';
-                    RAM1_nWE <= '0';
+                    RAM1_nWE <= not CLK;
                 end if;
             end if;
         end if;
