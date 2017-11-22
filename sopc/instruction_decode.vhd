@@ -92,7 +92,7 @@ begin
             COMMON.pc <= (others => '0');
             COMMON.op <= (others => '0');
             COMMON.funct <= (others => '0');
-            EX.alu_op <= alu_nop;
+            EX.alu_op <= (others => '0');
             EX.operand_0 <= (others => '0');
             EX.operand_1 <= (others => '0');
             MEM.alu_result <= (others => '0');
@@ -121,7 +121,7 @@ begin
             COMMON.pc <= PC;
             COMMON.op <= op_buff;
             COMMON.funct <= (others => 'X'); -- TODO
-            EX.alu_op <= alu_nop;
+            EX.alu_op <= (others => 'X');
             EX.operand_0 <= (others => 'X');
             EX.operand_1 <= (others => 'X');
             MEM.alu_result <= (others => 'X');
