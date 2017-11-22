@@ -33,10 +33,11 @@ NOP
 
 ## To-Do List
 
-* [ ] Basic ISA
-* [ ] Extend ISA
+* [x] Basic ISA
+* [x] Extend ISA
 * [ ] Interrupt
 * [ ] VGA
 * [ ] PS/2
-* [ ] SD card boot
+* [x] SD card boot
+* [ ] SD card read/write
 
