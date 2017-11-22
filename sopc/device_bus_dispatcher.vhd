@@ -31,6 +31,7 @@ begin
             BUS_RES <= GPIO_BUS_RES;
         else
             GPIO_BUS_REQ.en <= '0';
+            BUS_RES <= GPIO_BUS_RES;
         end if;
     end process;
 end;

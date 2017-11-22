@@ -7,6 +7,9 @@ use work.types.all;
 entity extbus_interface is
     port
     (
+        CLK: in std_logic;
+        RST: in std_logic;
+    
         EXTBUS_ADDR: out word_t;
         EXTBUS_DIN: in word_t;
         EXTBUS_DEN: out std_logic;
@@ -30,7 +33,7 @@ begin
     EXTBUS_DOUT <= BUS_REQ.data;
     BUS_RES.data <= EXTBUS_DIN;
     
-    RAM2_nWE <= not (BUS_REQ.en and BUS_REQ.nread_write);
+    RAM2_nWE <= not CLK or not (BUS_REQ.en and BUS_REQ.nread_write);
     RAM2_nOE <= BUS_REQ.nread_write;
     
     BUS_RES.grant <= '1';
