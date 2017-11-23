@@ -269,15 +269,13 @@ def print_font(x):
     offset = x * 16
     for y in range(16):
         for x in range(8):
-            print('*' if str((FONTS[offset] >> x) & 1) == '1' else ' ', end='')
+            print('*' if str((FONTS[offset] >> x) & 1) == '1' else '-', end='')
         offset += 1
         print()
 
-print_font('h')
-print_font('e')
-print_font('l')
-print_font('l')
-print_font('o')
+print_font('L')
+print_font('M')
+print_font('m')
 
 with open('font.bin', 'wb') as f:
     f.write(bytes(FONTS))
