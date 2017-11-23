@@ -13,9 +13,9 @@ if len(sys.argv) >= 4:
 
 with open(sys.argv[1], 'rb') as fin, \
      open(sys.argv[2], 'w', encoding='utf-8') as fout:
-  fout.write("""memory_initialization_radix={};
+  fout.write("""memory_initialization_radix=16;
 memory_initialization_vector=
-""".format(WIDTH))
+""")
   addr = 0
   buf = fin.read(WIDTH // 8)
   while buf:
