@@ -34,6 +34,12 @@ entity mips_sopc is
         SD_SCLK: out std_logic;
         SD_MISO: in std_logic;
         SD_MOSI: out std_logic;
+        
+        HSYNC: out std_logic;
+        VSYNC: out std_logic;
+        RED: out std_logic_vector(2 downto 0);
+        GREEN: out std_logic_vector(2 downto 0);
+        BLUE: out std_logic_vector(2 downto 0);
 
         testen: out std_logic;
         test_0: out reg_addr_t;
@@ -138,6 +144,39 @@ architecture behavioral of mips_sopc is
             DONE: out std_logic;
             REJECTED: out std_logic;
             DBG: out std_logic_vector(3 downto 0)
+        );
+    end component;
+    
+    component vga_controller is
+        generic
+        (
+            h_active: integer := 640;
+            h_front_porch: integer := 16;
+            h_sync_pulse: integer := 96;
+            h_back_porch: integer := 48;
+
+            v_active: integer := 480;
+            v_front_porch: integer := 10;
+            v_sync_pulse: integer := 2;
+            v_back_porch: integer := 33
+        );
+        port
+        (
+            VGA_CLK: in std_logic;
+            WR_CLK: in std_logic;
+            RST: in std_logic;
+
+            -- outputs
+            HSYNC: out std_logic;
+            VSYNC: out std_logic;
+            RED: out std_logic_vector(2 downto 0);
+            GREEN: out std_logic_vector(2 downto 0);
+            BLUE: out std_logic_vector(2 downto 0);
+
+            -- bus
+            GRAPHICS_BUS_REQ: out bus_request_t;
+            GRAPHICS_BUS_RES: in bus_response_t;
+            BASE_ADDR: in word_t
         );
     end component;
 
@@ -275,6 +314,8 @@ architecture behavioral of mips_sopc is
     signal gpio_bus_res: bus_response_t;
     signal sd_dma_bus_req: bus_request_t;
     signal sd_dma_bus_res: bus_response_t;
+    signal graphics_bus_req: bus_request_t;
+    signal graphics_bus_res: bus_response_t;
 
     signal wea: std_logic_vector(0 downto 0);
     signal sd_dbg: std_logic_vector(3 downto 0);
@@ -431,6 +472,29 @@ begin
         SYSBUS_REQ => sysbus_req_2,
         SYSBUS_RES => sysbus_res_2
     );
+    
+    vga_controller_inst: vga_controller
+    port map
+    (
+        VGA_CLK => CLK,
+        WR_CLK => CLK,
+        RST => RST,
+
+        -- outputs
+        HSYNC => HSYNC,
+        VSYNC => VSYNC,
+        RED => RED,
+        GREEN => GREEN,
+        BLUE => BLUE,
+
+        -- bus
+        GRAPHICS_BUS_REQ => graphics_bus_req,
+        GRAPHICS_BUS_RES => graphics_bus_res,
+        BASE_ADDR => (others => '0')
+    );
+    
+    graphics_bus_res.data <= "0000000101101101";
+    graphics_bus_res.done <= '1';
 
     ins_bus_dispatcher_inst: ins_bus_dispatcher
     port map

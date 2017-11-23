@@ -32,8 +32,8 @@ entity vga_controller is
         BLUE: out std_logic_vector(2 downto 0);
 
         -- bus
-        BUS_REQ: out bus_request_t;
-        BUS_RES: in bus_response_t;
+        GRAPHICS_BUS_REQ: out bus_request_t;
+        GRAPHICS_BUS_RES: in bus_response_t;
         BASE_ADDR: in word_t
     );
 end;
@@ -70,14 +70,14 @@ architecture behavorial of vga_controller is
     signal wr_rst, wr_en: std_logic;
 begin
     wr_rst <= RST or sync;
-    wr_en <= BUS_RES.done and req_en;
+    wr_en <= GRAPHICS_BUS_RES.done and req_en;
     
     fifo_ins : fifo
       PORT MAP (
         rst => wr_rst,
         wr_clk => WR_CLK,
         rd_clk => VGA_CLK,
-        din => BUS_RES.data(8 downto 0),
+        din => GRAPHICS_BUS_RES.data(8 downto 0),
         wr_en => wr_en,
         rd_en => next_en,
         dout => data,
@@ -135,16 +135,16 @@ begin
     -- prefetch
     done <= '1' when next_y >= v_active else '0';
     req_en <= not almost_full and not RST;
-    BUS_REQ.en <= req_en;
-    BUS_REQ.nread_write <= '0';
-    BUS_REQ.addr <= next_read_addr;
+    GRAPHICS_BUS_REQ.en <= req_en;
+    GRAPHICS_BUS_REQ.nread_write <= '0';
+    GRAPHICS_BUS_REQ.addr <= next_read_addr;
 
     process(WR_CLK, wr_rst)
     begin
         if wr_rst = '1' then
             next_read_addr <= BASE_ADDR;
         elsif rising_edge(WR_CLK) then
-            if BUS_RES.done = '1' and req_en = '1' then
+            if wr_en = '1' then
                 if next_read_addr = BASE_ADDR + h_active * v_active - 1 then
                     next_read_addr <= BASE_ADDR;
                 else 
