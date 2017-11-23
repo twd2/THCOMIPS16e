@@ -40,10 +40,16 @@ entity mips_sopc is
         RED: out std_logic_vector(2 downto 0);
         GREEN: out std_logic_vector(2 downto 0);
         BLUE: out std_logic_vector(2 downto 0);
+        
+        PS2_DATA: in std_logic;
+        PS2_CLK: in std_logic;
 
         testen: out std_logic;
         test_0: out reg_addr_t;
-        test_1: out word_t
+        test_1: out word_t;
+        
+        ps2_done: out std_logic;
+        ps2_frame: out std_logic_vector(7 downto 0)
     );
 end;
 
@@ -182,6 +188,18 @@ architecture behavioral of mips_sopc is
             GRAPHICS_BUS_REQ: out bus_request_t;
             GRAPHICS_BUS_RES: in bus_response_t;
             BASE_ADDR: in word_t
+        );
+    end component;
+    
+    component ps2_controller is
+        port
+        (
+            CLK: in std_logic;
+            RST: in std_logic;
+            PS2_DATA: in std_logic;
+            PS2_CLK: in std_logic;
+            OUTPUT_FRAME: out std_logic_vector(7 downto 0);
+            DONE: out std_logic
         );
     end component;
 
@@ -500,6 +518,17 @@ begin
     
     graphics_bus_res.data <= graphics_bus_req.addr;
     graphics_bus_res.done <= '1';
+    
+    ps2_controller_inst: ps2_controller
+    port map
+    (
+        CLK => CLK,
+        RST => RST,
+        PS2_DATA => PS2_DATA,
+        PS2_CLK => PS2_CLK,
+        OUTPUT_FRAME => ps2_frame,
+        DONE => ps2_done
+    );
 
     ins_bus_dispatcher_inst: ins_bus_dispatcher
     port map
