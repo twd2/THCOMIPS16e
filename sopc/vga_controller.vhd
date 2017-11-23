@@ -39,18 +39,6 @@ entity vga_controller is
 end;
 
 architecture behavorial of vga_controller is
-    constant h_whole: integer := h_active + h_front_porch + h_sync_pulse + h_back_porch;
-    constant v_whole: integer := v_active + v_front_porch + v_sync_pulse + v_back_porch;
-    signal next_x: std_logic_vector(12 downto 0);
-    signal next_y: std_logic_vector(12 downto 0);
-    signal data: std_logic_vector(8 downto 0);
-    signal h_counter: std_logic_vector(12 downto 0);
-    signal v_counter: std_logic_vector(12 downto 0);
-    signal done_buffer: std_logic_vector(1 downto 0);
-    signal next_en, req_en, sync: std_logic;
-    signal full, almost_full, empty, almost_empty: std_logic;
-    signal next_read_addr: word_t;
-    
     COMPONENT fifo
       PORT (
         rst : IN STD_LOGIC;
@@ -67,14 +55,30 @@ architecture behavorial of vga_controller is
       );
     END COMPONENT;
 
+    constant h_whole: integer := h_active + h_front_porch + h_sync_pulse + h_back_porch;
+    constant v_whole: integer := v_active + v_front_porch + v_sync_pulse + v_back_porch;
+    signal next_x: std_logic_vector(12 downto 0);
+    signal next_y: std_logic_vector(12 downto 0);
+    signal data: std_logic_vector(8 downto 0);
+    signal h_counter: std_logic_vector(12 downto 0);
+    signal v_counter: std_logic_vector(12 downto 0);
+    signal done_buffer: std_logic_vector(1 downto 0);
+    signal next_en, req_en, sync: std_logic;
+    signal full, almost_full, empty, almost_empty: std_logic;
+    signal next_read_addr: word_t;
+    signal done: std_logic;
+    signal wr_rst, wr_en: std_logic;
 begin
+    wr_rst <= RST or sync;
+    wr_en <= BUS_RES.done and req_en;
+    
     fifo_ins : fifo
       PORT MAP (
-        rst => RST or sync,
+        rst => wr_rst,
         wr_clk => WR_CLK,
         rd_clk => VGA_CLK,
         din => BUS_RES.data(8 downto 0),
-        wr_en => BUS_RES.done and req_en,
+        wr_en => wr_en,
         rd_en => next_en,
         dout => data,
         full => full,
@@ -113,44 +117,38 @@ begin
             RED <= "000";
             GREEN <= "000";
             BLUE <= "000";
-        else
-            if rising_edge(VGA_CLK) then
-                h_counter <= next_x;
-                v_counter <= next_y;
-                if next_en = '1' then
-                    RED <= data(8 downto 6);
-                    GREEN <= data(5 downto 3);
-                    BLUE <= data(2 downto 0);
-                else
-                    RED <= "000";
-                    GREEN <= "000";
-                    BLUE <= "000";
-                end if;
+        elsif rising_edge(VGA_CLK) then
+            h_counter <= next_x;
+            v_counter <= next_y;
+            if next_en = '1' then
+                RED <= data(8 downto 6);
+                GREEN <= data(5 downto 3);
+                BLUE <= data(2 downto 0);
+            else
+                RED <= "000";
+                GREEN <= "000";
+                BLUE <= "000";
             end if;
         end if;
     end process;
 
     -- prefetch
-    DONE <= '1' when next_y >= v_active else '0';
+    done <= '1' when next_y >= v_active else '0';
     req_en <= not almost_full and not RST;
     BUS_REQ.en <= req_en;
     BUS_REQ.nread_write <= '0';
     BUS_REQ.addr <= next_read_addr;
 
-    process(WR_CLK, RST, sync)
+    process(WR_CLK, wr_rst)
     begin
-        if RST = '1' or sync = '1' then
+        if wr_rst = '1' then
             next_read_addr <= BASE_ADDR;
-        else
-            if rising_edge(WR_CLK) then
-                done_buffer[0] <= done;
-                done_buffer[1] <= done_buffer[0];
-                if BUS_RES.done = '1' and req_en then
-                    if next_read_addr = BASE_ADDR + h_active * v_active - 1 then
-                        next_read_addr <= BASE_ADDR;
-                    else 
-                        next_read_addr <= next_read_addr + 1;
-                    end if;
+        elsif rising_edge(WR_CLK) then
+            if BUS_RES.done = '1' and req_en = '1' then
+                if next_read_addr = BASE_ADDR + h_active * v_active - 1 then
+                    next_read_addr <= BASE_ADDR;
+                else 
+                    next_read_addr <= next_read_addr + 1;
                 end if;
             end if;
         end if;
