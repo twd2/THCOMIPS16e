@@ -158,7 +158,12 @@ architecture behavioral of mips_sopc is
             v_active: integer := 480;
             v_front_porch: integer := 10;
             v_sync_pulse: integer := 2;
-            v_back_porch: integer := 33
+            v_back_porch: integer := 33;
+            
+            total_char_row: integer := 30;
+            total_char_col: integer := 80;
+            char_width: integer := 8;
+            char_height: integer := 16
         );
         port
         (
@@ -493,7 +498,7 @@ begin
         BASE_ADDR => (others => '0')
     );
     
-    graphics_bus_res.data <= "0000000101101101";
+    graphics_bus_res.data <= graphics_bus_req.addr;
     graphics_bus_res.done <= '1';
 
     ins_bus_dispatcher_inst: ins_bus_dispatcher

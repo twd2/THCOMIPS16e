@@ -60,4 +60,15 @@ package types is
         sp_write_en: std_logic;
         sp_write_data: word_t;
     end record;
+    
+    type font_task_t is record
+        valid: std_logic;
+        char_id: std_logic_vector(11 downto 0);
+        char_x: std_logic_vector(2 downto 0);
+        char_y: std_logic_vector(3 downto 0);
+        colored_char: word_t;
+        color: word_t;
+    end record;
+    
+    type tasks_t is array(integer range <>) of font_task_t;
 end;
