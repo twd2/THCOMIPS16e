@@ -189,7 +189,7 @@ begin
                             char_y <= conv_std_logic_vector(0, char_y'length);
                         else
                             char_y <= char_y + 1;
-                            char_id <= char_id + 1 - total_char_col;
+                            char_id <= char_id + (1 - total_char_col);
                         end if;
                         char_col <= conv_std_logic_vector(0, char_col'length);
                     else
