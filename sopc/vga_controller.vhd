@@ -16,7 +16,12 @@ entity vga_controller is
         v_active: integer := 480;
         v_front_porch: integer := 10;
         v_sync_pulse: integer := 2;
-        v_back_porch: integer := 33
+        v_back_porch: integer := 33;
+
+        total_char_row: integer := 25;
+        total_char_col: integer := 80;
+        char_width: integer := 8;
+        char_height: integer := 16
     );
     port
     (
@@ -68,6 +73,7 @@ architecture behavorial of vga_controller is
     signal next_read_addr: word_t;
     signal done: std_logic;
     signal wr_rst, wr_en: std_logic;
+    signal char_row, char_col, char_id, char_x, char_y: std_logic_vector(12 downto 0);
 begin
     wr_rst <= RST or sync;
     wr_en <= BUS_RES.done and req_en;
@@ -142,18 +148,42 @@ begin
     process(WR_CLK, wr_rst)
     begin
         if wr_rst = '1' then
-            next_read_addr <= BASE_ADDR;
+            char_id <= conv_std_logic_vector(0, char_id'length);
+            char_row <= conv_std_logic_vector(0, char_row'length);
+            char_col <= conv_std_logic_vector(0, char_col'length);
+            char_x <= conv_std_logic_vector(0, char_x'length);
+            char_y <= conv_std_logic_vector(0, char_y'length);
         elsif rising_edge(WR_CLK) then
             if BUS_RES.done = '1' and req_en = '1' then
-                if next_read_addr = BASE_ADDR + h_active * v_active - 1 then
-                    next_read_addr <= BASE_ADDR;
-                else 
-                    next_read_addr <= next_read_addr + 1;
+                if char_x = char_width - 1 then
+                    if char_col = total_char_col - 1 then
+                        if char_y = char_height - 1 then
+                            if char_row = total_char_row - 1 then
+                                char_id <= conv_std_logic_vector(0, char_id'length);
+                                char_row <= conv_std_logic_vector(0, char_row'length);
+                            else 
+                                char_id <= char_id + 1;
+                                char_row <= char_row + 1;
+                            end if;
+                            char_y <= conv_std_logic_vector(0, char_y'length);
+                        else 
+                            char_y <= char_y + 1;
+                            char_id <= char_id - total_char_col + 1;
+                        end if;
+                        char_col <= conv_std_logic_vector(0, char_col'length);
+                    else 
+                        char_col <= char_col + 1;
+                        char_id <= char_id + 1;
+                    end if;
+                    char_x <= conv_std_logic_vector(0, char_x'length);
+                else
+                    char_x <= char_x + 1; 
                 end if;
             end if;
         end if;
     end process;
 
+    -- get sync
     process(WR_CLK, RST)
     begin
         if RST = '1' then
