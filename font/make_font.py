@@ -272,10 +272,13 @@ def print_font(x):
             print('*' if str((FONTS[offset] >> x) & 1) == '1' else '-', end='')
         offset += 1
         print()
+    print()
 
 print_font('L')
 print_font('M')
+print_font('N')
 print_font('m')
+print_font(chr(22))
 
 with open('font.bin', 'wb') as f:
     f.write(bytes(FONTS))

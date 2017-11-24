@@ -173,7 +173,7 @@ def make_cmp(rx, ry):
     return make2(0b11101, reg(rx), reg(ry), 0b01010)
 ACT['cmp'] = make_cmp
 
-def make_cmpi(rx):
+def make_cmpi(rx, imm):
     if not -128 <= imm <= 127:
         raise ImmOutOfRangeError(imm)
     return make1(0b01110, reg(rx), imm)
