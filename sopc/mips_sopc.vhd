@@ -211,8 +211,9 @@ architecture behavioral of mips_sopc is
             RST: in std_logic;
             PS2_DATA: in std_logic;
             PS2_CLK: in std_logic;
-            OUTPUT_FRAME: out std_logic_vector(7 downto 0);
-            DONE: out std_logic
+        
+            BUS_REQ: in bus_request_t;
+            BUS_RES: out bus_response_t
         );
     end component;
 
@@ -595,8 +596,9 @@ begin
         RST => RST,
         PS2_DATA => PS2_DATA,
         PS2_CLK => PS2_CLK,
-        OUTPUT_FRAME => ps2_frame,
-        DONE => ps2_done
+        
+        BUS_REQ => ps2_bus_req,
+        BUS_RES => ps2_bus_res
     );
 
     ins_bus_dispatcher_inst: ins_bus_dispatcher
