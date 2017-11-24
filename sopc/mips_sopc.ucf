@@ -158,7 +158,6 @@ INST "mips_core_inst/ex_mem_reg_inst/MEM_MEM.alu_result_12" TNM = mips_core;
 INST "mips_core_inst/ex_mem_reg_inst/MEM_MEM.alu_result_13" TNM = mips_core;
 INST "mips_core_inst/ex_mem_reg_inst/MEM_MEM.alu_result_14" TNM = mips_core;
 INST "mips_core_inst/ex_mem_reg_inst/MEM_MEM.alu_result_15" TNM = mips_core;
-INST "mips_core_inst/ex_mem_reg_inst/MEM_MEM.alu_result_15_1" TNM = mips_core;
 INST "mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en" TNM = mips_core;
 INST "mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_write_en" TNM = mips_core;
 INST "mips_core_inst/ex_mem_reg_inst/MEM_MEM.write_mem_data_0" TNM = mips_core;

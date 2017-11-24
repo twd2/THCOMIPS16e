@@ -7,6 +7,7 @@ C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\mips_sopc.ngc
 C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\mips_sopc_cs.ngc
 
 Reading NGO file "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/mips_sopc.ngc" ...
+Loading design module "ipcore_dir/graphics_memory.ngc"...
 Loading design module "ipcore_dir/font_rom.ngc"...
 Loading design module "ipcore_dir/fifo.ngc"...
 
@@ -21,12 +22,12 @@ NGCBUILD Design Results Summary:
   Number of errors:     0
   Number of warnings:   0
 
-Total memory usage is 189660 kilobytes
+Total memory usage is 188616 kilobytes
 
 Writing NGC file "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/mips_sopc_cs.ngc"
 ...
-Total REAL time to NGCBUILD completion:  2 sec
-Total CPU time to NGCBUILD completion:   2 sec
+Total REAL time to NGCBUILD completion:  4 sec
+Total CPU time to NGCBUILD completion:   3 sec
 
 Writing NGCBUILD log file
 "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/mips_sopc_cs.blc"...

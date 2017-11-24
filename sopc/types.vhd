@@ -66,6 +66,8 @@ package types is
         char_id: std_logic_vector(11 downto 0);
         char_x: std_logic_vector(2 downto 0);
         char_y: std_logic_vector(3 downto 0);
+        char_col: std_logic_vector(7 downto 0);
+        char_row: std_logic_vector(7 downto 0);
         colored_char: word_t;
         color: word_t;
     end record;
