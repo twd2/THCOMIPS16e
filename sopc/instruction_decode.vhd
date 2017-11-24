@@ -23,6 +23,7 @@ entity instruction_decode is
         
         T: in std_logic;
         SP: in word_t;
+        DS: in word_t;
         
         COMMON: out common_signal_t;
         EX: out ex_signal_t;
@@ -80,7 +81,7 @@ begin
     READ_ADDR_0 <= read_addr_0_buff;
     READ_ADDR_1 <= read_addr_1_buff;
     
-    process(RST, INS, op_buff, rx, ry, rz, PC, READ_DATA_0, READ_DATA_1, T, SP,
+    process(RST, INS, op_buff, rx, ry, rz, PC, READ_DATA_0, READ_DATA_1, T, SP, DS,
             reg_0_eq_0,
             imm4se, imm5se, imm8se, imm8ze, imm11se)
     begin
@@ -99,6 +100,7 @@ begin
             MEM.mem_en <= '0';
             MEM.mem_write_en <= '0';
             MEM.write_mem_data <= (others => '0');
+            MEM.sw_after_load <= '0';
             WB.write_en <= '0';
             WB.write_addr <= (others => '0');
             WB.write_data <= (others => '0');
@@ -110,6 +112,8 @@ begin
             WB.t_write_data <= '0';
             WB.sp_write_en <= '0';
             WB.sp_write_data <= (others => '0');
+            WB.ds_write_en <= '0';
+            WB.ds_write_data <= (others => '0');
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => '0');
             IS_LOAD <= '0';
@@ -128,6 +132,7 @@ begin
             MEM.mem_en <= '0';
             MEM.mem_write_en <= 'X';
             MEM.write_mem_data <= (others => 'X');
+            MEM.sw_after_load <= '0';
             WB.write_en <= '0';
             WB.write_addr <= (others => 'X');
             WB.write_data <= (others => 'X');
@@ -139,6 +144,8 @@ begin
             WB.t_write_data <= 'X';
             WB.sp_write_en <= '0';
             WB.sp_write_data <= (others => 'X');
+            WB.ds_write_en <= '0';
+            WB.ds_write_data <= (others => 'X');
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => 'X');
             IS_LOAD <= '0';
@@ -334,6 +341,9 @@ begin
                     MEM.mem_en <= '1';
                     MEM.mem_write_en <= '1';
                     MEM.write_mem_data <= READ_DATA_1;
+                    if EX_IS_LOAD = '1' and EX_WRITE_ADDR = read_addr_1_buff then
+                        MEM.sw_after_load <= '1';
+                    end if;
                 when "11010" => -- swsp
                     read_en_1_buff <= '0';
                     EX.alu_op <= alu_addu;
@@ -342,13 +352,16 @@ begin
                     MEM.mem_en <= '1';
                     MEM.mem_write_en <= '1';
                     MEM.write_mem_data <= READ_DATA_0;
+                    if EX_IS_LOAD = '1' and EX_WRITE_ADDR = read_addr_0_buff then
+                        MEM.sw_after_load <= '1';
+                    end if;
                 when others =>
             end case;
         end if;
     end process;
 
     -- load hazard
-    STALL_REQ <= '1' when EX_IS_LOAD = '1' and 
+    STALL_REQ <= '1' when EX_IS_LOAD = '1' and MEM.sw_after_load = '0' and
                           ((read_en_0_buff = '1' and EX_WRITE_ADDR = read_addr_0_buff) or
                            (read_en_1_buff = '1' and EX_WRITE_ADDR = read_addr_1_buff)) else '0';
                           -- TODO: check zero reg here?

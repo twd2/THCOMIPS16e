@@ -12,28 +12,36 @@ entity special_reg_forward is
         -- read from sreg
         SREG_T: in std_logic;
         SREG_SP: in word_t;
+        SREG_DS: in word_t;
 
         -- ex
         EX_T_WRITE_EN: in std_logic;
         EX_T_WRITE_DATA: in std_logic;
         EX_SP_WRITE_EN: in std_logic;
         EX_SP_WRITE_DATA: in word_t;
+        EX_DS_WRITE_EN: in std_logic;
+        EX_DS_WRITE_DATA: in word_t;
 
         -- mem
         MEM_T_WRITE_EN: in std_logic;
         MEM_T_WRITE_DATA: in std_logic;
         MEM_SP_WRITE_EN: in std_logic;
         MEM_SP_WRITE_DATA: in word_t;
+        MEM_DS_WRITE_EN: in std_logic;
+        MEM_DS_WRITE_DATA: in word_t;
         
         -- wb
         WB_T_WRITE_EN: in std_logic;
         WB_T_WRITE_DATA: in std_logic;
         WB_SP_WRITE_EN: in std_logic;
         WB_SP_WRITE_DATA: in word_t;
+        WB_DS_WRITE_EN: in std_logic;
+        WB_DS_WRITE_DATA: in word_t;
         
         -- sreg content for id
         ID_T: out std_logic;
-        ID_SP: out word_t
+        ID_SP: out word_t;
+        ID_DS: out word_t
     );
 end;
 
@@ -66,6 +74,21 @@ begin
             ID_SP <= WB_SP_WRITE_DATA;
         else
             ID_SP <= SREG_SP;
+        end if;
+    end process;
+
+    ds_proc:
+    process(EX_DS_WRITE_EN, EX_DS_WRITE_DATA, MEM_DS_WRITE_EN, MEM_DS_WRITE_DATA,
+            WB_DS_WRITE_EN, WB_DS_WRITE_DATA, SREG_DS)
+    begin
+        if EX_DS_WRITE_EN = '1' then
+            ID_DS <= EX_DS_WRITE_DATA;
+        elsif MEM_DS_WRITE_EN = '1' then
+            ID_DS <= MEM_DS_WRITE_DATA;
+        elsif WB_DS_WRITE_EN = '1' then
+            ID_DS <= WB_DS_WRITE_DATA;
+        else
+            ID_DS <= SREG_DS;
         end if;
     end process;
 end;

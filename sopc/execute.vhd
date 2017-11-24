@@ -22,7 +22,9 @@ entity execute is
 
         HI: in word_t;
         LO: in word_t;
-        
+
+        MEM_WRITE_DATA: in word_t;
+
         -- divider interface
         -- data signals
         DIV_DIVIDEND: out word_t;
@@ -83,6 +85,7 @@ begin
             MEM_O.mem_en <= '0';
             MEM_O.mem_write_en <= '0';
             MEM_O.write_mem_data <= (others => '0');
+            MEM_O.sw_after_load <= '0';
             WB_O.write_en <= '0';
             WB_O.write_addr <= (others => '0');
             WB_O.write_data <= (others => '0');
@@ -94,6 +97,8 @@ begin
             WB_O.t_write_data <= '0';
             WB_O.sp_write_en <= '0';
             WB_O.sp_write_data <= (others => '0');
+            WB_O.ds_write_en <= '0';
+            WB_O.ds_write_data <= (others => '0');
             DIV_DIVIDEND <= (others => '0');
             DIV_DIV <= (others => '0');
             DIV_SIGN <= '0';
@@ -104,13 +109,14 @@ begin
             MEM_O <= MEM;
             MEM_O.alu_result <= alu_result_buff;
             WB_O <= WB;
-            WB_O.write_data <= alu_result_buff;
+            WB_O.write_data <= MEM_WRITE_DATA when MEM.sw_after_load = '1' else alu_result_buff;
             WB_O.hi_write_en <= '0';
             WB_O.hi_write_data <= (others => 'X');
             WB_O.lo_write_en <= '0';
             WB_O.lo_write_data <= (others => 'X');
             WB_O.t_write_data <= alu_result_buff(0);
             WB_O.sp_write_data <= alu_result_buff;
+            WB_O.ds_write_data <= alu_result_buff;
             DIV_DIVIDEND <= (others => 'X');
             DIV_DIV <= (others => 'X');
             DIV_SIGN <= 'X';

@@ -53,6 +53,8 @@ begin
             EX_WB.t_write_data <= '0';
             EX_WB.sp_write_en <= '0';
             EX_WB.sp_write_data <= (others => '0');
+            EX_WB.ds_write_en <= '0';
+            EX_WB.ds_write_data <= (others => '0');
             EX_IS_LOAD <= '0';
         elsif rising_edge(CLK) then
             if FLUSH = '1' or STALL(stage_ex downto stage_id) = "01" then
@@ -77,6 +79,8 @@ begin
                 EX_WB.t_write_data <= 'X';
                 EX_WB.sp_write_en <= '0';
                 EX_WB.sp_write_data <= (others => 'X');
+                EX_WB.ds_write_en <= '0';
+                EX_WB.ds_write_data <= (others => 'X');
                 EX_IS_LOAD <= '0';
             elsif STALL(stage_ex downto stage_id) = "11" then
                 -- do nothing

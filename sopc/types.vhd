@@ -44,6 +44,7 @@ package types is
         alu_result: word_t;
         mem_en: std_logic;
         mem_write_en: std_logic;
+        sw_after_load: std_logic;
         write_mem_data: word_t;
     end record;
     
@@ -59,6 +60,8 @@ package types is
         t_write_data: std_logic;
         sp_write_en: std_logic;
         sp_write_data: word_t;
+        ds_write_en: std_logic;
+        ds_write_data: word_t;
     end record;
     
     type font_task_t is record

@@ -40,6 +40,8 @@ begin
             WB_WB.t_write_data <= '0';
             WB_WB.sp_write_en <= '0';
             WB_WB.sp_write_data <= (others => '0');
+            WB_WB.ds_write_en <= '0';
+            WB_WB.ds_write_data <= (others => '0');
         elsif rising_edge(CLK) then
             if FLUSH = '1' or STALL(stage_wb downto stage_mem) = "01" then
                 WB_COMMON.pc <= (others => '0');
@@ -56,6 +58,8 @@ begin
                 WB_WB.t_write_data <= 'X';
                 WB_WB.sp_write_en <= '0';
                 WB_WB.sp_write_data <= (others => 'X');
+                WB_WB.ds_write_en <= '0';
+                WB_WB.ds_write_data <= (others => 'X');
             elsif STALL(stage_wb downto stage_mem) = "11" then
                 -- do nothing
             else

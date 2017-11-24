@@ -36,8 +36,8 @@ NOP
 * [x] Basic ISA
 * [x] Extend ISA
 * [ ] Interrupt
-* [ ] VGA
-* [ ] PS/2
+* [x] VGA
+* [x] PS/2
 * [x] SD card boot
 * [ ] SD card read/write
 
