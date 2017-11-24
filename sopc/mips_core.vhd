@@ -325,6 +325,8 @@ architecture behavioral of mips_core is
 
             HI: in word_t;
             LO: in word_t;
+
+            MEM_WRITE_DATA: in word_t;
             
             -- divider interface
             -- data signals
@@ -398,7 +400,9 @@ architecture behavioral of mips_core is
             
             -- bus
             BUS_REQ: out bus_request_t;
-            BUS_RES: in bus_response_t
+            BUS_RES: in bus_response_t;
+
+            MEM_WRITE_DATA: out word_t
         );
     end component;
 
@@ -490,6 +494,7 @@ architecture behavioral of mips_core is
     -- MEM outputs
     signal mem_common_o: common_signal_t;
     signal mem_wb_o: wb_signal_t;
+    signal mem_write_data:  word_t;
 
     -- WB inputs
     signal wb_common: common_signal_t;
@@ -788,6 +793,7 @@ begin
 
         HI => ex_hi,
         LO => ex_lo, 
+        MEM_WRITE_DATA => mem_write_data,
  
         DIV_DIVIDEND => ex_div_dividend,
         DIV_DIV => ex_div_div,
@@ -852,7 +858,8 @@ begin
         WB_O => mem_wb_o,
         
         BUS_REQ => DATA_BUS_REQ,
-        BUS_RES => DATA_BUS_RES
+        BUS_RES => DATA_BUS_RES,
+        MEM_WRITE_DATA => mem_write_data
     );
     
     mem_wb_reg_inst: mem_wb_reg

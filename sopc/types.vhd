@@ -44,6 +44,7 @@ package types is
         alu_result: word_t;
         mem_en: std_logic;
         mem_write_en: std_logic;
+        sw_after_load: std_logic;
         write_mem_data: word_t;
     end record;
     

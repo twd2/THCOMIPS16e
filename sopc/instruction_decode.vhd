@@ -100,6 +100,7 @@ begin
             MEM.mem_en <= '0';
             MEM.mem_write_en <= '0';
             MEM.write_mem_data <= (others => '0');
+            MEM.sw_after_load <= '0';
             WB.write_en <= '0';
             WB.write_addr <= (others => '0');
             WB.write_data <= (others => '0');
@@ -131,6 +132,7 @@ begin
             MEM.mem_en <= '0';
             MEM.mem_write_en <= 'X';
             MEM.write_mem_data <= (others => 'X');
+            MEM.sw_after_load <= '0';
             WB.write_en <= '0';
             WB.write_addr <= (others => 'X');
             WB.write_data <= (others => 'X');
@@ -339,6 +341,9 @@ begin
                     MEM.mem_en <= '1';
                     MEM.mem_write_en <= '1';
                     MEM.write_mem_data <= READ_DATA_1;
+                    if EX_IS_LOAD = '1' and EX_WRITE_ADDR = read_addr_1_buff then
+                        MEM.sw_after_load <= '1';
+                    end if;
                 when "11010" => -- swsp
                     read_en_1_buff <= '0';
                     EX.alu_op <= alu_addu;
@@ -347,13 +352,16 @@ begin
                     MEM.mem_en <= '1';
                     MEM.mem_write_en <= '1';
                     MEM.write_mem_data <= READ_DATA_0;
+                    if EX_IS_LOAD = '1' and EX_WRITE_ADDR = read_addr_0_buff then
+                        MEM.sw_after_load <= '1';
+                    end if;
                 when others =>
             end case;
         end if;
     end process;
 
     -- load hazard
-    STALL_REQ <= '1' when EX_IS_LOAD = '1' and 
+    STALL_REQ <= '1' when EX_IS_LOAD = '1' and MEM.sw_after_load = '0' and
                           ((read_en_0_buff = '1' and EX_WRITE_ADDR = read_addr_0_buff) or
                            (read_en_1_buff = '1' and EX_WRITE_ADDR = read_addr_1_buff)) else '0';
                           -- TODO: check zero reg here?
