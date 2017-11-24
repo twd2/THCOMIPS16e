@@ -59,6 +59,8 @@ package types is
         t_write_data: std_logic;
         sp_write_en: std_logic;
         sp_write_data: word_t;
+        ds_write_en: std_logic;
+        ds_write_data: word_t;
     end record;
     
     type font_task_t is record

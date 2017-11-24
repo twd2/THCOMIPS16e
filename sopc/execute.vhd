@@ -94,6 +94,8 @@ begin
             WB_O.t_write_data <= '0';
             WB_O.sp_write_en <= '0';
             WB_O.sp_write_data <= (others => '0');
+            WB_O.ds_write_en <= '0';
+            WB_O.ds_write_data <= (others => '0');
             DIV_DIVIDEND <= (others => '0');
             DIV_DIV <= (others => '0');
             DIV_SIGN <= '0';
@@ -111,6 +113,7 @@ begin
             WB_O.lo_write_data <= (others => 'X');
             WB_O.t_write_data <= alu_result_buff(0);
             WB_O.sp_write_data <= alu_result_buff;
+            WB_O.ds_write_data <= alu_result_buff;
             DIV_DIVIDEND <= (others => 'X');
             DIV_DIV <= (others => 'X');
             DIV_SIGN <= 'X';

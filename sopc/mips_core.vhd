@@ -129,9 +129,12 @@ architecture behavioral of mips_core is
             T_WRITE_DATA: in std_logic;
             SP_WRITE_EN: in std_logic;
             SP_WRITE_DATA: in word_t;
+            DS_WRITE_EN: in std_logic;
+            DS_WRITE_DATA: in word_t;
             
             T: out std_logic;
-            SP: out word_t
+            SP: out word_t;
+            DS: out word_t
         );
     end component;
     
@@ -143,28 +146,36 @@ architecture behavioral of mips_core is
             -- read from sreg
             SREG_T: in std_logic;
             SREG_SP: in word_t;
+            SREG_DS: in word_t;
 
             -- ex
             EX_T_WRITE_EN: in std_logic;
             EX_T_WRITE_DATA: in std_logic;
             EX_SP_WRITE_EN: in std_logic;
             EX_SP_WRITE_DATA: in word_t;
+            EX_DS_WRITE_EN: in std_logic;
+            EX_DS_WRITE_DATA: in word_t;
 
             -- mem
             MEM_T_WRITE_EN: in std_logic;
             MEM_T_WRITE_DATA: in std_logic;
             MEM_SP_WRITE_EN: in std_logic;
             MEM_SP_WRITE_DATA: in word_t;
+            MEM_DS_WRITE_EN: in std_logic;
+            MEM_DS_WRITE_DATA: in word_t;
             
             -- wb
             WB_T_WRITE_EN: in std_logic;
             WB_T_WRITE_DATA: in std_logic;
             WB_SP_WRITE_EN: in std_logic;
             WB_SP_WRITE_DATA: in word_t;
+            WB_DS_WRITE_EN: in std_logic;
+            WB_DS_WRITE_DATA: in word_t;
             
             -- sreg content for id
             ID_T: out std_logic;
-            ID_SP: out word_t
+            ID_SP: out word_t;
+            ID_DS: out word_t
         );
     end component;
 
@@ -256,6 +267,7 @@ architecture behavioral of mips_core is
             
             T: in std_logic;
             SP: in word_t;
+            DS: in word_t;
             
             COMMON: out common_signal_t;
             EX: out ex_signal_t;
@@ -417,6 +429,7 @@ architecture behavioral of mips_core is
     signal hilo_hi, hilo_lo: word_t;
     signal sreg_t: std_logic;
     signal sreg_sp: word_t;
+    signal sreg_ds: word_t;
     
     signal if_stall_req: std_logic;
     signal id_stall_req: std_logic;
@@ -438,6 +451,7 @@ architecture behavioral of mips_core is
     signal id_read_data_1: word_t;
     signal id_t: std_logic;
     signal id_sp: word_t;
+    signal id_ds: word_t;
     
     -- ID outputs
     signal id_common: common_signal_t;
@@ -588,9 +602,12 @@ begin
         T_WRITE_DATA => wb_wb.t_write_data,
         SP_WRITE_EN => wb_wb.sp_write_en,
         SP_WRITE_DATA => wb_wb.sp_write_data,
+        DS_WRITE_EN => wb_wb.ds_write_en,
+        DS_WRITE_DATA => wb_wb.ds_write_data,
         
         T => sreg_t,
-        SP => sreg_sp
+        SP => sreg_sp,
+        DS => sreg_ds
     );
     
     special_reg_forward_inst: special_reg_forward
@@ -601,28 +618,36 @@ begin
         -- read from sreg
         SREG_T => sreg_t,
         SREG_SP => sreg_sp,
+        SREG_DS => sreg_ds,
 
         -- ex
         EX_T_WRITE_EN => ex_wb_o.t_write_en,
         EX_T_WRITE_DATA => ex_wb_o.t_write_data,
         EX_SP_WRITE_EN => ex_wb_o.sp_write_en,
         EX_SP_WRITE_DATA => ex_wb_o.sp_write_data,
+        EX_DS_WRITE_EN => ex_wb_o.ds_write_en,
+        EX_DS_WRITE_DATA => ex_wb_o.ds_write_data,
 
         -- mem
         MEM_T_WRITE_EN => mem_wb_o.t_write_en,
         MEM_T_WRITE_DATA => mem_wb_o.t_write_data,
         MEM_SP_WRITE_EN => mem_wb_o.sp_write_en,
         MEM_SP_WRITE_DATA => mem_wb_o.sp_write_data,
+        MEM_DS_WRITE_EN => mem_wb_o.ds_write_en,
+        MEM_DS_WRITE_DATA => mem_wb_o.ds_write_data,
         
         -- wb
         WB_T_WRITE_EN => wb_wb.t_write_en,
         WB_T_WRITE_DATA => wb_wb.t_write_data,
         WB_SP_WRITE_EN => wb_wb.sp_write_en,
         WB_SP_WRITE_DATA => wb_wb.sp_write_data,
+        WB_DS_WRITE_EN => wb_wb.ds_write_en,
+        WB_DS_WRITE_DATA => wb_wb.ds_write_data,
         
         -- sreg content for id
         ID_T => id_t,
-        ID_SP => id_sp
+        ID_SP => id_sp,
+        ID_DS => id_ds
     );
     
     controller_inst: controller
@@ -707,6 +732,7 @@ begin
         
         T => id_t,
         SP => id_sp,
+        DS => id_ds,
         
         COMMON => id_common,
         EX => id_ex,

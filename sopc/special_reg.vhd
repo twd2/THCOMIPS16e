@@ -14,18 +14,23 @@ entity special_reg is
         T_WRITE_DATA: in std_logic;
         SP_WRITE_EN: in std_logic;
         SP_WRITE_DATA: in word_t;
+        DS_WRITE_EN: in std_logic;
+        DS_WRITE_DATA: in word_t;
         
         T: out std_logic;
-        SP: out word_t
+        SP: out word_t;
+        DS: out word_t
     );
 end;
 
 architecture behavioral of special_reg is
     signal t_buff: std_logic;
     signal sp_buff: word_t;
+    signal ds_buff: word_t;
 begin
     T <= t_buff;
     SP <= sp_buff;
+    DS <= ds_buff;
 
     t_proc:
     process(CLK, RST)
@@ -47,6 +52,18 @@ begin
         elsif rising_edge(CLK) then
             if SP_WRITE_EN = '1' then
                 sp_buff <= SP_WRITE_DATA;
+            end if;
+        end if;
+    end process;
+
+    ds_proc:
+    process(CLK, RST)
+    begin
+        if RST = '1' then
+            ds_buff <= (others => '0');
+        elsif rising_edge(CLK) then
+            if DS_WRITE_EN = '1' then
+                ds_buff <= DS_WRITE_DATA;
             end if;
         end if;
     end process;

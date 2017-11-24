@@ -23,6 +23,7 @@ entity instruction_decode is
         
         T: in std_logic;
         SP: in word_t;
+        DS: in word_t;
         
         COMMON: out common_signal_t;
         EX: out ex_signal_t;
@@ -80,7 +81,7 @@ begin
     READ_ADDR_0 <= read_addr_0_buff;
     READ_ADDR_1 <= read_addr_1_buff;
     
-    process(RST, INS, op_buff, rx, ry, rz, PC, READ_DATA_0, READ_DATA_1, T, SP,
+    process(RST, INS, op_buff, rx, ry, rz, PC, READ_DATA_0, READ_DATA_1, T, SP, DS,
             reg_0_eq_0,
             imm4se, imm5se, imm8se, imm8ze, imm11se)
     begin
@@ -110,6 +111,8 @@ begin
             WB.t_write_data <= '0';
             WB.sp_write_en <= '0';
             WB.sp_write_data <= (others => '0');
+            WB.ds_write_en <= '0';
+            WB.ds_write_data <= (others => '0');
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => '0');
             IS_LOAD <= '0';
@@ -139,6 +142,8 @@ begin
             WB.t_write_data <= 'X';
             WB.sp_write_en <= '0';
             WB.sp_write_data <= (others => 'X');
+            WB.ds_write_en <= '0';
+            WB.ds_write_data <= (others => 'X');
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => 'X');
             IS_LOAD <= '0';
