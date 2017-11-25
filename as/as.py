@@ -173,7 +173,7 @@ def make_cmp(rx, ry):
     return make2(0b11101, reg(rx), reg(ry), 0b01010)
 ACT['cmp'] = make_cmp
 
-def make_cmpi(rx):
+def make_cmpi(rx, imm):
     if not -128 <= imm <= 127:
         raise ImmOutOfRangeError(imm)
     return make1(0b01110, reg(rx), imm)
@@ -397,6 +397,8 @@ def main():
         out_filename = sys.argv[2]
     with open(out_filename, 'wb') as f:
         f.write(buffer)
+        if len(buffer) < 4096:
+            f.write(bytes([0] * (4096 - len(buffer))))
     with open(out_filename + '.sym', 'w', encoding='utf-8') as f:
         for k, v in sorted(syms.items(), key=lambda t: t[1]):
             f.write('0x{:04x} {}\n'.format(v, k))

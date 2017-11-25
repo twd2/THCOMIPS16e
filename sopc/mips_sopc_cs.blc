@@ -1,12 +1,13 @@
 Release 14.7 ngcbuild P.20131013 (nt64)
 Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
 
-Command Line: ngcbuild.exe -dd C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/_ngo
--sd ipcore_dir -p xc3s1200e-fg320-4 -i
-C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\mips_sopc.ngc
-C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\mips_sopc_cs.ngc
+Command Line: ngcbuild.exe -dd G:/Program/cpld_fpga/THCOMIPS16e/sopc/_ngo -sd
+ipcore_dir -p xc3s1200e-fg320-4 -i
+G:\Program\cpld_fpga\THCOMIPS16e\sopc\mips_sopc.ngc
+G:\Program\cpld_fpga\THCOMIPS16e\sopc\mips_sopc_cs.ngc
 
-Reading NGO file "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/mips_sopc.ngc" ...
+Reading NGO file "G:/Program/cpld_fpga/THCOMIPS16e/sopc/mips_sopc.ngc" ...
+Loading design module "ipcore_dir/graphics_memory.ngc"...
 Loading design module "ipcore_dir/font_rom.ngc"...
 Loading design module "ipcore_dir/fifo.ngc"...
 
@@ -21,12 +22,11 @@ NGCBUILD Design Results Summary:
   Number of errors:     0
   Number of warnings:   0
 
-Total memory usage is 189660 kilobytes
+Total memory usage is 188376 kilobytes
 
-Writing NGC file "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/mips_sopc_cs.ngc"
-...
+Writing NGC file "G:/Program/cpld_fpga/THCOMIPS16e/sopc/mips_sopc_cs.ngc" ...
 Total REAL time to NGCBUILD completion:  2 sec
 Total CPU time to NGCBUILD completion:   2 sec
 
 Writing NGCBUILD log file
-"C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/mips_sopc_cs.blc"...
+"G:/Program/cpld_fpga/THCOMIPS16e/sopc/mips_sopc_cs.blc"...

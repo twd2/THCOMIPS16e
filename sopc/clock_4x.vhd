@@ -7,11 +7,11 @@
 -- \   \   \/     Version : 14.7
 --  \   \         Application : xaw2vhdl
 --  /   /         Filename : clock_4x.vhd
--- /___/   /\     Timestamp : 11/21/2017 23:05:45
+-- /___/   /\     Timestamp : 11/25/2017 00:30:47
 -- \   \  /  \ 
 --  \___\/\___\ 
 --
---Command: xaw2vhdl-intstyle C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/clock_4x.xaw -st clock_4x.vhd
+--Command: xaw2vhdl-intstyle G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/clock_4x.xaw -st clock_4x.vhd
 --Design Name: clock_4x
 --Device: xc3s1200e-4fg320
 --

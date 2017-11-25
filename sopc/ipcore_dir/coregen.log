@@ -1,131 +1,61 @@
 INFO:sim:172 - Generating IP...
-ERROR:sim - Unable to find e\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\e\font\font.coe
-ERROR:sim - Unable to find \font\font.coe
-ERROR:sim -    Coregen is looking for C:\font\font.coe
-ERROR:sim - Unable to find .\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\font\font.coe
-ERROR:sim - Unable to find .?\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\.?\font\font.coe
-ERROR:sim - Unable to find .?/\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\.?\font\font.coe
-ERROR:sim - Unable to find .?\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\.?\font\font.coe
-ERROR:sim - Unable to find .\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\font\font.coe
-ERROR:sim - Unable to find .?\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\.?\font\font.coe
-ERROR:sim - Unable to find .\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\font\font.coe
-ERROR:sim - Unable to find .?\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\.?\font\font.coe
-ERROR:sim - Unable to find .\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\font\font.coe
-ERROR:sim - Unable to find ..\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -    C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\font\font.coe
-ERROR:sim - Unable to find ..\\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -    C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\font\font.coe
-ERROR:sim - Unable to find ..\.\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -    C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\font\font.coe
-ERROR:sim - Unable to find C:\Us\ers\twd2\Desktop\thco\THCOMIPS16e\font\font.coe
-ERROR:sim -    Coregen is looking for
-   C:\Us\ers\twd2\Desktop\thco\THCOMIPS16e\font\font.coe
-ERROR:sim - Unable to find .\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -   
-   C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\ipcore_dir\font\font.coe
-ERROR:sim - Unable to find ..\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -    C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\font\font.coe
-ERROR:sim - Unable to find ..\\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -    C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\font\font.coe
-ERROR:sim - Unable to find ..\.\font\font.coe
-ERROR:sim -    Coregen is looking for
-ERROR:sim -    C:\Users\twd2\Desktop\thco\THCOMIPS16e\sopc\font\font.coe
-ERROR:sim - Unable to find C:\Us\ers\twd2\Desktop\thco\THCOMIPS16e\font\font.coe
-ERROR:sim -    Coregen is looking for
-   C:\Us\ers\twd2\Desktop\thco\THCOMIPS16e\font\font.coe
-Resolving generics for 'font_rom'...
-Applying external generics to 'font_rom'...
-Delivering associated files for 'font_rom'...
-Delivering EJava files for 'font_rom'...
-Generating implementation netlist for 'font_rom'...
-INFO:sim - Pre-processing HDL files for 'font_rom'...
-Running synthesis for 'font_rom'
+Resolving generics for 'graphics_memory'...
+Applying external generics to 'graphics_memory'...
+Delivering associated files for 'graphics_memory'...
+Delivering EJava files for 'graphics_memory'...
+Generating implementation netlist for 'graphics_memory'...
+INFO:sim - Pre-processing HDL files for 'graphics_memory'...
+Running synthesis for 'graphics_memory'
 Running ngcbuild...
-Writing VHO instantiation template for 'font_rom'...
-Writing VHDL behavioral simulation model for 'font_rom'...
+Writing VHO instantiation template for 'graphics_memory'...
+Writing VHDL behavioral simulation model for 'graphics_memory'...
 WARNING:sim - Overwriting existing file
-   C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom/doc/b
-   lk_mem_gen_v7_3_vinfo.html with file from view xilinx_documentation
+   C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memor
+   y/doc/blk_mem_gen_v7_3_vinfo.html with file from view xilinx_documentation
 Delivered 1 file into directory
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom
+C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory
 Generating ASY schematic symbol...
 INFO:sim:949 - Finished generation of ASY schematic symbol.
-Generating SYM schematic symbol for 'font_rom'...
+Generating SYM schematic symbol for 'graphics_memory'...
 Generating metadata file...
-Generating ISE project file for 'font_rom'...
+Generating ISE project file for 'graphics_memory'...
 Generating ISE project...
-XCO file found: font_rom.xco
-XMDF file found: font_rom_xmdf.tcl
+XCO file found: graphics_memory.xco
+XMDF file found: graphics_memory_xmdf.tcl
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom.asy
--view all -origin_type imported
+C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.a
+sy -view all -origin_type imported
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom.ngc
--view all -origin_type created
+C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.n
+gc -view all -origin_type created
 Checking file
-"C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom.ngc"
-for project device match ...
+"C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.
+ngc" for project device match ...
 File
-"C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom.ngc"
-device information matches project device.
+"C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.
+ngc" device information matches project device.
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom.sym
--view all -origin_type imported
+C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.s
+ym -view all -origin_type imported
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom.vhd
--view all -origin_type created
+C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.v
+hd -view all -origin_type created
 INFO:HDLCompiler:1061 - Parsing VHDL file
-   "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom.vhd"
-   into library work
+   "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memo
+   ry.vhd" into library work
 INFO:ProjectMgmt - Parsing design hierarchy completed successfully.
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/font_rom.vho
--view all -origin_type imported
+C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.v
+ho -view all -origin_type imported
 INFO:TclTasksC:2116 - The automatic calculation of top has been turned-off.
    Please set the new top explicitly by running the "project set top" command.
    To re-calculate the new top automatically, set the "Auto Implementation Top"
    property to true.
-Top level has been set to "/font_rom"
+Top level has been set to "/graphics_memory"
 Generating README file...
 Generating FLIST file...
 INFO:sim:948 - Finished FLIST file generation.
 Launching README viewer...
 Moving files to output directory...
 Finished moving files to output directory
-Wrote CGP file for project 'font_rom'.
+Wrote CGP file for project 'graphics_memory'.

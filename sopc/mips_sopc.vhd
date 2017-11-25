@@ -187,9 +187,22 @@ architecture behavioral of mips_sopc is
             -- bus
             GRAPHICS_BUS_REQ: out bus_request_t;
             GRAPHICS_BUS_RES: in bus_response_t;
-            BASE_ADDR: in word_t
+            
+            -- control bus 
+            BUS_REQ: in bus_request_t;
+            BUS_RES: out bus_response_t
         );
     end component;
+    
+    component graphics_memory IS
+      PORT (
+        clka : IN STD_LOGIC;
+        wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+        addra : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+        dina : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+        douta : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+      );
+    END component;
     
     component ps2_controller is
         port
@@ -198,8 +211,9 @@ architecture behavioral of mips_sopc is
             RST: in std_logic;
             PS2_DATA: in std_logic;
             PS2_CLK: in std_logic;
-            OUTPUT_FRAME: out std_logic_vector(7 downto 0);
-            DONE: out std_logic
+        
+            BUS_REQ: in bus_request_t;
+            BUS_RES: out bus_response_t
         );
     end component;
 
@@ -244,7 +258,15 @@ architecture behavioral of mips_sopc is
             
             -- devices
             GPIO_BUS_REQ: out bus_request_t;
-            GPIO_BUS_RES: in bus_response_t
+            GPIO_BUS_RES: in bus_response_t;
+            GRAPHICS_BUS_REQ: out bus_request_t;
+            GRAPHICS_BUS_RES: in bus_response_t;
+            VGA_BUS_REQ: out bus_request_t;
+            VGA_BUS_RES: in bus_response_t;
+            PS2_BUS_REQ: out bus_request_t;
+            PS2_BUS_RES: in bus_response_t;
+            SD_BUS_REQ: out bus_request_t;
+            SD_BUS_RES: in bus_response_t
         );
     end component;
 
@@ -337,10 +359,22 @@ architecture behavioral of mips_sopc is
     signal gpio_bus_res: bus_response_t;
     signal sd_dma_bus_req: bus_request_t;
     signal sd_dma_bus_res: bus_response_t;
+    signal vga_bus_req: bus_request_t;
+    signal vga_bus_res: bus_response_t;
+    signal vga_graphics_bus_req: bus_request_t;
+    signal vga_graphics_bus_res: bus_response_t;
+    signal core_graphics_bus_req: bus_request_t;
+    signal core_graphics_bus_res: bus_response_t;
+    signal graphics_bus_req_2: bus_request_t;
+    signal graphics_bus_res_2: bus_response_t;
     signal graphics_bus_req: bus_request_t;
     signal graphics_bus_res: bus_response_t;
+    signal graphics_wea: std_logic_vector(0 downto 0);
+    signal ps2_bus_req: bus_request_t;
+    signal ps2_bus_res: bus_response_t;
+    signal sd_bus_req: bus_request_t;
+    signal sd_bus_res: bus_response_t;
 
-    signal wea: std_logic_vector(0 downto 0);
     signal sd_dbg: std_logic_vector(3 downto 0);
     
     signal core_testen: std_logic;
@@ -511,13 +545,49 @@ begin
         BLUE => BLUE,
 
         -- bus
-        GRAPHICS_BUS_REQ => graphics_bus_req,
-        GRAPHICS_BUS_RES => graphics_bus_res,
-        BASE_ADDR => (others => '0')
+        GRAPHICS_BUS_REQ => vga_graphics_bus_req,
+        GRAPHICS_BUS_RES => vga_graphics_bus_res,
+        
+        BUS_REQ => vga_bus_req,
+        BUS_RES => vga_bus_res
+    );
+    --vga_graphics_bus_res.done <= '1';
+    --vga_graphics_bus_res.data <= vga_graphics_bus_req.addr;
+    
+    graphics_memory_inst: graphics_memory
+    port map
+    (
+        clka => not CLK,
+        wea => graphics_wea,
+        addra => graphics_bus_req.addr(11 downto 0),
+        dina => graphics_bus_req.data,
+        douta => graphics_bus_res.data
+    );
+
+    graphics_wea(0) <= graphics_bus_req.en and graphics_bus_req.nread_write;
+    graphics_bus_res.grant <= '1';
+    graphics_bus_res.done <= '1';
+    graphics_bus_res.tlb_miss <= '0';
+    graphics_bus_res.page_fault <= '0';
+    graphics_bus_res.error <= '0';
+    
+    graphics_bus_arbiter: bus_arbiter
+    port map
+    (
+        -- hosts (2 > 1 > 0)
+        BUS_REQ_0 => core_graphics_bus_req,
+        BUS_RES_0 => core_graphics_bus_res,
+        BUS_REQ_1 => vga_graphics_bus_req,
+        BUS_RES_1 => vga_graphics_bus_res,
+        BUS_REQ_2 => graphics_bus_req_2,
+        BUS_RES_2 => graphics_bus_res_2,
+        
+        -- device
+        BUS_REQ => graphics_bus_req,
+        BUS_RES => graphics_bus_res
     );
     
-    graphics_bus_res.data <= graphics_bus_req.addr;
-    graphics_bus_res.done <= '1';
+    graphics_bus_req_2.en <= '0';
     
     ps2_controller_inst: ps2_controller
     port map
@@ -526,8 +596,9 @@ begin
         RST => RST,
         PS2_DATA => PS2_DATA,
         PS2_CLK => PS2_CLK,
-        OUTPUT_FRAME => ps2_frame,
-        DONE => ps2_done
+        
+        BUS_REQ => ps2_bus_req,
+        BUS_RES => ps2_bus_res
     );
 
     ins_bus_dispatcher_inst: ins_bus_dispatcher
@@ -569,7 +640,15 @@ begin
         
         -- devices
         GPIO_BUS_REQ => gpio_bus_req,
-        GPIO_BUS_RES => gpio_bus_res
+        GPIO_BUS_RES => gpio_bus_res,
+        GRAPHICS_BUS_REQ => core_graphics_bus_req,
+        GRAPHICS_BUS_RES => core_graphics_bus_res,
+        VGA_BUS_REQ => vga_bus_req,
+        VGA_BUS_RES => vga_bus_res,
+        PS2_BUS_REQ => ps2_bus_req,
+        PS2_BUS_RES => ps2_bus_res,
+        SD_BUS_REQ => sd_bus_req,
+        SD_BUS_RES => sd_bus_res
     );
     
     extbus_arbiter: bus_arbiter

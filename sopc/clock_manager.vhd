@@ -7,11 +7,11 @@
 -- \   \   \/     Version : 14.7
 --  \   \         Application : xaw2vhdl
 --  /   /         Filename : clock_manager.vhd
--- /___/   /\     Timestamp : 11/21/2017 23:51:48
+-- /___/   /\     Timestamp : 11/25/2017 00:30:45
 -- \   \  /  \ 
 --  \___\/\___\ 
 --
---Command: xaw2vhdl-intstyle C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/clock_manager.xaw -st clock_manager.vhd
+--Command: xaw2vhdl-intstyle G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/clock_manager.xaw -st clock_manager.vhd
 --Design Name: clock_manager
 --Device: xc3s1200e-4fg320
 --

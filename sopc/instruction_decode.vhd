@@ -49,6 +49,8 @@ architecture behavioral of instruction_decode is
     signal read_addr_0_buff, read_addr_1_buff: reg_addr_t;
     signal read_en_0_buff, read_en_1_buff: std_logic;
     
+    signal store_after_load_buff: std_logic;
+    
     -- for branch instrutions
     signal reg_0_eq_0: std_logic;
     signal b_pc, cb_pc: word_t;
@@ -82,7 +84,7 @@ begin
     READ_ADDR_1 <= read_addr_1_buff;
     
     process(RST, INS, op_buff, rx, ry, rz, PC, READ_DATA_0, READ_DATA_1, T, SP, DS,
-            reg_0_eq_0,
+            reg_0_eq_0, store_after_load_buff,
             imm4se, imm5se, imm8se, imm8ze, imm11se)
     begin
         if RST = '1' then
@@ -132,7 +134,6 @@ begin
             MEM.mem_en <= '0';
             MEM.mem_write_en <= 'X';
             MEM.write_mem_data <= (others => 'X');
-            MEM.sw_after_load <= '0';
             WB.write_en <= '0';
             WB.write_addr <= (others => 'X');
             WB.write_data <= (others => 'X');
@@ -149,8 +150,10 @@ begin
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => 'X');
             IS_LOAD <= '0';
+            
+            store_after_load_buff <= '0';
+            MEM.sw_after_load <= store_after_load_buff;
 
-            -- TODO
             case op_buff is
                 when "00010" => -- b
                     read_en_0_buff <= '0';
@@ -342,7 +345,7 @@ begin
                     MEM.mem_write_en <= '1';
                     MEM.write_mem_data <= READ_DATA_1;
                     if EX_IS_LOAD = '1' and EX_WRITE_ADDR = read_addr_1_buff then
-                        MEM.sw_after_load <= '1';
+                        store_after_load_buff <= '1';
                     end if;
                 when "11010" => -- swsp
                     read_en_1_buff <= '0';
@@ -353,7 +356,7 @@ begin
                     MEM.mem_write_en <= '1';
                     MEM.write_mem_data <= READ_DATA_0;
                     if EX_IS_LOAD = '1' and EX_WRITE_ADDR = read_addr_0_buff then
-                        MEM.sw_after_load <= '1';
+                        store_after_load_buff <= '1';
                     end if;
                 when others =>
             end case;
@@ -361,7 +364,7 @@ begin
     end process;
 
     -- load hazard
-    STALL_REQ <= '1' when EX_IS_LOAD = '1' and MEM.sw_after_load = '0' and
+    STALL_REQ <= '1' when EX_IS_LOAD = '1' and store_after_load_buff = '0' and
                           ((read_en_0_buff = '1' and EX_WRITE_ADDR = read_addr_0_buff) or
                            (read_en_1_buff = '1' and EX_WRITE_ADDR = read_addr_1_buff)) else '0';
                           -- TODO: check zero reg here?
