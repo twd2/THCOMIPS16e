@@ -41,3 +41,6 @@ NOP
 * [x] SD card boot
 * [ ] SD card read/write
 
+## Note
+
+*Because this is a course project, any plagiarism will be reported to the professor and TAs.*
