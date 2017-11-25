@@ -61,6 +61,7 @@ architecture behavioral of sd_controller is
 
     -- data length
     constant CMD_BITS: integer := 48;
+    constant BYTE_BITS: integer := 8;
     constant R1_BITS: integer := 8;
     constant DWORD_BUFF_BITS: integer := 32;
     constant SECTOR_SIZE: integer := 512;
@@ -82,7 +83,8 @@ architecture behavioral of sd_controller is
                      st_cmd17_req, st_cmd17_res, st_cmd17_r1,
                      st_cmd17_read_token, st_cmd17_read_data, st_cmd17_read_crc,
                      st_cmd17_write_ram, st_cmd17_write_ram_done, st_cmd17_done,
-                     st_wait_spi, st_send_cmd, st_read_wait, st_read_byte, st_read_4_bytes,
+                     st_wait_spi, st_send_cmd, st_send_byte,
+                     st_read_wait, st_read_byte, st_read_4_bytes,
                      st_finish_delay,
                      st_reject, st_done);
 
@@ -474,6 +476,23 @@ begin
                         sd_sclk_buff <= '1';
                     end if;
                     if counter = (CMD_BITS * 2) - 1 then
+                        wait_return_state <= cmd_return_state;
+                        current_state <= st_wait_spi;
+                        counter <= 0;
+                    else
+                        wait_return_state <= st_send_cmd;
+                        current_state <= st_wait_spi;
+                        counter <= counter + 1;
+                    end if;
+                -- send a byte
+                when st_send_byte =>
+                    if counter mod 2 = 0 then
+                        SD_MOSI <= byte_buff(BYTE_BITS - 1 - counter / 2);
+                        sd_sclk_buff <= '0';
+                    else
+                        sd_sclk_buff <= '1';
+                    end if;
+                    if counter = (BYTE_BITS * 2) - 1 then
                         wait_return_state <= cmd_return_state;
                         current_state <= st_wait_spi;
                         counter <= 0;
