@@ -375,7 +375,7 @@ begin
             base_addr <= (others => '0');
             base_addr_hi <= (others => '0');
             cursor_pos <= (others => '0');
-            cursor_counter_limit <= (others => '0');
+            cursor_counter_limit <= x"001D";
         elsif rising_edge(WR_CLK) then
             if BUS_REQ.en = '1' and BUS_REQ.nread_write = '1' then
                 case BUS_REQ.addr(1 downto 0) is

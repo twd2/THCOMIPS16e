@@ -2,6 +2,7 @@
 _xmsgs\pn_parser.xmsgs
 graphics_memory.asy
 graphics_memory.gise
+graphics_memory.mif
 graphics_memory.ngc
 graphics_memory.sym
 graphics_memory.vhd
