@@ -22,7 +22,7 @@ NGCBUILD Design Results Summary:
   Number of errors:     0
   Number of warnings:   0
 
-Total memory usage is 188376 kilobytes
+Total memory usage is 188352 kilobytes
 
 Writing NGC file "G:/Program/cpld_fpga/THCOMIPS16e/sopc/mips_sopc_cs.ngc" ...
 Total REAL time to NGCBUILD completion:  2 sec

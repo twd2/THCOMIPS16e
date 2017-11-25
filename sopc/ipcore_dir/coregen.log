@@ -1,5 +1,11 @@
 INFO:sim:172 - Generating IP...
+Applying current project options...
+Finished applying current project options.
+WARNING:sim - A core named 'graphics_memory' already exists in the project.
+   Output products for this core may be overwritten.
 Resolving generics for 'graphics_memory'...
+WARNING:sim - A core named 'graphics_memory' already exists in the project.
+   Output products for this core may be overwritten.
 Applying external generics to 'graphics_memory'...
 Delivering associated files for 'graphics_memory'...
 Delivering EJava files for 'graphics_memory'...
@@ -10,43 +16,43 @@ Running ngcbuild...
 Writing VHO instantiation template for 'graphics_memory'...
 Writing VHDL behavioral simulation model for 'graphics_memory'...
 WARNING:sim - Overwriting existing file
-   C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memor
-   y/doc/blk_mem_gen_v7_3_vinfo.html with file from view xilinx_documentation
+   G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory/doc/
+   blk_mem_gen_v7_3_vinfo.html with file from view xilinx_documentation
 Delivered 1 file into directory
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory
+G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory
 Generating ASY schematic symbol...
 INFO:sim:949 - Finished generation of ASY schematic symbol.
 Generating SYM schematic symbol for 'graphics_memory'...
 Generating metadata file...
-Generating ISE project file for 'graphics_memory'...
+Regenerating ISE project file for 'graphics_memory'...
 Generating ISE project...
 XCO file found: graphics_memory.xco
 XMDF file found: graphics_memory_xmdf.tcl
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.a
-sy -view all -origin_type imported
+G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.asy
+-view all -origin_type imported
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.n
-gc -view all -origin_type created
+G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.ngc
+-view all -origin_type created
 Checking file
-"C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.
-ngc" for project device match ...
+"G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.ngc"
+for project device match ...
 File
-"C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.
-ngc" device information matches project device.
+"G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.ngc"
+device information matches project device.
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.s
-ym -view all -origin_type imported
+G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.sym
+-view all -origin_type imported
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.v
-hd -view all -origin_type created
+G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.vhd
+-view all -origin_type created
 INFO:HDLCompiler:1061 - Parsing VHDL file
-   "C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memo
-   ry.vhd" into library work
+   "G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.vhd
+   " into library work
 INFO:ProjectMgmt - Parsing design hierarchy completed successfully.
 Adding
-C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.v
-ho -view all -origin_type imported
+G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/tmp/_cg/graphics_memory.vho
+-view all -origin_type imported
 INFO:TclTasksC:2116 - The automatic calculation of top has been turned-off.
    Please set the new top explicitly by running the "project set top" command.
    To re-calculate the new top automatically, set the "Auto Implementation Top"

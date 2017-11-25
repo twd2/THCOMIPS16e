@@ -180,6 +180,7 @@ begin
                 BLUE <= (others => '0');
             end if;
             
+            -- sample cursor_counter_limit from clock domain WR_CLK
             cursor_counter_limit_buff1 <= cursor_counter_limit;
             cursor_counter_limit_buff2 <= cursor_counter_limit_buff1;
             
@@ -333,7 +334,26 @@ begin
         fore_color => font_fore_color,
         back_color => font_back_color
     );
- 
+
+    -- sample show_cursor from clock domain VGA_CLK
+    process(WR_CLK, RST)
+    begin
+        if RST = '1' then
+            show_cursor_buff <= (others => '0');
+        elsif rising_edge(WR_CLK) then
+            show_cursor_buff <= show_cursor_buff(0) & show_cursor;
+        end if;
+    end process;
+
+    process(tasks)
+    begin
+        if (tasks(1).char_col = cursor_pos(7 downto 0)) and (tasks(1).char_row = cursor_pos(15 downto 8)) then
+            at_cursor <= show_cursor_buff(1);
+        else
+            at_cursor <= '0';
+        end if;
+    end process;
+
     process(tasks)
     begin
         if (font_pixel xor at_cursor) = '1' then
@@ -375,7 +395,7 @@ begin
             base_addr <= (others => '0');
             base_addr_hi <= (others => '0');
             cursor_pos <= (others => '0');
-            cursor_counter_limit <= (others => '0');
+            cursor_counter_limit <= x"001D";
         elsif rising_edge(WR_CLK) then
             if BUS_REQ.en = '1' and BUS_REQ.nread_write = '1' then
                 case BUS_REQ.addr(1 downto 0) is
@@ -390,24 +410,6 @@ begin
                     when others =>
                 end case;
             end if;
-        end if;
-    end process;
-    
-    process(WR_CLK, RST)
-    begin
-        if RST = '1' then
-            show_cursor_buff <= (others => '0');
-        elsif rising_edge(WR_CLK) then
-            show_cursor_buff <= show_cursor_buff(0) & show_cursor;
-        end if;
-    end process;
-    
-    process(tasks)
-    begin
-        if (tasks(1).char_col = cursor_pos(7 downto 0)) and (tasks(1).char_row = cursor_pos(15 downto 8)) then
-            at_cursor <= show_cursor_buff(1);
-        else
-            at_cursor <= '0';
         end if;
     end process;
 end;

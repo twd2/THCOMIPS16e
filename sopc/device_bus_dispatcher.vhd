@@ -65,6 +65,12 @@ begin
             GRAPHICS_BUS_REQ.en <= '0';
             VGA_BUS_REQ.en <= '0';
             SD_BUS_REQ.en <= '0';
+        elsif BUS_REQ.addr(word_msb downto 3) = x"E00" & "1" then
+            BUS_RES <= SD_BUS_RES;
+            GPIO_BUS_REQ.en <= '0';
+            GRAPHICS_BUS_REQ.en <= '0';
+            VGA_BUS_REQ.en <= '0';
+            PS2_BUS_REQ.en <= '0';
         else
             BUS_RES <= GPIO_BUS_RES;
             GPIO_BUS_REQ.en <= '0';

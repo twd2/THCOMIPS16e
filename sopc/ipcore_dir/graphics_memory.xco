@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 14.7
-# Date: Fri Nov 24 02:05:46 2017
+# Date: Sat Nov 25 16:59:48 2017
 #
 ##############################################################
 #
@@ -46,7 +46,7 @@ CSET axi_id_width=4
 CSET axi_slave_type=Memory_Slave
 CSET axi_type=AXI4_Full
 CSET byte_size=9
-CSET coe_file=no_coe_file_loaded
+CSET coe_file=G:\Program\cpld_fpga\THCOMIPS16e\sopc\boot.coe
 CSET collision_warnings=ALL
 CSET component_name=graphics_memory
 CSET disable_collision_warnings=false
@@ -59,7 +59,7 @@ CSET enable_b=Always_Enabled
 CSET error_injection_type=Single_Bit_Error_Injection
 CSET fill_remaining_memory_locations=true
 CSET interface_type=Native
-CSET load_init_file=false
+CSET load_init_file=true
 CSET mem_file=no_Mem_file_loaded
 CSET memory_type=Single_Port_RAM
 CSET operating_mode_a=WRITE_FIRST
@@ -105,4 +105,4 @@ CSET write_width_b=16
 MISC pkg_timestamp=2012-11-19T16:22:25Z
 # END Extra information
 GENERATE
-# CRC: ea9e3ec5
+# CRC:  caf927a
