@@ -139,8 +139,11 @@ architecture behavioral of mips_sopc is
             CLK: in std_logic;
             RST: in std_logic;
 
-            BUS_REQ: out bus_request_t;
-            BUS_RES: in bus_response_t;
+            DMA_BUS_REQ: out bus_request_t;
+            DMA_BUS_RES: in bus_response_t;
+            
+            BUS_REQ: in bus_request_t;
+            BUS_RES: out bus_response_t;
 
             SD_nCS: out std_logic; -- SD_NCS, SD_DATA3_CD
             SD_SCLK: out std_logic; -- SD_CLK
@@ -149,7 +152,9 @@ architecture behavioral of mips_sopc is
 
             DONE: out std_logic;
             REJECTED: out std_logic;
-            DBG: out std_logic_vector(3 downto 0)
+            DBG: out std_logic_vector(3 downto 0);
+            
+            IRQ: out std_logic
         );
     end component;
     
@@ -503,8 +508,11 @@ begin
         CLK => CLK,
         RST => RST,
 
-        BUS_REQ => sd_dma_bus_req,
-        BUS_RES => sd_dma_bus_res,
+        DMA_BUS_REQ => sd_dma_bus_req,
+        DMA_BUS_RES => sd_dma_bus_res,
+        
+        BUS_REQ => sd_bus_req,
+        BUS_RES => sd_bus_res,
 
         SD_nCS => SD_nCS,
         SD_SCLK => SD_SCLK,

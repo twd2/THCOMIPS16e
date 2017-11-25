@@ -38,8 +38,11 @@ entity sd_controller is
         CLK: in std_logic;
         RST: in std_logic;
 
-        BUS_REQ: out bus_request_t;
-        BUS_RES: in bus_response_t;
+        DMA_BUS_REQ: out bus_request_t;
+        DMA_BUS_RES: in bus_response_t;
+        
+        BUS_REQ: in bus_request_t;
+        BUS_RES: out bus_response_t;
 
         SD_nCS: out std_logic; -- SD_NCS, SD_DATA3_CD
         SD_SCLK: out std_logic; -- SD_CLK
@@ -48,7 +51,9 @@ entity sd_controller is
 
         DONE: out std_logic;
         REJECTED: out std_logic;
-        DBG: out std_logic_vector(3 downto 0)
+        DBG: out std_logic_vector(3 downto 0);
+        
+        IRQ: out std_logic
     );
 end;
 
@@ -102,7 +107,7 @@ architecture behavioral of sd_controller is
     signal counter: integer range 0 to 255; -- >= max(DUMMY_CLOCKS, CMD_BITS) * 2 - 1
     signal byte_counter: integer range 0 to SECTOR_SIZE - 1;
     signal retry_counter: integer range 0 to MAX_RETRY - 1; -- TODO: retry
-    signal sector_counter: integer range 0 to RAM_SIZE / SECTOR_SIZE - 1;
+    signal sector_counter: integer range 0 to integer'high;
 
     signal sd_sclk_buff: std_logic;
 
@@ -124,17 +129,17 @@ architecture behavioral of sd_controller is
     
     signal booted: std_logic;
     
+    signal last_state: state_t;
+    
     -- registers
+    signal irq_buff: std_logic;
     signal sector_base: std_logic_vector(31 downto 0);
     signal ram_base: std_logic_vector(31 downto 0);
+    signal sector_count: std_logic_vector(31 downto 0);
 begin
     SD_SCLK <= sd_sclk_buff;
 
     packet <= "01" & conv_std_logic_vector(cmd, 6) & arg & crc & "1";
-
-    -- TODO
-    sector_base <= (others => '0');
-    ram_base <= (others => '0');
 
     sector_as_arg_process:
     process(sector_counter, is_sdhc)
@@ -171,10 +176,10 @@ begin
             finish_delay <= '1';
             sector_counter <= 0;
             byte_counter <= 0;
-            BUS_REQ.en <= '1';
-            BUS_REQ.nread_write <= '0';
-            BUS_REQ.byte_mask <= (others => '1');
-            BUS_REQ.addr <= (others => '0');
+            DMA_BUS_REQ.en <= '1';
+            DMA_BUS_REQ.nread_write <= '0';
+            DMA_BUS_REQ.byte_mask <= (others => '1');
+            DMA_BUS_REQ.addr <= (others => '0');
             booted <= '0';
         elsif rising_edge(CLK) then
             case current_state is
@@ -370,7 +375,7 @@ begin
                 when st_cmd16_done =>
                     if byte_buff = R1_NO_ERROR_NO_IDLE then
                         -- SD card is initialized.
-                        current_state <= st_cmd25_req; -- bootloader
+                        current_state <= st_cmd17_req; -- bootloader
                         -- use st_ready to skip bootloader
                     else
                         DBG <= x"6";
@@ -422,10 +427,10 @@ begin
                     word_buff <= byte_buff & word_buff(WORD_WIDTH - 1 downto 8); -- little-endian
                     if byte_counter = SECTOR_SIZE - 1 then
                         -- assert byte_counter mod WORD_SIZE = WORD_SIZE - 1
-                        BUS_REQ.addr <= conv_std_logic_vector(
+                        DMA_BUS_REQ.addr <= conv_std_logic_vector(
                             conv_integer(unsigned(ram_base)) +
                             (sector_counter * SECTOR_SIZE + byte_counter) / WORD_SIZE,
-                            BUS_REQ.addr'length
+                            DMA_BUS_REQ.addr'length
                         );
                         cmd_return_state <= st_cmd17_read_crc;
                         ram_return_state <= st_read_byte;
@@ -433,10 +438,10 @@ begin
                         byte_counter <= 0;
                     else
                         if byte_counter mod WORD_SIZE = WORD_SIZE - 1 then
-                            BUS_REQ.addr <= conv_std_logic_vector(
+                            DMA_BUS_REQ.addr <= conv_std_logic_vector(
                                 conv_integer(unsigned(ram_base)) +
                                 (sector_counter * SECTOR_SIZE + byte_counter) / WORD_SIZE,
-                                BUS_REQ.addr'length
+                                DMA_BUS_REQ.addr'length
                             );
                             cmd_return_state <= st_cmd17_read_data;
                             ram_return_state <= st_read_byte;
@@ -448,18 +453,18 @@ begin
                         byte_counter <= byte_counter + 1;
                     end if;
                 when st_cmd17_write_ram =>
-                    BUS_REQ.en <= '1';
-                    BUS_REQ.nread_write <= '1';
-                    BUS_REQ.data <= word_buff;
+                    DMA_BUS_REQ.en <= '1';
+                    DMA_BUS_REQ.nread_write <= '1';
+                    DMA_BUS_REQ.data <= word_buff;
                     current_state <= st_cmd17_write_ram_done;
                 when st_cmd17_write_ram_done =>
-                    if BUS_RES.done = '1' then
+                    if DMA_BUS_RES.done = '1' then
                         if booted = '1' then
-                            BUS_REQ.en <= '0';
+                            DMA_BUS_REQ.en <= '0';
                         else
                             -- keep BUS_REQ.en = '1' to block Instruction Fetch
                         end if;
-                        BUS_REQ.nread_write <= '0';
+                        DMA_BUS_REQ.nread_write <= '0';
                         current_state <= ram_return_state;
                     end if;
                 when st_cmd17_read_crc =>
@@ -476,7 +481,7 @@ begin
                     end if;
                 when st_cmd17_done =>
                     -- next sector
-                    if sector_counter = RAM_SIZE / SECTOR_SIZE - 1 then
+                    if sector_counter = sector_count - 1 then
                         current_state <= st_ready;
                         sector_counter <= 0;
                     else
@@ -514,18 +519,18 @@ begin
                     current_state <= st_send_byte;
                     byte_counter <= 0;
                 when st_cmd25_read_ram =>
-                    BUS_REQ.addr <= conv_std_logic_vector(
+                    DMA_BUS_REQ.addr <= conv_std_logic_vector(
                         conv_integer(unsigned(ram_base)) +
                         (sector_counter * SECTOR_SIZE + byte_counter) / WORD_SIZE,
-                        BUS_REQ.addr'length
+                        DMA_BUS_REQ.addr'length
                     );
-                    BUS_REQ.en <= '1';
-                    BUS_REQ.nread_write <= '0';
+                    DMA_BUS_REQ.en <= '1';
+                    DMA_BUS_REQ.nread_write <= '0';
                     current_state <= st_cmd25_read_ram_done;
                 when st_cmd25_read_ram_done =>
-                    if BUS_RES.done = '1' then
-                        BUS_REQ.en <= '0';
-                        word_buff <= BUS_RES.data;
+                    if DMA_BUS_RES.done = '1' then
+                        DMA_BUS_REQ.en <= '0';
+                        word_buff <= DMA_BUS_RES.data;
                         current_state <= st_cmd25_send_data;
                     end if;
                 when st_cmd25_send_data =>
@@ -569,7 +574,7 @@ begin
                     end if;
                 when st_cmd25_next =>
                     -- next sector
-                    if sector_counter = RAM_SIZE / SECTOR_SIZE - 1 then
+                    if sector_counter = sector_count - 1 then
                         -- send stop
                         byte_buff <= CMD25_STOP_TOKEN;
                         cmd_return_state <= st_cmd25_send_stop;
@@ -733,9 +738,20 @@ begin
                 ------------------------------------------------------------------------------
                 when st_reject => -- do nothing
                 when st_done => -- do nothing
-                    BUS_REQ.en <= '0';
                 when st_ready =>
+                    DMA_BUS_REQ.en <= '0';
                     booted <= '1';
+                    if BUS_REQ.en = '1' and BUS_REQ.nread_write = '1' then
+                        if BUS_REQ.addr(2 downto 0) = "111" then
+                            case BUS_REQ.data is
+                                when x"0001" => -- read
+                                    current_state <= st_cmd17_req;
+                                when x"0002" =>
+                                    current_state <= st_cmd25_req;
+                                when others =>
+                            end case;
+                        end if;
+                    end if;
                 when others =>
                     current_state <= st_poweron_wait;
                     wait_counter <= 0;
@@ -775,4 +791,78 @@ begin
             end if;
         end if;
     end process;
+
+    -- registers
+    
+    BUS_RES.grant <= '1';
+    BUS_RES.done <= '1';
+    BUS_RES.tlb_miss <= '0';
+    BUS_RES.page_fault <= '0';
+    BUS_RES.error <= '0';
+
+    read_proc:
+    process(BUS_REQ, sector_base, ram_base, sector_count, irq_buff)
+    begin
+        case BUS_REQ.addr(2 downto 0) is
+            when "000" =>
+                BUS_RES.data <= sector_base(15 downto 0);
+            when "001" =>
+                BUS_RES.data <= sector_base(31 downto 16);
+            when "010" =>
+                BUS_RES.data <= ram_base(15 downto 0);
+            when "011" =>
+                BUS_RES.data <= ram_base(31 downto 16);
+            when "100" =>
+                BUS_RES.data <= sector_count(15 downto 0);
+            when "101" =>
+                BUS_RES.data <= sector_count(31 downto 16);
+            when "110" =>
+                BUS_RES.data <= (15 downto 1 => '0') & irq_buff;
+            when "111" =>
+                BUS_RES.data <= (others => '0');
+            when others =>
+                BUS_RES.data <= (others => 'X');
+        end case;
+    end process;
+
+    write_proc:
+    process(CLK, RST)
+    begin
+        if RST = '1' then
+            sector_base <= (others => '0');
+            ram_base <= (others => '0');
+            sector_count <= conv_std_logic_vector(RAM_SIZE / SECTOR_SIZE, sector_count'length);
+            irq_buff <= '0';
+            last_state <= st_poweron_wait;
+        elsif rising_edge(CLK) then
+            if BUS_REQ.en = '1' and BUS_REQ.nread_write = '1' then
+                case BUS_REQ.addr(2 downto 0) is
+                    when "000" =>
+                        sector_base(15 downto 0) <= BUS_REQ.data;
+                    when "001" =>
+                        sector_base(31 downto 16) <= BUS_REQ.data;
+                    when "010" =>
+                        ram_base(15 downto 0) <= BUS_REQ.data;
+                    when "011" =>
+                        ram_base(31 downto 16) <= BUS_REQ.data;
+                    when "100" =>
+                        sector_count(15 downto 0) <= BUS_REQ.data;
+                    when "101" =>
+                        sector_count(31 downto 16) <= BUS_REQ.data;
+                    when "110" =>
+                        if BUS_REQ.data(0) = '1' then
+                            irq_buff <= '0'; -- write 1 to clear
+                        end if;
+                    when others =>
+                end case;
+            end if;
+            
+            if current_state = st_ready and last_state /= st_ready then
+                irq_buff <= '1';
+            end if;
+            last_state <= current_state;
+        end if;
+    end process;
+
+    IRQ <= irq_buff;
 end;
