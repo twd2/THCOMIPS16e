@@ -71,6 +71,8 @@ architecture behavioral of sd_controller is
     constant R1_NO_ERROR_IDLE: std_logic_vector(7 downto 0) := x"01";
     constant R1_ILLIGAL_CMD_IDLE: std_logic_vector(7 downto 0) := x"05";
     constant R1_NO_ERROR_NO_IDLE: std_logic_vector(7 downto 0) := x"00";
+    constant CMD25_DATA_TOKEN: std_logic_vector(7 downto 0) := x"FC";
+    constant CMD25_STOP_TOKEN: std_logic_vector(7 downto 0) := x"FD";
 
     -- :-)
     type state_t is (st_poweron_wait, st_dummy_clock,
@@ -83,12 +85,16 @@ architecture behavioral of sd_controller is
                      st_cmd17_req, st_cmd17_res, st_cmd17_r1,
                      st_cmd17_read_token, st_cmd17_read_data, st_cmd17_read_crc,
                      st_cmd17_write_ram, st_cmd17_write_ram_done, st_cmd17_done,
-                     st_wait_spi, st_send_cmd, st_send_byte,
+                     st_cmd25_req, st_cmd25_res, st_cmd25_r1,
+                     st_cmd25_send_token, st_cmd25_send_data, st_cmd25_send_crc,
+                     st_cmd25_read_data_res, st_cmd25_read_data_res2,
+                     st_cmd25_next, st_cmd25_send_stop, st_cmd25_done,
+                     st_wait_spi, st_send_cmd, st_send_byte, st_wait_busy,
                      st_read_wait, st_read_byte, st_read_4_bytes,
                      st_finish_delay,
                      st_reject, st_done);
 
-    signal current_state, wait_return_state, cmd_return_state, ram_return_state: state_t;
+    signal current_state, wait_return_state, wait_busy_return_state, cmd_return_state, ram_return_state: state_t;
 
     -- wait_counter ranged 0 to max(SPI_WAIT_CYCLES, POWERON_WAIT_CYCLES) - 1
     signal wait_counter: integer range 0 to POWERON_WAIT_CYCLES - 1;
@@ -351,13 +357,13 @@ begin
                     current_state <= st_read_wait;
                 when st_cmd16_done =>
                     if byte_buff = R1_NO_ERROR_NO_IDLE then
-                        current_state <= st_cmd17_req;
+                        current_state <= st_cmd25_req;
                     else
                         DBG <= x"6";
                         current_state <= st_reject;
                     end if;
                 ------------------------------------------------------------------------------
-                -- Bootloader: CMD17 READ_SINGLE_BLOCK
+                -- Reader: CMD17 READ_SINGLE_BLOCK
                 when st_cmd17_req =>
                     SD_nCS <= '0';
                     cmd <= 17;
@@ -458,6 +464,93 @@ begin
                         current_state <= st_cmd17_req;
                     end if;
                 ------------------------------------------------------------------------------
+                -- Reader: CMD25 WRITE_MULTIPLE_BLOCK
+                when st_cmd25_req =>
+                    SD_nCS <= '0';
+                    cmd <= 25;
+                    arg <= sector_as_arg;
+                    crc <= "1111111"; -- actually, don't care
+                    cmd_return_state <= st_cmd25_res;
+                    current_state <= st_send_cmd;
+                    counter <= 0;
+                when st_cmd25_res =>
+                    finish_delay <= '0';
+                    cmd_return_state <= st_cmd25_r1;
+                    current_state <= st_read_wait;
+                when st_cmd25_r1 =>
+                    DBG <= x"C";
+                    if byte_buff = R1_NO_ERROR_NO_IDLE then
+                        -- current_state <= st_cmd25_send_token;
+                        byte_buff <= x"FF";
+                        cmd_return_state <= st_cmd25_send_token;
+                        current_state <= st_send_byte;
+                    else
+                        DBG <= x"7";
+                        current_state <= st_reject;
+                    end if;
+                when st_cmd25_send_token =>
+                    byte_buff <= CMD25_DATA_TOKEN;
+                    cmd_return_state <= st_cmd25_send_data;
+                    current_state <= st_send_byte;
+                    byte_counter <= 0;
+                when st_cmd25_send_data =>
+                    if byte_counter mod 2 = 0 then
+                        byte_buff <= x"55";
+                    else
+                        byte_buff <= x"AA";
+                    end if;
+                    if byte_counter = SECTOR_SIZE - 1 then
+                        cmd_return_state <= st_cmd25_send_crc;
+                        current_state <= st_send_byte;
+                        byte_counter <= 0;
+                    else
+                        cmd_return_state <= st_cmd25_send_data;
+                        current_state <= st_send_byte;
+                        byte_counter <= byte_counter + 1;
+                    end if;
+                when st_cmd25_send_crc =>
+                    byte_buff <= x"FF"; -- don't care
+                    if byte_counter = 2 - 1 then
+                        cmd_return_state <= st_cmd25_read_data_res;
+                        current_state <= st_send_byte;
+                        byte_counter <= 0;
+                    else
+                        cmd_return_state <= st_cmd25_send_crc;
+                        current_state <= st_send_byte;
+                        byte_counter <= byte_counter + 1;
+                    end if;
+                when st_cmd25_read_data_res =>
+                    cmd_return_state <= st_cmd25_read_data_res2;
+                    current_state <= st_read_byte;
+                when st_cmd25_read_data_res2 =>
+                    DBG <= x"D";
+                    if byte_buff(4 downto 0) = "00101" then
+                        wait_busy_return_state <= st_cmd25_next;
+                        current_state <= st_wait_busy;
+                    else
+                        DBG <= x"2";
+                        current_state <= st_reject;
+                    end if;
+                when st_cmd25_next =>
+                    -- next sector
+                    if sector_counter = RAM_SIZE / SECTOR_SIZE - 1 then
+                        -- send stop
+                        byte_buff <= CMD25_STOP_TOKEN;
+                        cmd_return_state <= st_cmd25_send_stop;
+                        current_state <= st_send_byte;
+                        sector_counter <= 0;
+                    else
+                        sector_counter <= sector_counter + 1;
+                        current_state <= st_cmd25_send_token;
+                    end if;
+                when st_cmd25_send_stop =>
+                    byte_buff <= x"FF"; -- send a dummy byte
+                    wait_busy_return_state <= st_cmd25_done;
+                    cmd_return_state <= st_wait_busy;
+                    current_state <= st_send_byte;
+                when st_cmd25_done =>
+                    DBG <= x"E";
+                ------------------------------------------------------------------------------
                 -- Subroutines --
                 -- delay for low speed SPI.
                 when st_wait_spi =>
@@ -497,9 +590,25 @@ begin
                         current_state <= st_wait_spi;
                         counter <= 0;
                     else
-                        wait_return_state <= st_send_cmd;
+                        wait_return_state <= st_send_byte;
                         current_state <= st_wait_spi;
                         counter <= counter + 1;
+                    end if;
+                -- wait until SD_MISO is high
+                when st_wait_busy =>
+                    if sd_sclk_buff = '0' then
+                        if SD_MISO = '1' then
+                            current_state <= wait_busy_return_state;
+                            counter <= 0;
+                        else
+                            wait_return_state <= st_wait_busy;
+                            current_state <= st_wait_spi;
+                            sd_sclk_buff <= '1';
+                        end if;
+                    else
+                        sd_sclk_buff <= '0';
+                        wait_return_state <= st_wait_busy;
+                        current_state <= st_wait_spi;
                     end if;
                 -- wait until SD_MISO is low, and read a byte from SPI bus
                 when st_read_wait =>
