@@ -22,7 +22,7 @@ entity memory_access is
         BUS_REQ: out bus_request_t;
         BUS_RES: in bus_response_t;
 
-        MEM_WRITE_DATA: out word_t
+        LOADED_DATA: out word_t
     );
 end;
 
@@ -53,7 +53,7 @@ begin
             BUS_REQ.byte_mask <= (others => '0');
             BUS_REQ.en <= '0';
             BUS_REQ.nread_write <= '0';
-            MEM_WRITE_DATA <= (others => '0');
+            LOADED_DATA <= (others => '0');
         else
             STALL_REQ <= '0';
             COMMON_O <= COMMON;
@@ -63,20 +63,19 @@ begin
             BUS_REQ.byte_mask <= (others => 'X');
             BUS_REQ.en <= '0';
             BUS_REQ.nread_write <= 'X';
-            MEM_WRITE_DATA <= (others => '0');
+            LOADED_DATA <= (others => 'X');
             if MEM.mem_en = '1' then
+                BUS_REQ.addr <= MEM.alu_result;
+                BUS_REQ.en <= '1';
                 if MEM.mem_write_en = '0' then
-                    BUS_REQ.addr <= MEM.alu_result;
                     BUS_REQ.byte_mask <= (others => '1'); -- TODO
-                    BUS_REQ.en <= '1';
                     BUS_REQ.nread_write <= '0';
+
                     STALL_REQ <= not BUS_RES.done; -- wait BUS_RES.done
                     WB_O.write_data <= BUS_RES.data;
-                    MEM_WRITE_DATA <= BUS_RES.data;
+                    LOADED_DATA <= BUS_RES.data;
                 else
-                    BUS_REQ.addr <= MEM.alu_result;
                     BUS_REQ.byte_mask <= (others => '1'); -- TODO
-                    BUS_REQ.en <= '1';
                     BUS_REQ.nread_write <= '1';
                     BUS_REQ.data <= MEM.write_mem_data;
                     

@@ -23,7 +23,7 @@ entity execute is
         HI: in word_t;
         LO: in word_t;
 
-        MEM_WRITE_DATA: in word_t;
+        MEM_LOADED_DATA: in word_t;
 
         -- divider interface
         -- data signals
@@ -109,7 +109,7 @@ begin
             MEM_O <= MEM;
             MEM_O.alu_result <= alu_result_buff;
             WB_O <= WB;
-            WB_O.write_data <= MEM_WRITE_DATA when MEM.sw_after_load = '1' else alu_result_buff;
+            WB_O.write_data <= alu_result_buff;
             WB_O.hi_write_en <= '0';
             WB_O.hi_write_data <= (others => 'X');
             WB_O.lo_write_en <= '0';
@@ -121,6 +121,11 @@ begin
             DIV_DIV <= (others => 'X');
             DIV_SIGN <= 'X';
             DIV_EN <= '0';
+            
+            -- FIXME: check zero reg here
+            if MEM.sw_after_load = '1' then
+                MEM_O.write_mem_data <= MEM_LOADED_DATA;
+            end if;
 
             -- TODO(twd2)
         end if;
