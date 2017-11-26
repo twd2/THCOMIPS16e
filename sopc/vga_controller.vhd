@@ -88,6 +88,7 @@ architecture behavorial of vga_controller is
     signal data: std_logic_vector(8 downto 0);
     signal h_counter: std_logic_vector(12 downto 0);
     signal v_counter: std_logic_vector(12 downto 0);
+    signal next_hsync, next_vsync: std_logic;
     signal done_buffer: std_logic_vector(1 downto 0);
     signal next_en, sync: std_logic;
     signal full, almost_full, empty, almost_empty: std_logic;
@@ -136,8 +137,8 @@ begin
     next_en <= '1' when (next_x < h_active) and (next_y < v_active) and RST = '0' else '0';
     
     -- starts at h_active and v_active
-    HSYNC <= '0' when (h_counter >= h_active + h_front_porch) and (h_counter < h_active + h_front_porch + h_sync_pulse) else '1';
-    VSYNC <= '0' when (v_counter >= v_active + v_front_porch) and (v_counter < v_active + v_front_porch + v_sync_pulse) else '1';
+    next_hsync <= '0' when (next_x >= h_active + h_front_porch) and (next_x < h_active + h_front_porch + h_sync_pulse) else '1';
+    next_vsync <= '0' when (next_y >= v_active + v_front_porch) and (next_y < v_active + v_front_porch + v_sync_pulse) else '1';
 
     -- next (x, y)
     process(h_counter, v_counter)
@@ -164,6 +165,9 @@ begin
             GREEN <= (others => '0');
             BLUE <= (others => '0');
             
+            HSYNC <= '0';
+            VSYNC <= '0';
+            
             cursor_counter_limit_buff1 <= (others => '0');
             cursor_counter_limit_buff2 <= (others => '0');
             show_cursor <= '0';
@@ -179,6 +183,9 @@ begin
                 GREEN <= (others => '0');
                 BLUE <= (others => '0');
             end if;
+
+            HSYNC <= next_hsync;
+            VSYNC <= next_vsync;
             
             -- sample cursor_counter_limit from clock domain WR_CLK
             cursor_counter_limit_buff1 <= cursor_counter_limit;
