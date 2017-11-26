@@ -39,7 +39,9 @@ NOP
 * [x] VGA
 * [x] PS/2
 * [x] SD card boot
-* [ ] SD card read/write
+* [x] SD card read/write
+* [ ] Data Segment
+* [ ] Code Segment
 
 ## Note
 
