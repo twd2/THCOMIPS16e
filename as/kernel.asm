@@ -115,9 +115,7 @@ START:
 	LI R0 0x07
 	MTIH R0
 	;初始化栈地址
-	LI R0 0x00BF 
-	SLL R0 R0 8
-	ADDIU R0 0x10					;R0=0xBF10 
+	li r0, 0xc000
 	MTSP R0
 	NOP
 	

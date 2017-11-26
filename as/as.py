@@ -93,6 +93,12 @@ def pseudo_ret(rx='r7'):
     return [['jr', rx]]
 PSEUDO['ret'] = pseudo_ret
 
+def pseudo_jalr(rx='r7', ry='r0'):
+    return [['mfpc', rx],
+            ['addiu', rx, '3'],
+            ['jr', ry]]
+PSEUDO['jalr'] = pseudo_jalr
+
 # define instructions
 
 ACT = {}
@@ -288,7 +294,7 @@ def make__lahi(rx, imm):
     lo = imm & 0xff
     if lo >= 0x80:
         hi += 1
-    return make_li(rx, hi)
+    return make_li(rx, hi & 0xff)
 ACT['_lahi'] = make__lahi
 
 def make__lalo(rx, imm):
@@ -329,6 +335,7 @@ def asm(code):
     # pass 1: build inst list and symbol table
     inst_list = []
     syms = {}
+    extern_syms = set()
     for line in code.split('\n'):
         line = line.split(';')[0].strip()
         if not line:
@@ -340,8 +347,18 @@ def asm(code):
             syms[sym] = len(inst_list)
         else: # inst
             l = list(filter(lambda s: bool(s), line.replace(',', ' ').split(' ')))
-            if l[0].lower() in PSEUDO:
-                inst_list.extend(PSEUDO[l[0].lower()](*l[1:]))
+            inst = l[0].lower()
+            if inst == '.org':
+                org = parse_imm(l[1])
+                inst_list.extend([['nop']] * (org - len(inst_list)))
+            elif inst == '.extern':
+                sym = l[1]
+                if sym in syms:
+                    raise DuplicatedSymbolError(sym)
+                syms[sym] = parse_imm(l[2])
+                extern_syms.add(sym)
+            elif inst in PSEUDO:
+                inst_list.extend(PSEUDO[inst](*l[1:]))
             else:
                 inst_list.append(l)
 
@@ -384,6 +401,10 @@ def asm(code):
     buffer = b''
     for c in mc:
         buffer += struct.pack('<H', c) # little-endian
+    
+    for sym in extern_syms:
+        syms.pop(sym)
+
     return buffer, syms
 
 def main():
@@ -401,7 +422,7 @@ def main():
             f.write(bytes([0] * (4096 - len(buffer))))
     with open(out_filename + '.sym', 'w', encoding='utf-8') as f:
         for k, v in sorted(syms.items(), key=lambda t: t[1]):
-            f.write('0x{:04x} {}\n'.format(v, k))
+            f.write('.extern {}, 0x{:04x}\n'.format(k, v))
 
 if __name__ == '__main__':
     main()
