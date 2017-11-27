@@ -1,8 +1,12 @@
 ; r0 data
-li r4, 0xEFFC ; vga control
-lw r4, r1, 2 ; cursor addr
-lw r4, r2, 3 ; cursor row
-lw r4, r3, 4 ; cursor col
+li r4, 0xEFFB ; vga control
+lw r4, r1, 0 ; cursor addr
+lw r4, r3, 3 ; cursor pos
+li r2, 0xFF00
+and r2, r3
+sra r2, r2, 4 ; cursor row
+li r4, 0xFF
+and r3, r4 ; cursor col
 li r4, 0xf000 ; graphics memory base
 li r5, 0x0700 ; color
 
@@ -57,7 +61,7 @@ addiu r1, -80
 addiu r2, -1
 move r5, r4
 _loop:
-cmpi r5, -100 
+cmpi r5, -81 ; r5 + 80 <= 0xffff
 bteqz _save
 nop
 lw r5, r6, 80
@@ -67,12 +71,11 @@ b _loop
 nop
 
 _save:
-li r0, 0xEFFC ; vga control
-sw r0, r1, 2 ; cursor addr
-sw r0, r2, 3 ; cursor row
-sw r0, r3, 4 ; cursor col
-li r1, 29
-sw r0, r1, 5 ; cursor_counter_limit
+li r0, 0xEFFB ; vga control
+sw r0, r1, 0 ; cursor addr
+sll r2, r2, 4
+and r2, r3 
+sw r0, r2, 3 ; cursor pos
 
 $:
 b $
