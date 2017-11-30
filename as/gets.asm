@@ -1,3 +1,10 @@
+; global variables
+.extern ctrl_pressed, 0xc000
+.extern alt_pressed, 0xc001
+.extern shift_pressed, 0xc002
+.extern is_extend, 0xc003
+.extern is_break, 0xc004
+
 li r7, 1 ; not done
 
 _ps2_loop:
