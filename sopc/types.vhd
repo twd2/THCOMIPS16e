@@ -83,6 +83,8 @@ package types is
         interrupt_enable: std_logic; -- interrupt enable
         in_except_handler: std_logic;
         interrupt_mask: std_logic_vector(5 downto 0); -- '1' disables interrupt
+        epc: word_t;
+        ecs: word_t;
     end record;
     
     type except_write_cp0_t is record

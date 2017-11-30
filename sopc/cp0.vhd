@@ -16,19 +16,30 @@ entity cp0 is
         WRITE_EN: in std_logic;
         WRITE_ADDR: in cp0_addr_t;
         WRITE_DATA: in word_t;
+ 
+        EX_READ_ADDR: in cp0_addr_t;
+        EX_READ_DATA: out word_t;
+
+        EX_BITS: out cp0_bits_t;
         
-        BITS: out cp0_bits_t;
+        -- mem
+        MEM_WRITE_EN: in std_logic;
+        MEM_WRITE_ADDR: in cp0_addr_t;
+        MEM_WRITE_DATA: in word_t;
         
         EXCEPT_WRITE: in except_write_cp0_t
     );
 end;
 
 architecture behavioral of cp0 is
-    signal cp0_reg: cp0_reg_t;
-    signal read_addr_i, write_addr_i: integer range 0 to cp0_reg_count - 1;
+    signal cp0_reg, ex_cp0_reg: cp0_reg_t;
+    signal read_addr_i, write_addr_i,
+           mem_write_addr_i, ex_read_addr_i: integer range 0 to cp0_reg_count - 1;
 begin
     read_addr_i <= to_integer(unsigned(READ_ADDR));
     write_addr_i <= to_integer(unsigned(WRITE_ADDR));
+    mem_write_addr_i <= to_integer(unsigned(MEM_WRITE_ADDR));
+    ex_read_addr_i <= to_integer(unsigned(EX_READ_ADDR));
 
     read_proc:
     process(cp0_reg, read_addr_i)
@@ -59,7 +70,25 @@ begin
         end if;
     end process;
     
-    BITS.interrupt_enable <= cp0_reg(cp0_addr_status)(cp0_bit_interrupt_enable);
-    BITS.in_except_handler <= cp0_reg(cp0_addr_status)(cp0_bit_in_except_handler);
-    BITS.interrupt_mask <= cp0_reg(cp0_addr_status)(7 downto 2);
+    -- for EX stage
+    
+    forward_proc:
+    process(CLK, RST)
+    begin
+        ex_cp0_reg <= cp0_reg;
+        ex_cp0_reg(write_addr_i) <= WRITE_DATA;
+        ex_cp0_reg(mem_write_addr_i) <= MEM_WRITE_DATA;
+
+        -- override
+        ex_cp0_reg(cp0_addr_status)(15 downto 8) <= (others => '0');
+        ex_cp0_reg(cp0_addr_cause)(15 downto 8) <= (others => '0');
+    end process;
+    
+    EX_BITS.interrupt_enable <= ex_cp0_reg(cp0_addr_status)(cp0_bit_interrupt_enable);
+    EX_BITS.in_except_handler <= ex_cp0_reg(cp0_addr_status)(cp0_bit_in_except_handler);
+    EX_BITS.interrupt_mask <= ex_cp0_reg(cp0_addr_status)(7 downto 2);
+    EX_BITS.epc <= ex_cp0_reg(cp0_addr_epc);
+    EX_BITS.ecs <= ex_cp0_reg(cp0_addr_ecs);
+    
+    EX_READ_DATA <= ex_cp0_reg(ex_read_addr_i);
 end;
