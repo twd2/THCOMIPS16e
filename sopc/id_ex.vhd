@@ -35,6 +35,8 @@ begin
             EX_COMMON.pc <= (others => '0');
             EX_COMMON.op <= (others => '0');
             EX_COMMON.funct <= (others => '0');
+            EX_EX.cp0_read_en <= '0';
+            EX_EX.cp0_read_addr <= (others => 'X');
             EX_EX.alu_op <= alu_nop;
             EX_EX.operand_0 <= (others => '0');
             EX_EX.operand_1 <= (others => '0');
@@ -55,12 +57,17 @@ begin
             EX_WB.sp_write_data <= (others => '0');
             EX_WB.ds_write_en <= '0';
             EX_WB.ds_write_data <= (others => '0');
+            EX_WB.cp0_write_en <= '0';
+            EX_WB.cp0_write_addr <= (others => '0');
+            EX_WB.cp0_write_data <= (others => '0');
             EX_IS_LOAD <= '0';
         elsif rising_edge(CLK) then
             if FLUSH = '1' or STALL(stage_ex downto stage_id) = "01" then
                 EX_COMMON.pc <= (others => '0');
                 EX_COMMON.op <= (others => '0');
                 EX_COMMON.funct <= (others => '0');
+                EX_EX.cp0_read_en <= 'X';
+                EX_EX.cp0_read_addr <= (others => 'X');
                 EX_EX.alu_op <= alu_nop;
                 EX_EX.operand_0 <= (others => 'X');
                 EX_EX.operand_1 <= (others => 'X');
@@ -81,6 +88,9 @@ begin
                 EX_WB.sp_write_data <= (others => 'X');
                 EX_WB.ds_write_en <= '0';
                 EX_WB.ds_write_data <= (others => 'X');
+                EX_WB.cp0_write_en <= '0';
+                EX_WB.cp0_write_addr <= (others => 'X');
+                EX_WB.cp0_write_data <= (others => 'X');
                 EX_IS_LOAD <= '0';
             elsif STALL(stage_ex downto stage_id) = "11" then
                 -- do nothing

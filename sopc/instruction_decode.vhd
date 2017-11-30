@@ -45,6 +45,7 @@ architecture behavioral of instruction_decode is
     signal shamt_buff: word_t;
     signal op_buff: op_t;
     signal imm4se, imm5se, imm8se, imm8ze, imm11se: word_t;
+    signal cp0_addr: cp0_addr_t;
     
     signal read_addr_0_buff, read_addr_1_buff: reg_addr_t;
     signal read_en_0_buff, read_en_1_buff: std_logic;
@@ -59,6 +60,7 @@ begin
     rx <= INS(10 downto 8);
     ry <= INS(7 downto 5);
     rz <= INS(4 downto 2);
+    cp0_addr <= INS(7 downto 5);
     
     process(INS)
     begin
@@ -85,7 +87,8 @@ begin
     
     process(RST, INS, op_buff, rx, ry, rz, PC, READ_DATA_0, READ_DATA_1, T, SP, DS,
             reg_0_eq_0, store_after_load_buff,
-            imm4se, imm5se, imm8se, imm8ze, imm11se)
+            imm4se, imm5se, imm8se, imm8ze, imm11se,
+            cp0_addr)
     begin
         if RST = '1' then
             read_addr_0_buff <= (others => '0');
@@ -95,6 +98,8 @@ begin
             COMMON.pc <= (others => '0');
             COMMON.op <= (others => '0');
             COMMON.funct <= (others => '0');
+            EX.cp0_read_en <= '0';
+            EX.cp0_read_addr <= (others => '0');
             EX.alu_op <= alu_nop;
             EX.operand_0 <= (others => '0');
             EX.operand_1 <= (others => '0');
@@ -116,17 +121,22 @@ begin
             WB.sp_write_data <= (others => '0');
             WB.ds_write_en <= '0';
             WB.ds_write_data <= (others => '0');
+            WB.cp0_write_en <= '0';
+            WB.cp0_write_addr <= (others => '0');
+            WB.cp0_write_data <= (others => '0');
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => '0');
             IS_LOAD <= '0';
         else
             read_addr_0_buff <= rx;
             read_addr_1_buff <= ry;
-            read_en_0_buff <= '1'; -- TODO, for performance
+            read_en_0_buff <= '1';
             read_en_1_buff <= '1';
             COMMON.pc <= PC;
             COMMON.op <= op_buff;
             COMMON.funct <= (others => 'X'); -- TODO
+            EX.cp0_read_en <= '0';
+            EX.cp0_read_addr <= (others => 'X');
             EX.alu_op <= alu_nop;
             EX.operand_0 <= (others => 'X');
             EX.operand_1 <= (others => 'X');
@@ -147,6 +157,9 @@ begin
             WB.sp_write_data <= (others => 'X');
             WB.ds_write_en <= '0';
             WB.ds_write_data <= (others => 'X');
+            WB.cp0_write_en <= '0';
+            WB.cp0_write_addr <= (others => 'X');
+            WB.cp0_write_data <= (others => 'X');
             BRANCH_EN <= '0';
             BRANCH_PC <= (others => 'X');
             IS_LOAD <= '0';
@@ -358,6 +371,24 @@ begin
                     if EX_IS_LOAD = '1' and EX_WRITE_ADDR = read_addr_0_buff then
                         store_after_load_buff <= '1';
                     end if;
+                when "11110" =>
+                    case INS(4 downto 0) is
+                        when "00000" => -- mfc0
+                            read_en_0_buff <= '0';
+                            read_en_1_buff <= '0';
+                            EX.cp0_read_en <= '1';
+                            EX.cp0_read_addr <= cp0_addr;
+                            WB.write_en <= '1';
+                            WB.write_addr <= rx;
+                        when "00001" => --mtc0
+                            read_en_1_buff <= '0';
+                            EX.alu_op <= alu_or;
+                            EX.operand_0 <= READ_DATA_0;
+                            EX.operand_1 <= zero_word;
+                            WB.cp0_write_en <= '1';
+                            WB.cp0_write_addr <= cp0_addr;
+                        when others =>
+                    end case;
                 when others =>
             end case;
         end if;

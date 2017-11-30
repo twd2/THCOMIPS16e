@@ -24,6 +24,10 @@ entity execute is
         LO: in word_t;
 
         MEM_LOADED_DATA: in word_t;
+        
+        -- CP0 interface
+        CP0_READ_ADDR: out cp0_addr_t;
+        CP0_READ_DATA: in word_t;
 
         -- divider interface
         -- data signals
@@ -72,6 +76,8 @@ begin
 
         result => alu_result_buff
     );
+    
+    CP0_READ_ADDR <= EX.cp0_read_addr;
 
     process(RST, alu_result_buff, COMMON, EX, MEM, WB,
             HI, LO, DIV_DONE, DIV_QUOTIENT, DIV_REMAINDER)
@@ -99,6 +105,9 @@ begin
             WB_O.sp_write_data <= (others => '0');
             WB_O.ds_write_en <= '0';
             WB_O.ds_write_data <= (others => '0');
+            WB_O.cp0_write_en <= '0';
+            WB_O.cp0_write_addr <= (others => '0');
+            WB_O.cp0_write_data <= (others => '0');
             DIV_DIVIDEND <= (others => '0');
             DIV_DIV <= (others => '0');
             DIV_SIGN <= '0';
@@ -117,6 +126,7 @@ begin
             WB_O.t_write_data <= alu_result_buff(0);
             WB_O.sp_write_data <= alu_result_buff;
             WB_O.ds_write_data <= alu_result_buff;
+            WB_O.cp0_write_data <= alu_result_buff;
             DIV_DIVIDEND <= (others => 'X');
             DIV_DIV <= (others => 'X');
             DIV_SIGN <= 'X';
@@ -125,6 +135,10 @@ begin
             -- FIXME: check zero reg here
             if MEM.sw_after_load = '1' then
                 MEM_O.write_mem_data <= MEM_LOADED_DATA;
+            end if;
+            
+            if EX.cp0_read_en = '1' then
+                WB_O.write_data <= CP0_READ_DATA;
             end if;
 
             -- TODO(twd2)

@@ -27,7 +27,7 @@ entity cp0 is
         MEM_WRITE_ADDR: in cp0_addr_t;
         MEM_WRITE_DATA: in word_t;
         
-        EXCEPT_WRITE: in except_write_cp0_t
+        EXCEPT_WRITE: in cp0_except_write_t
     );
 end;
 
@@ -55,17 +55,17 @@ begin
         elsif rising_edge(CLK) then
             if WRITE_EN = '1' then
                 cp0_reg(write_addr_i) <= WRITE_DATA;
-                
-                -- override
-                cp0_reg(cp0_addr_status)(15 downto 8) <= (others => '0');
-                cp0_reg(cp0_addr_cause)(15 downto 8) <= (others => '0');
-                
-                if EXCEPT_WRITE.en = '1' then
-                    cp0_reg(cp0_addr_status)(cp0_bit_in_except_handler) <= EXCEPT_WRITE.in_except_handler;
-                    cp0_reg(cp0_addr_cause)(7 downto 0) <= EXCEPT_WRITE.cause;
-                    cp0_reg(cp0_addr_epc) <= EXCEPT_WRITE.epc;
-                    cp0_reg(cp0_addr_ecs) <= EXCEPT_WRITE.ecs;
-                end if;
+            end if;
+            
+            -- override
+            cp0_reg(cp0_addr_status)(15 downto 8) <= (others => '0');
+            cp0_reg(cp0_addr_cause)(15 downto 8) <= (others => '0');
+            
+            if EXCEPT_WRITE.en = '1' then
+                cp0_reg(cp0_addr_status)(cp0_bit_in_except_handler) <= EXCEPT_WRITE.in_except_handler;
+                cp0_reg(cp0_addr_cause)(7 downto 0) <= EXCEPT_WRITE.cause;
+                cp0_reg(cp0_addr_epc) <= EXCEPT_WRITE.epc;
+                cp0_reg(cp0_addr_ecs) <= EXCEPT_WRITE.ecs;
             end if;
         end if;
     end process;
@@ -73,11 +73,15 @@ begin
     -- for EX stage
     
     forward_proc:
-    process(CLK, RST)
+    process(cp0_reg, write_addr_i, WRITE_DATA, mem_write_addr_i, MEM_WRITE_DATA)
     begin
         ex_cp0_reg <= cp0_reg;
-        ex_cp0_reg(write_addr_i) <= WRITE_DATA;
-        ex_cp0_reg(mem_write_addr_i) <= MEM_WRITE_DATA;
+        if WRITE_EN = '1' then
+            ex_cp0_reg(write_addr_i) <= WRITE_DATA;
+        end if;
+        if MEM_WRITE_EN = '1' then
+            ex_cp0_reg(mem_write_addr_i) <= MEM_WRITE_DATA;
+        end if;
 
         -- override
         ex_cp0_reg(cp0_addr_status)(15 downto 8) <= (others => '0');

@@ -48,6 +48,9 @@ begin
             WB_O.sp_write_data <= (others => '0');
             WB_O.ds_write_en <= '0';
             WB_O.ds_write_data <= (others => '0');
+            WB_O.cp0_write_en <= '0';
+            WB_O.cp0_write_addr <= (others => '0');
+            WB_O.cp0_write_data <= (others => '0');
             BUS_REQ.addr <= (others => '0');
             BUS_REQ.data <= (others => '0');
             BUS_REQ.byte_mask <= (others => '0');

@@ -37,6 +37,8 @@ package types is
     end record;
     
     type ex_signal_t is record
+        cp0_read_en: std_logic;
+        cp0_read_addr: cp0_addr_t;
         alu_op: alu_op_t;
         operand_0: word_t;
         operand_1: word_t;
@@ -64,6 +66,9 @@ package types is
         sp_write_data: word_t;
         ds_write_en: std_logic;
         ds_write_data: word_t;
+        cp0_write_en: std_logic;
+        cp0_write_addr: cp0_addr_t;
+        cp0_write_data: word_t;
     end record;
     
     type font_task_t is record
@@ -87,7 +92,7 @@ package types is
         ecs: word_t;
     end record;
     
-    type except_write_cp0_t is record
+    type cp0_except_write_t is record
         en: std_logic;
         in_except_handler: std_logic;
         cause: std_logic_vector(7 downto 0);

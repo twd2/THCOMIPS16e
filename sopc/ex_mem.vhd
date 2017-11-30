@@ -48,6 +48,9 @@ begin
             MEM_WB.sp_write_data <= (others => '0');
             MEM_WB.ds_write_en <= '0';
             MEM_WB.ds_write_data <= (others => '0');
+            MEM_WB.cp0_write_en <= '0';
+            MEM_WB.cp0_write_addr <= (others => '0');
+            MEM_WB.cp0_write_data <= (others => '0');
         elsif rising_edge(CLK) then
             if FLUSH = '1' or STALL(stage_mem downto stage_ex) = "01" then
                 MEM_COMMON.pc <= (others => '0');
@@ -70,6 +73,9 @@ begin
                 MEM_WB.sp_write_data <= (others => 'X');
                 MEM_WB.ds_write_en <= '0';
                 MEM_WB.ds_write_data <= (others => 'X');
+                MEM_WB.cp0_write_en <= '0';
+                MEM_WB.cp0_write_addr <= (others => 'X');
+                MEM_WB.cp0_write_data <= (others => 'X');
             elsif STALL(stage_mem downto stage_ex) = "11" then
                 -- do nothing
             else

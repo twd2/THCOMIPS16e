@@ -192,6 +192,33 @@ architecture behavioral of mips_core is
             STALL: out stall_t
         );
     end component;
+    
+    component cp0 is
+        port
+        (
+            CLK: in std_logic;
+            RST: in std_logic;
+            
+            READ_ADDR: in cp0_addr_t;
+            READ_DATA: out word_t;
+
+            WRITE_EN: in std_logic;
+            WRITE_ADDR: in cp0_addr_t;
+            WRITE_DATA: in word_t;
+     
+            EX_READ_ADDR: in cp0_addr_t;
+            EX_READ_DATA: out word_t;
+
+            EX_BITS: out cp0_bits_t;
+            
+            -- mem
+            MEM_WRITE_EN: in std_logic;
+            MEM_WRITE_ADDR: in cp0_addr_t;
+            MEM_WRITE_DATA: in word_t;
+            
+            EXCEPT_WRITE: in cp0_except_write_t
+        );
+    end component;
 
     component program_counter is
         port
@@ -328,6 +355,10 @@ architecture behavioral of mips_core is
 
             MEM_LOADED_DATA: in word_t;
             
+            -- CP0 interface
+            CP0_READ_ADDR: out cp0_addr_t;
+            CP0_READ_DATA: in word_t;
+            
             -- divider interface
             -- data signals
             DIV_DIVIDEND: out word_t;
@@ -435,6 +466,9 @@ architecture behavioral of mips_core is
     signal sreg_sp: word_t;
     signal sreg_ds: word_t;
     
+    signal cp0_bits: cp0_bits_t;
+    signal cp0_except_write: cp0_except_write_t;
+    
     signal if_stall_req: std_logic;
     signal id_stall_req: std_logic;
     signal ex_stall_req: std_logic;
@@ -478,6 +512,9 @@ architecture behavioral of mips_core is
     signal ex_common_o: common_signal_t;
     signal ex_mem_o: mem_signal_t;
     signal ex_wb_o: wb_signal_t;
+    -- EX CP0 interface
+    signal ex_cp0_read_addr: cp0_addr_t;
+    signal ex_cp0_read_data: word_t;
     -- EX divider interface
     signal ex_div_dividend: word_t;
     signal ex_div_div: word_t;
@@ -668,6 +705,35 @@ begin
         STALL => stall
     );
     
+    cp0_inst: cp0
+    port map
+    (
+        CLK => CLK,
+        RST => RST, 
+        
+        READ_ADDR => (others => 'X'),
+        -- READ_DATA =>
+
+        WRITE_EN => wb_wb.cp0_write_en,
+        WRITE_ADDR => wb_wb.cp0_write_addr,
+        WRITE_DATA => wb_wb.cp0_write_data,
+ 
+        EX_READ_ADDR => ex_cp0_read_addr,
+        EX_READ_DATA => ex_cp0_read_data,
+
+        EX_BITS => cp0_bits,
+        
+        -- mem
+        MEM_WRITE_EN => mem_wb_o.cp0_write_en,
+        MEM_WRITE_ADDR => mem_wb_o.cp0_write_addr,
+        MEM_WRITE_DATA => mem_wb_o.cp0_write_data,
+        
+        EXCEPT_WRITE => cp0_except_write
+    );
+    
+    cp0_except_write.en <= '0';
+    -- TODO
+    
     program_counter_inst: program_counter
     port map
     (
@@ -794,6 +860,9 @@ begin
         HI => ex_hi,
         LO => ex_lo, 
         MEM_LOADED_DATA => mem_loaded_data,
+        
+        CP0_READ_ADDR => ex_cp0_read_addr,
+        CP0_READ_DATA => ex_cp0_read_data,
  
         DIV_DIVIDEND => ex_div_dividend,
         DIV_DIV => ex_div_div,
