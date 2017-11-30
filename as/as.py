@@ -281,6 +281,18 @@ def make_sw_sp(rx, imm):
 ACT['sw_sp'] = make_sw_sp
 ACT['swsp'] = make_sw_sp
 
+def make_mfc0(rx, imm):
+    if not 0 <= imm <= 7:
+        raise ImmOutOfRangeError(imm)
+    return make2(0b11110, reg(rx), imm, 0b00000)
+ACT['mfc0'] = make_mfc0
+
+def make_mtc0(rx, imm):
+    if not 0 <= imm <= 7:
+        raise ImmOutOfRangeError(imm)
+    return make2(0b11110, reg(rx), imm, 0b00001)
+ACT['mtc0'] = make_mtc0
+
 def make__word(imm):
     if not -32768 <= imm <= 65535:
         raise ImmOutOfRangeError(imm)
