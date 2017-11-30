@@ -22,4 +22,15 @@ package constants is
                       alu_addu, alu_subu,
                       alu_or, alu_and, alu_xor, alu_nor,
                       alu_sll, alu_sra, alu_srl);
+
+    constant cp0_reg_count: integer := 8;
+    constant cp0_addr_status: integer := 0;
+    constant cp0_addr_cause: integer := 1;
+    constant cp0_addr_epc: integer := 2;
+    constant cp0_addr_ecs: integer := 3;
+    constant cp0_addr_tmp0: integer := 4;
+    constant cp0_addr_tmp1: integer := 5;
+    constant cp0_addr_tmp2: integer := 6;
+    constant cp0_bit_interrupt_enable: integer := 0;
+    constant cp0_bit_in_except_handler: integer := 1;
 end;

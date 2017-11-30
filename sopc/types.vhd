@@ -10,6 +10,8 @@ package types is
     subtype reg_addr_t is std_logic_vector(2 downto 0);
     subtype stall_t is std_logic_vector(5 downto 0);
     type reg_file_t is array(reg_count - 1 downto 0) of word_t;
+    subtype cp0_addr_t is std_logic_vector(2 downto 0);
+    type cp0_reg_t is array(cp0_reg_count - 1 downto 0) of word_t;
     
     type bus_request_t is record -- output for host, input for device
         addr: word_t;
@@ -76,4 +78,18 @@ package types is
     end record;
     
     type tasks_t is array(integer range <>) of font_task_t;
+
+    type cp0_bits_t is record
+        interrupt_enable: std_logic; -- interrupt enable
+        in_except_handler: std_logic;
+        interrupt_mask: std_logic_vector(5 downto 0); -- '1' disables interrupt
+    end record;
+    
+    type except_write_cp0_t is record
+        en: std_logic;
+        in_except_handler: std_logic;
+        cause: std_logic_vector(7 downto 0);
+        epc: word_t;
+        ecs: word_t;
+    end record;
 end;
