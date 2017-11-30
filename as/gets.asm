@@ -111,3 +111,105 @@ nop
 _done:
 b $
 nop
+
+_ps2_scancode:
+; scancode lookup table
+; 128 items
+; usage:
+; la r0, _ps2_scancode
+; addu r1, r0
+; lw r1, r1, 0
+.word 00
+.word 1b
+.word 31
+.word 32
+.word 33
+.word 34
+.word 35
+.word 36
+.word 37
+.word 38
+.word 39
+.word 30
+.word 2d
+.word 3d
+.word 08
+.word 09
+.word 71
+.word 77
+.word 65
+.word 72
+.word 74
+.word 79
+.word 75
+.word 69
+.word 6f
+.word 70
+.word 5b
+.word 5d
+.word 0d
+.word 00
+.word 61
+.word 73
+.word 64
+.word 66
+.word 67
+.word 68
+.word 6a
+.word 6b
+.word 6c
+.word 3b
+.word 27
+.word 60
+.word 00
+.word 5c
+.word 7a
+.word 78
+.word 63
+.word 76
+.word 62
+.word 6e
+.word 6d
+.word 2c
+.word 2e
+.word 2f
+.word 00
+.word 2a
+.word 00
+.word 20
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 2d
+.word 00
+.word 00
+.word 00
+.word 2b
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
+.word 00
