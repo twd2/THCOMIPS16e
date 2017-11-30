@@ -281,13 +281,18 @@ def make_sw_sp(rx, imm):
 ACT['sw_sp'] = make_sw_sp
 ACT['swsp'] = make_sw_sp
 
+cp0_name_alias = {'status': 0, 'cause': 1, 'epc': 2, 'ecs': 3,
+                  'tmp0': 4, 'tmp1': 5, 'tmp2': 6}
+
 def make_mfc0(rx, imm):
+    imm = cp0_name_alias.get(imm, imm)
     if not 0 <= imm <= 7:
         raise ImmOutOfRangeError(imm)
     return make2(0b11110, reg(rx), imm, 0b00000)
 ACT['mfc0'] = make_mfc0
 
 def make_mtc0(rx, imm):
+    imm = cp0_name_alias.get(imm, imm)
     if not 0 <= imm <= 7:
         raise ImmOutOfRangeError(imm)
     return make2(0b11110, reg(rx), imm, 0b00001)
