@@ -34,8 +34,6 @@ sw r0, r1, 14
 li r1, 0
 sw r0, r1, 15
 
-addsp -32
-
 _2048_clear_graphic_memory:
 	li r0, 0
 	li r1, 0xEFFC ; vga control
@@ -49,6 +47,32 @@ _2048_clear_graphic_memory:
 		nop
 		b _2048_clear_loop
 		nop
+
+_2048_new_block:
+	li r1, 0 ; block id
+	li r2, 0 ; blank_block_cnt
+	_2048_new_block_loop:
+		li r3, 0xb000 ; load block status
+		addu r1, r3, r3
+		lw r3, r4, 0 ; status
+		bnez r4, _2048_new_block_next
+		nop
+		addiu r2, 1 ; blank_block_cnt++
+		addu r1, r2, r4
+		li r5, 3
+		and r4, r5
+		bnez r4, _2048_new_block_next
+		nop
+		li r4, 1
+		sw r3, r4, 1 ; blank block -> Colin when (id + cnt) % 4 == 0
+		_2048_new_block_next:
+			addiu r1, 1
+			cmpi r1, 16
+			bteqz _2048_render
+			nop
+			b _2048_new_block_loop
+			nop
+
 _2048_render:
 	_2048_draw_block:
 		; r0 block id
@@ -154,22 +178,43 @@ _2048_get_command:
 		nop
 	lw r1, r0, 0x00 ; ps2 data
 	cmpi r0, 0x1D ; 'w'
-	bteqz _2048_up
+	bteqz _2048_up_relay
 	nop 
 	cmpi r0, 0x1B ; 's'
-	bteqz _2048_down 
+	bteqz _2048_down_relay 
 	nop
 	cmpi r0, 0x1C ; 'a'
-	bteqz _2048_left 
+	bteqz _2048_left_relay
 	nop
 	cmpi r0, 0x23 ; 'd'
-	bteqz _2048_right
+	bteqz _2048_right_relay
 	nop
 	cmpi r0, 0x15 ; 'q'
-	bteqz _2048_game_over
+	bteqz _2048_game_over_relay
 	nop
 	b _2048_get_command
 	nop
+	_2048_up_relay:
+		li r1, _2048_up
+		jr r1
+		nop
+	_2048_down_relay:
+		li r1, _2048_down
+		jr r1
+		nop
+	_2048_left_relay:
+		li r1, _2048_left
+		jr r1
+		nop
+	_2048_right_relay:
+		li r1, _2048_right
+		jr r1
+		nop
+	_2048_game_over_relay:
+		li r1, _2048_game_over
+		jr r1
+		nop
+
 
 _2048_left:
 	li r0, 1 ; block id
@@ -177,7 +222,7 @@ _2048_left:
 		li r1, 0xb000 ; load block status
 		addu r0, r1, r2
 		lw r2, r1, 0 ; status
-		beqz r1, _2048_next_block
+		beqz r1, _2048_left_next_block
 		li r3, 0
 		sw r2, r3, 0 ; clear origin status
 		move r2, r0 ; next_id
@@ -189,8 +234,7 @@ _2048_left:
 			li r3, 0xb000 ; load block status
 			addu r2, r3, r3
 			lw r3, r3, 0 ; next status
-			cmpi r3, 0
-			bteqz _2048_left_next_loop
+			beqz r3, _2048_left_next_loop
 			nop
 			cmp r3, r1
 			bteqz _2048_left_merge
@@ -200,14 +244,14 @@ _2048_left:
 			li r3, 0xb000 
 			addu r3, r2, r3 ; next addr
 			sw r3, r1, 0 ; move block
-			b _2048_next_block
+			b _2048_left_next_block
 			nop
 		_2048_left_merge:
 			li r3, 0xb000 
 			addu r3, r2, r3 ; next addr
 			addiu r1, 1
 			sw r3, r1, 0 ; move block
-		_2048_next_block:
+		_2048_left_next_block:
 			addiu r0, 4
 			move r1, r0
 			cmpi r1, 17
@@ -217,11 +261,14 @@ _2048_left:
 			bteqz _2048_left_loop
 			li r0, 3 ; slot
 			cmpi r1, 19
-			bteqz _2048_render ; FIXME: ImmOutOfRangeError: -164
+			bteqz _2048_left_new_block_relay ; FIXME: ImmOutOfRangeError: -164
 			li r0, 0 ; slot
-
 			move r0, r1
 			b _2048_left_loop
+			nop
+		_2048_left_new_block_relay:
+			li r1, _2048_new_block
+			jr r1
 			nop
 
 _2048_right:
@@ -229,8 +276,6 @@ _2048_right:
 _2048_up:
 
 _2048_down:
-
-_2048_new_block:
 
 _2048_game_over:
 ; store game status to sd card
