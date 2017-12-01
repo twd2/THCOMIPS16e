@@ -1,13 +1,13 @@
 _2048_start_game: 
 ; load game status from sd card to 0xb000 - 0xb00f
 li r0, 0xb000
-li r1, 1
+li r1, 4
 sw r0, r1, 0
-li r1, 1
+li r1, 0
 sw r0, r1, 1
-li r1, 2
+li r1, 0
 sw r0, r1, 2
-li r1, 3
+li r1, 0
 sw r0, r1, 3
 li r1, 4
 sw r0, r1, 4
@@ -25,13 +25,13 @@ li r1, 10
 sw r0, r1, 10
 li r1, 11
 sw r0, r1, 11
-li r1, 1
+li r1, 2
 sw r0, r1, 12
-li r1, 1
+li r1, 2
 sw r0, r1, 13
-li r1, 1
+li r1, 0
 sw r0, r1, 14
-li r1, 1
+li r1, 0
 sw r0, r1, 15
 
 addsp -32
@@ -124,7 +124,7 @@ _2048_render:
 			li r5, 0
 			_2048_draw_string_loop:
 				cmpi r5, 12
-				bteqz _2048_next_block
+				bteqz _2048_render_next_block
 				nop
 				lw r4, r6, 0
 				or r6, r1
@@ -134,7 +134,7 @@ _2048_render:
 				addiu r2, 1
 				b _2048_draw_string_loop
 				nop
-		_2048_next_block:
+		_2048_render_next_block:
 			addiu r0, 1
 			cmpi r0, 16
 			bteqz _2048_get_command
@@ -185,7 +185,7 @@ _2048_left:
 			addiu r2, -1
 			cmpi r2, -1
 			bteqz _2048_left_move
-			nop 
+			nop
 			li r3, 0xb000 ; load block status
 			addu r2, r3, r3
 			lw r3, r3, 0 ; next status
@@ -194,8 +194,6 @@ _2048_left:
 			nop
 			cmp r3, r1
 			bteqz _2048_left_merge
-			nop
-			b _2048_left_move
 			nop
 		_2048_left_move:
 			addiu r2, 1 ; next id
@@ -209,23 +207,22 @@ _2048_left:
 			addu r3, r2, r3 ; next addr
 			addiu r1, 1
 			sw r3, r1, 0 ; move block
-			b _2048_next_block
-			nop
 		_2048_next_block:
 			addiu r0, 4
-			cmpi r0, 17
-			bteqz _2048_next_loop
+			move r1, r0
+			cmpi r1, 17
+			bteqz _2048_left_loop
 			li r0, 2 ; slot
-			cmpi r0, 18
-			bteqz _2048_next_loop
-			li r0, 3 ; slor
-			cmpi r0, 19
-			bteqz _2048_render
-			nop
+			cmpi r1, 18
+			bteqz _2048_left_loop
+			li r0, 3 ; slot
+			cmpi r1, 19
+			bteqz _2048_render ; FIXME: ImmOutOfRangeError: -164
+			li r0, 0 ; slot
+
+			move r0, r1
 			b _2048_left_loop
 			nop
-
-
 
 _2048_right:
 
