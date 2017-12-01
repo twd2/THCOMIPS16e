@@ -37,6 +37,12 @@ class UnknownInstructionError(ASError):
     def __str__(self):
         return repr(self.value)
 
+class BadOffsetError(ASError):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
 # define pseudo-instructions
 
 PSEUDO = {}
@@ -168,10 +174,14 @@ def make_bnez(rx, imm):
 ACT['bnez'] = make_bnez
 
 def make_bteqz(imm):
+    if not -128 <= imm <= 127:
+        raise ImmOutOfRangeError(imm)
     return make1(0b01100, 0b000, imm)
 ACT['bteqz'] = make_bteqz
 
 def make_btnez(imm):
+    if not -128 <= imm <= 127:
+        raise ImmOutOfRangeError(imm)
     return make1(0b01100, 0b001, imm)
 ACT['btnez'] = make_btnez
 
@@ -367,6 +377,8 @@ def asm(code):
             inst = l[0].lower()
             if inst == '.org':
                 org = parse_imm(l[1])
+                if org < len(inst_list):
+                    raise BadOffsetError(org)
                 inst_list.extend([['nop']] * (org - len(inst_list)))
             elif inst == '.extern':
                 sym = l[1]
