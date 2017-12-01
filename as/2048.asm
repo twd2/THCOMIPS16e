@@ -1,7 +1,7 @@
 _2048_start_game: 
 ; load game status from sd card to 0xb000 - 0xb00f
 li r0, 0xb000
-li r1, 0
+li r1, 1
 sw r0, r1, 0
 li r1, 1
 sw r0, r1, 1
@@ -25,13 +25,13 @@ li r1, 10
 sw r0, r1, 10
 li r1, 11
 sw r0, r1, 11
-li r1, 12
+li r1, 1
 sw r0, r1, 12
-li r1, 13
+li r1, 1
 sw r0, r1, 13
-li r1, 14
+li r1, 1
 sw r0, r1, 14
-li r1, 15
+li r1, 1
 sw r0, r1, 15
 
 addsp -32
@@ -145,11 +145,87 @@ _2048_render:
 
 
 _2048_get_command:
-	$:
-		b $
+	li r1, 0xe002 ; ps2 base
+	li r2, 0x0001
+	_2048_gets_wait_ps2:
+		lw r1, r0, 0x01 ; ps2 control
+		and r0, r2
+		beqz r0, _2048_gets_wait_ps2
 		nop
+	lw r1, r0, 0x00 ; ps2 data
+	cmpi r0, 0x1D ; 'w'
+	bteqz _2048_up
+	nop 
+	cmpi r0, 0x1B ; 's'
+	bteqz _2048_down 
+	nop
+	cmpi r0, 0x1C ; 'a'
+	bteqz _2048_left 
+	nop
+	cmpi r0, 0x23 ; 'd'
+	bteqz _2048_right
+	nop
+	cmpi r0, 0x15 ; 'q'
+	bteqz _2048_game_over
+	nop
+	b _2048_get_command
+	nop
 
 _2048_left:
+	li r0, 1 ; block id
+	_2048_left_loop:
+		li r1, 0xb000 ; load block status
+		addu r0, r1, r2
+		lw r2, r1, 0 ; status
+		beqz r1, _2048_next_block
+		li r3, 0
+		sw r2, r3, 0 ; clear origin status
+		move r2, r0 ; next_id
+		_2048_left_next_loop:
+			addiu r2, -1
+			cmpi r2, -1
+			bteqz _2048_left_move
+			nop 
+			li r3, 0xb000 ; load block status
+			addu r2, r3, r3
+			lw r3, r3, 0 ; next status
+			cmpi r3, 0
+			bteqz _2048_left_next_loop
+			nop
+			cmp r3, r1
+			bteqz _2048_left_merge
+			nop
+			b _2048_left_move
+			nop
+		_2048_left_move:
+			addiu r2, 1 ; next id
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			sw r3, r1, 0 ; move block
+			b _2048_next_block
+			nop
+		_2048_left_merge:
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			addiu r1, 1
+			sw r3, r1, 0 ; move block
+			b _2048_next_block
+			nop
+		_2048_next_block:
+			addiu r0, 4
+			cmpi r0, 17
+			bteqz _2048_next_loop
+			li r0, 2 ; slot
+			cmpi r0, 18
+			bteqz _2048_next_loop
+			li r0, 3 ; slor
+			cmpi r0, 19
+			bteqz _2048_render
+			nop
+			b _2048_left_loop
+			nop
+
+
 
 _2048_right:
 
@@ -161,6 +237,9 @@ _2048_new_block:
 
 _2048_game_over:
 ; store game status to sd card
+	$:
+		b $
+		nop
 
 _2048_block_name:
 .word 32
