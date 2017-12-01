@@ -121,7 +121,7 @@ _gets_backspace:
 	lw_sp r5, 2 ; result addr (original)
 	lw_sp r6, 1 ; result addr (modified)
 	cmp r5, r6
-	bteqz _gets_ps2_loop ; cannot backspace
+	bteqz _gets_clear_flags ; cannot backspace
 	nop
 	li r5, 0
 	sw r6, r5, 0 ; clear memory
