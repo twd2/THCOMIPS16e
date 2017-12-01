@@ -1,22 +1,16 @@
+.extern vga_control_base, 0xeffc
+.extern graphics_base, 0xf000
 .extern char_addr, 0xc005
 
 li r0, 0xe000
 mtsp r0
 
-clear_screen:
-li r0, 0xf000
-li r1, 0x0700
-_clear_screen_loop:
-    cmpi r0, -1 ; r0 = 0xffff?
-    bteqz _clear_screen_out
-    sw r0, r1, 0x00 ; bd
-    b _clear_screen_loop
-    addiu r0, 1 ; bd
-_clear_screen_out:
+call clear_screen
+nop
 
-li r0, 0x0000
-la r4, char_addr
-sw r4, r0, 0
+la r0, hello_world
+call puts
+nop
 
 li r0, 'a'
 call putchar
@@ -81,6 +75,17 @@ loop3:
     addiu r1, 1 ; bd
 out3:
 
+call clear_screen
+nop
+
+la r0, hello_world
+call puts
+nop
+
+li r0, 'g'
+call putchar
+nop
+
 $:
 b $
 nop
@@ -98,26 +103,27 @@ putchar:
     ; r0 data
     la r4, char_addr
     lw r4, r1, 0 ; cursor addr
-    li r4, 0xEFFC ; vga control
+    la r4, vga_control_base ; vga control
     lw r4, r3, 2 ; cursor pos
     move r2, r3
     sra r2, r2, 8
     li r4, 0xFF
     and r2, r4 ; cursor row
     and r3, r4 ; cursor col
-    li r4, 0xf000 ; graphics memory base
+
+    la r4, graphics_base ; graphics memory base
     li r5, 0x0700 ; color
 
-    cmpi r0, 10 ; \n
+    cmpi r0, 10 ; '\n'
     bteqz _putchar_newline
     nop
-    cmpi r0, 13 ; \r
+    cmpi r0, 13 ; '\r'
     bteqz _putchar_enter
     nop
     b _putchar_char
     nop
 
-    _putchar_newline: ;\n
+    _putchar_newline: ; '\n'
     subu r1, r3, r1
     addiu r1, 80
     addiu r2, 1
@@ -128,7 +134,7 @@ putchar:
     b _putchar_save
     nop
 
-    _putchar_enter: ;\r
+    _putchar_enter: ; '\r'
     subu r1, r3, r1
     li r3, 0
     b _putchar_save
@@ -175,9 +181,10 @@ putchar:
     sw r0, r1, 0 ; cursor addr
     sll r2, r2, 8 ; row
     or r2, r3 ; pos
-    li r0, 0xEFFC ; vga control
+    la r0, vga_control_base ; vga control
     sw r0, r2, 2 ; cursor pos
 
+_putchar_out:
     lwsp r0, 0
     lwsp r1, 1
     lwsp r2, 2
@@ -188,3 +195,66 @@ putchar:
     addsp 7
     ret
     nop
+
+clear_screen:
+    addsp -2
+    swsp r0, 0
+    swsp r0, 1
+    la r0, graphics_base
+    li r1, 0x0700
+    _clear_screen_loop:
+        cmpi r0, -1 ; r0 = 0xffff?
+        bteqz _clear_screen_out
+        sw r0, r1, 0x00 ; bd
+        b _clear_screen_loop
+        addiu r0, 1 ; bd
+    _clear_screen_out:
+    li r0, 0x0000
+    la r1, char_addr
+    sw r1, r0, 0
+    la r1, vga_control_base
+    sw r1, r0, 2 ; pos
+    lwsp r0, 0
+    lwsp r1, 1
+    addsp 2
+    ret
+    nop
+
+; print a string stored at *r0 ending with '\0'
+puts:
+    addsp -3
+    swsp r0, 0
+    swsp r1, 1
+    swsp r7, 2
+    move r1, r0
+_puts_loop:
+    lw r1, r0, 0
+    beqz r0, _puts_out
+    nop
+    call putchar
+    nop
+    b _puts_loop
+    addiu r1, 1 ; bd, next char
+_puts_out:
+    lwsp r0, 0
+    lwsp r1, 1
+    lwsp r7, 2
+    addsp 3
+    ret
+    nop
+
+hello_world:
+.word 'h'
+.word 'e'
+.word 'l'
+.word 'l'
+.word 'o'
+.word 44
+.word 32
+.word 'w'
+.word 'o'
+.word 'r'
+.word 'l'
+.word 'd'
+.word 10
+.word 0
