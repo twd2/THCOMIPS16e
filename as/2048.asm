@@ -1,8 +1,38 @@
 _2048_start_game: 
 ; load game status from sd card to 0xb000 - 0xb00f
 li r0, 0xb000
-li r1, 4
+li r1, 0
 sw r0, r1, 0
+li r1, 1
+sw r0, r1, 1
+li r1, 2
+sw r0, r1, 2
+li r1, 3
+sw r0, r1, 3
+li r1, 4
+sw r0, r1, 4
+li r1, 5
+sw r0, r1, 5
+li r1, 6
+sw r0, r1, 6
+li r1, 7
+sw r0, r1, 7
+li r1, 8
+sw r0, r1, 8
+li r1, 9
+sw r0, r1, 9
+li r1, 10
+sw r0, r1, 10
+li r1, 11
+sw r0, r1, 11
+li r1, 12
+sw r0, r1, 12
+li r1, 13
+sw r0, r1, 13
+li r1, 14
+sw r0, r1, 14
+li r1, 15
+sw r0, r1, 15
 
 addsp -32
 
@@ -19,10 +49,8 @@ _2048_clear_graphic_memory:
 		nop
 		b _2048_clear_loop
 		nop
-
 _2048_render:
 	_2048_draw_block:
-		li r0, 0 ; TODO
 		; r0 block id
 		li r1, 0xb000 ; load block status
 		addu r0, r1, r1
@@ -96,7 +124,7 @@ _2048_render:
 			li r5, 0
 			_2048_draw_string_loop:
 				cmpi r5, 12
-				bteqz _2048_render
+				bteqz _2048_next_block
 				nop
 				lw r4, r6, 0
 				or r6, r1
@@ -105,10 +133,21 @@ _2048_render:
 				addiu r4, 1
 				addiu r2, 1
 				b _2048_draw_string_loop
-				nop		
+				nop
+		_2048_next_block:
+			addiu r0, 1
+			cmpi r0, 16
+			bteqz _2048_get_command
+			nop
+			b _2048_draw_block
+			nop
+
 
 
 _2048_get_command:
+	$:
+		b $
+		nop
 
 _2048_left:
 
