@@ -1,11 +1,11 @@
 _2048_start_game: 
 ; load game status from sd card to 0xb000 - 0xb00f
 li r0, 0xb000
-li r1, 1
+li r1, 4
 sw r0, r1, 0
 
 addsp -32
-	
+
 _2048_clear_graphic_memory:
 	li r0, 0
 	li r1, 0xEFFC ; vga control
@@ -22,6 +22,7 @@ _2048_clear_graphic_memory:
 
 _2048_render:
 	_2048_draw_block:
+		li r0, 0 ; TODO
 		; r0 block id
 		li r1, 0xb000 ; load block status
 		addu r0, r1, r1
@@ -39,19 +40,19 @@ _2048_render:
 			subu r4, r2, r2 ; r2 = r2 * 7
 			sll r4, r3, 4
 			sll r5, r3, 1
-			subu r5, r4, r3 ; r3 = r3 * 14
+			subu r4, r5, r3 ; r3 = r3 * 14
 			sll r4, r2, 6
 			sll r5, r2, 4
 			addu r4, r5, r2 ; r2 = r2 * 80
 			addu r2, r3, r2 ; r2: addr
 		_2048_draw_horizontal_line:
 			li r3, 0xf000 ; graphics memory base
-			li r4, '-'
+			li r4, 196
 			or r4, r1
-			li r5, 0
+			li r5, 1
 			_2048_draw_horizontal_line_loop:
-				cmpi r5, 14
-				bteqz _2048_draw_vertical_line:
+				cmpi r5, 13
+				bteqz _2048_draw_vertical_line
 				nop
 				addu r2, r5, r6
 				addu r6, r3, r6 
@@ -64,13 +65,13 @@ _2048_render:
 				nop
 		_2048_draw_vertical_line:
 			li r3, 0xf000 ; graphics memory base
-			li r4, '|'
+			li r4, 179
 			or r4, r1
-			li r5, 0
+			li r5, 80
 			_2048_draw_vertical_line_loop:
-				li r7, 560 ; 80 * 7
+				li r7, 480 ; 80 * 6
 				cmp r5, r7
-				bteqz _2048_draw_string:
+				bteqz _2048_draw_string
 				nop
 				addu r2, r5, r6
 				addu r6, r3, r6 
@@ -82,20 +83,24 @@ _2048_render:
 		_2048_draw_string:
 			li r3, 0xf000 ; graphics memory base
 			la r4, _2048_block_name
-			sll r5, r0, 4
-			sll r6, r0, 2
-			subu r5, r6, r5 ; r5 = r0 * 12
+			li r7, 0xb000 ; load block status
+			addu r0, r7, r7
+			lw r7, r7, 0
+			sll r5, r7, 4
+			sll r6, r7, 2
+			subu r5, r6, r5 ; r5 = r7 * 12
 			addu r4, r5, r4 ; r4: block name
-			li r5, 241
+			li r5, 241 ; 3 * 80 + 1
 			addu r2, r5, r2
 			addu r3, r2, r2
 			li r5, 0
 			_2048_draw_string_loop:
 				cmpi r5, 12
-				bteqz _2048_render:
+				bteqz _2048_render
 				nop
 				lw r4, r6, 0
-				sw r2, r6, 0 
+				or r6, r1
+				sw r2, r6, 0
 				addiu r5, 1
 				addiu r4, 1
 				addiu r2, 1
@@ -131,6 +136,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -143,6 +149,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 'b'
@@ -155,6 +162,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 'l'
@@ -167,6 +175,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -179,6 +188,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -191,6 +201,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -203,6 +214,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -215,6 +227,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -227,6 +240,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -239,6 +253,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -251,6 +266,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
@@ -263,6 +279,7 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
 .word 32
 .word 32
 .word 32
