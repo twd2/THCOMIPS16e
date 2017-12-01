@@ -1,95 +1,3 @@
-.extern vga_control_base, 0xeffc
-.extern graphics_base, 0xf000
-.extern char_addr, 0xc005
-
-li r0, 0xe000
-mtsp r0
-
-call clear_screen
-nop
-
-la r0, hello_world
-call puts
-nop
-
-li r0, 'a'
-call putchar
-nop
-li r0, 'b'
-call putchar
-nop
-li r0, 'c'
-call putchar
-nop
-li r0, 10
-call putchar
-nop
-li r0, 'd'
-call putchar
-nop
-li r0, 'e'
-call putchar
-nop
-
-li r0, 'g'
-li r1, 0
-loop:
-    cmpi r1, 127
-    bteqz out
-    nop
-    call putchar
-    nop
-    b loop
-    addiu r1, 1 ; bd
-out:
-
-li r0, 10
-li r1, 0
-loop2:
-    cmpi r1, 28
-    bteqz out2
-    nop
-    call putchar
-    nop
-    b loop2
-    addiu r1, 1 ; bd
-out2:
-
-li r0, 'g'
-call putchar
-nop
-
-li r0, 'g'
-call putchar
-nop
-
-li r0, 'f'
-li r1, 0
-loop3:
-    cmpi r1, 127
-    bteqz out3
-    nop
-    call putchar
-    nop
-    b loop3
-    addiu r1, 1 ; bd
-out3:
-
-call clear_screen
-nop
-
-la r0, hello_world
-call puts
-nop
-
-li r0, 'g'
-call putchar
-nop
-
-$:
-b $
-nop
-
 putchar:
     addsp -7
     swsp r0, 0
@@ -233,6 +141,8 @@ _puts_loop:
     nop
     call putchar
     nop
+    ; call delay
+    ; nop
     b _puts_loop
     addiu r1, 1 ; bd, next char
 _puts_out:
@@ -242,19 +152,3 @@ _puts_out:
     addsp 3
     ret
     nop
-
-hello_world:
-.word 'h'
-.word 'e'
-.word 'l'
-.word 'l'
-.word 'o'
-.word 44
-.word 32
-.word 'w'
-.word 'o'
-.word 'r'
-.word 'l'
-.word 'd'
-.word 10
-.word 0
