@@ -122,6 +122,8 @@ clear_screen:
     sw r1, r0, 0
     la r1, vga_control_base
     sw r1, r0, 2 ; pos
+    li r0, 29
+    sw r1, r0, 3 ; cursor counter limit
     lwsp r0, 0
     lwsp r1, 1
     addsp 2

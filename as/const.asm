@@ -9,6 +9,11 @@
 .extern ps2_data, 0xe002
 .extern ps2_control, 0xe003
 
+; GPIO
+.extern gpio_base, 0xe000
+.extern gpio_data, 0xe000
+.extern gpio_direction, 0xe001
+
 ; global variables
 .extern ctrl_pressed, 0xc000
 .extern alt_pressed, 0xc001

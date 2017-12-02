@@ -718,6 +718,11 @@ COMPILE:
 .extern ps2_data, 0xe002
 .extern ps2_control, 0xe003
 
+; GPIO
+.extern gpio_base, 0xe000
+.extern gpio_data, 0xe000
+.extern gpio_direction, 0xe001
+
 ; global variables
 .extern ctrl_pressed, 0xc000
 .extern alt_pressed, 0xc001
@@ -770,6 +775,34 @@ shell_loop:
     beqz r4, goto_server
     nop
 
+    ; command == "help"?
+    la r1, help
+    call strcmp
+    nop
+    beqz r4, show_help
+    nop
+
+    ; command == "gpio on"?
+    la r1, gpio_on
+    call strcmp
+    nop
+    beqz r4, do_gpio_on
+    nop
+
+    ; command == "gpio off"?
+    la r1, gpio_off
+    call strcmp
+    nop
+    beqz r4, do_gpio_off
+    nop
+
+    ; command == "gpio off"?
+    la r1, _2048
+    call strcmp
+    nop
+    beqz r4, call_2048
+    nop
+
     la r1, empty_string
     call strcmp
     nop
@@ -792,10 +825,469 @@ shell_loop:
     nop
 
 goto_server:
+    la r0, running_server
+    call puts
+    nop
     ; goto 0x0003
     li r0, 0x0003
     jr r0
     nop
+
+show_help:
+    la r0, usage
+    call puts
+    nop
+    b shell_loop
+    nop
+
+do_gpio_on:
+    la r0, gpio_base
+    li r1, 0x0000 ; out
+    sw r0, r1, 1 ; gpio control
+    li r1, 0xffff ; on
+    sw r0, r1, 0 ; gpio data
+    b shell_loop
+    nop
+do_gpio_off:
+    la r0, gpio_base
+    li r1, 0x0000 ; out
+    sw r0, r1, 1 ; gpio control
+    li r1, 0x0000 ; off
+    sw r0, r1, 0 ; gpio data
+    b shell_loop
+    nop
+
+call_2048:
+    call game_2048
+    nop
+    call clear_screen
+    nop
+    b shell_loop
+    nop
+game_2048:
+	addsp -8
+	swsp r0, 0
+	swsp r1, 1
+	swsp r2, 2
+	swsp r3, 3
+	swsp r4, 4
+	swsp r5, 5
+	swsp r6, 6
+	swsp r7, 7
+_2048_start_game:
+; load game status from sd card to 0xb000 - 0xb00f
+li r0, 0xb000
+li r1, 1
+sw r0, r1, 0
+li r1, 1
+sw r0, r1, 1
+li r1, 0
+sw r0, r1, 2
+li r1, 0
+sw r0, r1, 3
+li r1, 0
+sw r0, r1, 4
+li r1, 0
+sw r0, r1, 5
+li r1, 0
+sw r0, r1, 6
+li r1, 0
+sw r0, r1, 7
+li r1, 0
+sw r0, r1, 8
+li r1, 0
+sw r0, r1, 9
+li r1, 0
+sw r0, r1, 10
+li r1, 0
+sw r0, r1, 11
+li r1, 0
+sw r0, r1, 12
+li r1, 0
+sw r0, r1, 13
+li r1, 0
+sw r0, r1, 14
+li r1, 1
+sw r0, r1, 15
+
+_2048_clear_graphic_memory:
+	li r0, 0
+	li r1, 0xEFFC ; vga control
+	sw r1, r0, 3 ; turn off cursor
+	li r1, 0xf000 ; graphics memory base
+	_2048_clear_loop:
+		sw r1, r0, 0
+		addiu r1, 1
+		cmpi r1, -1 ; 0xffff
+		bteqz _2048_render
+		nop
+		b _2048_clear_loop
+		nop
+
+_2048_new_block:
+	li r1, 0 ; block id
+	li r2, 0 ; blank_block_cnt
+	_2048_new_block_loop:
+		li r3, 0xb000 ; load block status
+		addu r1, r3, r3
+		lw r3, r4, 0 ; status
+		bnez r4, _2048_new_block_next
+		nop
+		addiu r2, 1 ; blank_block_cnt++
+		addu r1, r2, r4
+		li r5, 1
+		and r4, r5
+		beqz r4, _2048_new_block_next
+		nop
+		li r4, 1
+		sw r3, r4, 1 ; blank block -> Colin when (id + cnt) % 4 == 0
+		_2048_new_block_next:
+			addiu r1, 1
+			cmpi r1, 16
+			bteqz _2048_render
+			nop
+			b _2048_new_block_loop
+			nop
+
+_2048_render:
+	li r0, 0
+	_2048_draw_block:
+		; r0 block id
+		li r1, 0xb000 ; load block status
+		addu r0, r1, r1
+		lw r1, r1, 0
+		beqz r1, _2048_calc_addr
+		li r1, 0 ; slot
+		li r1, 0x0700 ; r1: block color
+		_2048_calc_addr:
+			move r2, r0
+			move r3, r0
+			sra r2, r2, 2 ; r2: block row
+			li r4, 3
+			and r3, r4 ; r3: block col
+			sll r4, r2, 3
+			subu r4, r2, r2 ; r2 = r2 * 7
+			sll r4, r3, 4
+			sll r5, r3, 1
+			subu r4, r5, r3 ; r3 = r3 * 14
+			sll r4, r2, 6
+			sll r5, r2, 4
+			addu r4, r5, r2 ; r2 = r2 * 80
+			addu r2, r3, r2 ; r2: addr
+		_2048_draw_horizontal_line:
+			li r3, 0xf000 ; graphics memory base
+			li r4, 196
+			or r4, r1
+			li r5, 1
+			_2048_draw_horizontal_line_loop:
+				cmpi r5, 13
+				bteqz _2048_draw_vertical_line
+				nop
+				addu r2, r5, r6
+				addu r6, r3, r6 
+				sw r6, r4, 0 ; draw up line
+				li r7, 480 ; 6 * 80
+				addu r6, r7, r6
+				sw r6, r4, 0 ; draw down line 
+				addiu r5, 1
+				b _2048_draw_horizontal_line_loop
+				nop
+		_2048_draw_vertical_line:
+			li r3, 0xf000 ; graphics memory base
+			li r4, 179
+			or r4, r1
+			li r5, 80
+			_2048_draw_vertical_line_loop:
+				li r7, 480 ; 80 * 6
+				cmp r5, r7
+				bteqz _2048_draw_string
+				nop
+				addu r2, r5, r6
+				addu r6, r3, r6 
+				sw r6, r4, 0 ; draw left line
+				sw r6, r4, 13 ; draw right line 
+				addiu r5, 80
+				b _2048_draw_vertical_line_loop
+				nop		
+		_2048_draw_string:
+			li r3, 0xf000 ; graphics memory base
+			la r4, _2048_block_name
+			li r7, 0xb000 ; load block status
+			addu r0, r7, r7
+			lw r7, r7, 0
+			sll r5, r7, 4
+			sll r6, r7, 2
+			subu r5, r6, r5 ; r5 = r7 * 12
+			addu r4, r5, r4 ; r4: block name
+			li r5, 241 ; 3 * 80 + 1
+			addu r2, r5, r2
+			addu r3, r2, r2
+			li r5, 0
+			_2048_draw_string_loop:
+				cmpi r5, 12
+				bteqz _2048_render_next_block
+				nop
+				lw r4, r6, 0
+				or r6, r1
+				sw r2, r6, 0
+				addiu r5, 1
+				addiu r4, 1
+				addiu r2, 1
+				b _2048_draw_string_loop
+				nop
+		_2048_render_next_block:
+			addiu r0, 1
+			cmpi r0, 16
+			bteqz _2048_get_command
+			nop
+			b _2048_draw_block
+			nop
+
+_2048_get_command:
+	call getchar
+	nop
+	cmpi r4, 'w' ; 'w'
+	bteqz _2048_up_relay
+	nop 
+	cmpi r4, 's' ; 's'
+	bteqz _2048_down_relay 
+	nop
+	cmpi r4, 'a' ; 'a'
+	bteqz _2048_left_relay
+	nop
+	cmpi r4, 'd' ; 'd'
+	bteqz _2048_right_relay
+	nop
+	cmpi r4, 'q' ; 'q'
+	bteqz _2048_game_over_relay
+	nop
+	b _2048_get_command
+	nop
+	_2048_up_relay:
+		b _2048_up
+		nop
+	_2048_down_relay:
+		b _2048_down
+		nop
+	_2048_left_relay:
+		b _2048_left
+		nop
+	_2048_right_relay:
+		b _2048_right
+		nop
+	_2048_game_over_relay:
+		b _2048_game_over
+		nop
+
+
+_2048_left:
+	li r0, 0 ; block id
+	_2048_left_loop:
+		li r1, 0xb000 ; load block status
+		addu r0, r1, r2
+		lw r2, r1, 0 ; status
+		beqz r1, _2048_left_next_block
+		li r3, 0
+		sw r2, r3, 0 ; clear origin status
+		move r2, r0 ; next_id
+		_2048_left_next_loop:
+			addiu r2, -1
+			li r3, 3
+			and r3, r2
+			cmpi r3, 3
+			bteqz _2048_left_move
+			nop
+			li r3, 0xb000 ; load block status
+			addu r2, r3, r3
+			lw r3, r3, 0 ; next status
+			beqz r3, _2048_left_next_loop
+			nop
+			cmp r3, r1
+			bteqz _2048_left_merge
+			nop
+		_2048_left_move:
+			addiu r2, 1 ; next id
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			sw r3, r1, 0 ; move block
+			b _2048_left_next_block
+			nop
+		_2048_left_merge:
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			addiu r1, 1
+			sw r3, r1, 0 ; move block
+		_2048_left_next_block:
+			addiu r0, 1
+			cmpi r0, 16
+			bteqz _2048_left_new_block_relay
+			nop
+			b _2048_left_loop
+			nop
+		_2048_left_new_block_relay:
+			b _2048_new_block
+			nop
+
+_2048_right:
+	li r0, 15 ; block id
+	_2048_right_loop:
+		li r1, 0xb000 ; load block status
+		addu r0, r1, r2
+		lw r2, r1, 0 ; status
+		beqz r1, _2048_right_next_block
+		li r3, 0
+		sw r2, r3, 0 ; clear origin status
+		move r2, r0 ; next_id
+		_2048_right_next_loop:
+			addiu r2, 1
+			li r3, 3
+			and r3, r2
+			beqz r3, _2048_right_move
+			nop
+			li r3, 0xb000 ; load block status
+			addu r2, r3, r3
+			lw r3, r3, 0 ; next status
+			beqz r3, _2048_right_next_loop
+			nop
+			cmp r3, r1
+			bteqz _2048_right_merge
+			nop
+		_2048_right_move:
+			addiu r2, -1 ; next id
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			sw r3, r1, 0 ; move block
+			b _2048_right_next_block
+			nop
+		_2048_right_merge:
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			addiu r1, 1
+			sw r3, r1, 0 ; move block
+		_2048_right_next_block:
+			addiu r0, -1
+			cmpi r0, -1
+			bteqz _2048_right_new_block_relay
+			nop
+			b _2048_right_loop
+			nop
+		_2048_right_new_block_relay:
+			b _2048_new_block
+			nop
+
+
+_2048_up:
+	li r0, 0 ; block id
+	_2048_up_loop:
+		li r1, 0xb000 ; load block status
+		addu r0, r1, r2
+		lw r2, r1, 0 ; status
+		beqz r1, _2048_up_next_block
+		li r3, 0
+		sw r2, r3, 0 ; clear origin status
+		move r2, r0 ; next_id
+		_2048_up_next_loop:
+			addiu r2, -4
+			li r3, 16
+			and r3, r2
+			cmpi r3, 16
+			bteqz _2048_up_move
+			nop
+			li r3, 0xb000 ; load block status
+			addu r2, r3, r3
+			lw r3, r3, 0 ; next status
+			beqz r3, _2048_up_next_loop
+			nop
+			cmp r3, r1
+			bteqz _2048_up_merge
+			nop
+		_2048_up_move:
+			addiu r2, 4 ; next id
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			sw r3, r1, 0 ; move block
+			b _2048_up_next_block
+			nop
+		_2048_up_merge:
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			addiu r1, 1
+			sw r3, r1, 0 ; move block
+		_2048_up_next_block:
+			addiu r0, 1
+			cmpi r0, 16
+			bteqz _2048_up_new_block_relay
+			nop
+			b _2048_up_loop
+			nop
+		_2048_up_new_block_relay:
+			b _2048_new_block
+			nop
+
+
+_2048_down:
+	li r0, 15 ; block id
+	_2048_down_loop:
+		li r1, 0xb000 ; load block status
+		addu r0, r1, r2
+		lw r2, r1, 0 ; status
+		beqz r1, _2048_down_next_block
+		li r3, 0
+		sw r2, r3, 0 ; clear origin status
+		move r2, r0 ; next_id
+		_2048_down_next_loop:
+			addiu r2, 4
+			li r3, 16
+			and r3, r2
+			cmpi r3, 16
+			bteqz _2048_down_move
+			nop
+			li r3, 0xb000 ; load block status
+			addu r2, r3, r3
+			lw r3, r3, 0 ; next status
+			beqz r3, _2048_down_next_loop
+			nop
+			cmp r3, r1
+			bteqz _2048_down_merge
+			nop
+		_2048_down_move:
+			addiu r2, -4 ; next id
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			sw r3, r1, 0 ; move block
+			b _2048_down_next_block
+			nop
+		_2048_down_merge:
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			addiu r1, 1
+			sw r3, r1, 0 ; move block
+		_2048_down_next_block:
+			addiu r0, -1
+			cmpi r0, -1
+			bteqz _2048_down_new_block_relay
+			nop
+			b _2048_down_loop
+			nop
+		_2048_down_new_block_relay:
+			b _2048_new_block
+			nop
+
+
+_2048_game_over:
+; store game status to sd card
+	lwsp r0, 0
+	lwsp r1, 1
+	lwsp r2, 2
+	lwsp r3, 3
+	lwsp r4, 4
+	lwsp r5, 5
+	lwsp r6, 6
+	lwsp r7, 7
+	addsp 8
+	ret
+	nop
+
 putchar:
     addsp -7
     swsp r0, 0
@@ -920,6 +1412,8 @@ clear_screen:
     sw r1, r0, 0
     la r1, vga_control_base
     sw r1, r0, 2 ; pos
+    li r0, 29
+    sw r1, r0, 3 ; cursor counter limit
     lwsp r0, 0
     lwsp r1, 1
     addsp 2
@@ -1120,6 +1614,86 @@ gets:
 		sw r0, r2, 2 ; cursor pos
 		b _gets_clear_flags
 		nop
+getchar:
+	addsp -4
+	swsp r0, 0
+	swsp r1, 1
+	swsp r2, 2
+	swsp r3, 3
+	la r2, ps2_base
+	li r3, 0x0001
+	_getchar_ps2_loop:
+		_getchar_wait_ps2:
+			lw r2, r4, 1 ; ps2 control
+			and r4, r3
+			beqz r4, _getchar_wait_ps2
+			nop
+		lw r2, r0, 0 ; ps2 data
+
+		; is extend?
+		li r1, 0xe0
+		cmp r0, r1
+		bteqz _getchar_extend
+		nop
+
+		; is break?
+		li r1, 0xf0
+		cmp r0, r1
+		bteqz _getchar_break
+		nop
+
+		; ignore extend and break
+		la r1, is_extend
+		lw r1, r1, 0
+		bnez r1, _getchar_clear_flags
+		nop
+		la r1, is_break
+		lw r1, r1, 0
+		bnez r1, _getchar_clear_flags
+		nop
+
+		; keyboard 2 ascii
+		la r1, ps2_scancode
+		addu r0, r1, r0
+		lw r0, r4, 0
+
+_getchar_done:
+	lwsp r0, 0
+	lwsp r1, 1
+	lwsp r2, 2
+	lwsp r3, 3
+	addsp 4
+	ret
+	nop
+
+_getchar_extend:
+	li r4, 0
+	la r0, is_extend
+	li r1, 1
+	sw r0, r1, 0
+	b _getchar_done
+	nop
+
+_getchar_break:
+	li r4, 0
+	la r0, is_break
+	li r1, 1
+	sw r0, r1, 0
+	b _getchar_done
+	nop
+
+_getchar_clear_flags:
+	li r4, 0
+	; clear flags
+	la r0, is_extend
+	li r1, 0
+	sw r0, r1, 0
+	la r0, is_break
+	li r1, 0
+	sw r0, r1, 0
+	b _getchar_done
+	nop
+
 delay:
     push r0
     push r1
@@ -1312,6 +1886,121 @@ unknown_command:
 .word 32
 .word 0
 
+running_server:
+.word 'R'
+.word 'u'
+.word 'n'
+.word 'n'
+.word 'i'
+.word 'n'
+.word 'g'
+.word 32
+.word 'k'
+.word 'e'
+.word 'r'
+.word 'n'
+.word 'e'
+.word 'l'
+.word '.'
+.word 's'
+.word 44
+.word 32
+.word 'p'
+.word 'l'
+.word 'e'
+.word 'a'
+.word 's'
+.word 'e'
+.word 32
+.word 'c'
+.word 'o'
+.word 'n'
+.word 'n'
+.word 'e'
+.word 'c'
+.word 't'
+.word 32
+.word 'w'
+.word 'i'
+.word 't'
+.word 'h'
+.word 32
+.word 'U'
+.word 'A'
+.word 'R'
+.word 'T'
+.word '.'
+.word 10
+.word 0
+
+help:
+.word 'h'
+.word 'e'
+.word 'l'
+.word 'p'
+.word 0
+
+usage:
+.word 'T'
+.word 'h'
+.word 'i'
+.word 's'
+.word 32
+.word 'P'
+.word 'C'
+.word 32
+.word 'h'
+.word 'a'
+.word 's'
+.word 32
+.word 'S'
+.word 'u'
+.word 'p'
+.word 'e'
+.word 'r'
+.word 32
+.word 'C'
+.word 'o'
+.word 'w'
+.word 32
+.word 'P'
+.word 'o'
+.word 'w'
+.word 'e'
+.word 'r'
+.word 's'
+.word '.'
+.word 10
+.word 0
+
+gpio_on:
+.word 'g'
+.word 'p'
+.word 'i'
+.word 'o'
+.word 32
+.word 'o'
+.word 'n'
+.word 0
+
+gpio_off:
+.word 'g'
+.word 'p'
+.word 'i'
+.word 'o'
+.word 32
+.word 'o'
+.word 'f'
+.word 'f'
+.word 0
+
+_2048:
+.word '2'
+.word '0'
+.word '4'
+.word '8'
+.word 0
+
 empty_string:
 .word 0
 
@@ -1450,4 +2139,174 @@ ps2_scancode:
 .word 0x39
 .word 0x00
 .word 0x00
+
+_2048_block_name:
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 'C'
+.word 'o'
+.word 'l'
+.word 'i'
+.word 'n'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 'b'
+.word 'i'
+.word 'l'
+.word 'l'
+.word '1'
+.word '2'
+.word '5'
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 'l'
+.word 'a'
+.word 'z'
+.word 'y'
+.word 'c'
+.word 'a'
+.word 'l'
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word 't'
+.word 'w'
+.word 'd'
+.word '2'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 'f'
+.word 's'
+.word 'y'
+.word 'g'
+.word 'd'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word 'w'
+.word 'u'
+.word 'h'
+.word 'z'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word 'Y'
+.word 'Y'
+.word 'F'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word '1'
+.word '2'
+.word '8'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word '2'
+.word '5'
+.word '6'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word '5'
+.word '1'
+.word '2'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word '1'
+.word '0'
+.word '2'
+.word '4'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word 'l'
+.word 's'
+.word 's'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
 

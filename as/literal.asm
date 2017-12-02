@@ -134,6 +134,121 @@ unknown_command:
 .word 32
 .word 0
 
+running_server:
+.word 'R'
+.word 'u'
+.word 'n'
+.word 'n'
+.word 'i'
+.word 'n'
+.word 'g'
+.word 32
+.word 'k'
+.word 'e'
+.word 'r'
+.word 'n'
+.word 'e'
+.word 'l'
+.word '.'
+.word 's'
+.word 44
+.word 32
+.word 'p'
+.word 'l'
+.word 'e'
+.word 'a'
+.word 's'
+.word 'e'
+.word 32
+.word 'c'
+.word 'o'
+.word 'n'
+.word 'n'
+.word 'e'
+.word 'c'
+.word 't'
+.word 32
+.word 'w'
+.word 'i'
+.word 't'
+.word 'h'
+.word 32
+.word 'U'
+.word 'A'
+.word 'R'
+.word 'T'
+.word '.'
+.word 10
+.word 0
+
+help:
+.word 'h'
+.word 'e'
+.word 'l'
+.word 'p'
+.word 0
+
+usage:
+.word 'T'
+.word 'h'
+.word 'i'
+.word 's'
+.word 32
+.word 'P'
+.word 'C'
+.word 32
+.word 'h'
+.word 'a'
+.word 's'
+.word 32
+.word 'S'
+.word 'u'
+.word 'p'
+.word 'e'
+.word 'r'
+.word 32
+.word 'C'
+.word 'o'
+.word 'w'
+.word 32
+.word 'P'
+.word 'o'
+.word 'w'
+.word 'e'
+.word 'r'
+.word 's'
+.word '.'
+.word 10
+.word 0
+
+gpio_on:
+.word 'g'
+.word 'p'
+.word 'i'
+.word 'o'
+.word 32
+.word 'o'
+.word 'n'
+.word 0
+
+gpio_off:
+.word 'g'
+.word 'p'
+.word 'i'
+.word 'o'
+.word 32
+.word 'o'
+.word 'f'
+.word 'f'
+.word 0
+
+_2048:
+.word '2'
+.word '0'
+.word '4'
+.word '8'
+.word 0
+
 empty_string:
 .word 0
 
@@ -272,3 +387,173 @@ ps2_scancode:
 .word 0x39
 .word 0x00
 .word 0x00
+
+_2048_block_name:
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 'C'
+.word 'o'
+.word 'l'
+.word 'i'
+.word 'n'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 'b'
+.word 'i'
+.word 'l'
+.word 'l'
+.word '1'
+.word '2'
+.word '5'
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 'l'
+.word 'a'
+.word 'z'
+.word 'y'
+.word 'c'
+.word 'a'
+.word 'l'
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word 't'
+.word 'w'
+.word 'd'
+.word '2'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 'f'
+.word 's'
+.word 'y'
+.word 'g'
+.word 'd'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word 'w'
+.word 'u'
+.word 'h'
+.word 'z'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word 'Y'
+.word 'Y'
+.word 'F'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word '1'
+.word '2'
+.word '8'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word '2'
+.word '5'
+.word '6'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word '5'
+.word '1'
+.word '2'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word '1'
+.word '0'
+.word '2'
+.word '4'
+.word 32
+.word 32
+.word 32
+.word 32
+
+.word 32
+.word 32
+.word 32
+.word 32
+.word 'l'
+.word 's'
+.word 's'
+.word 32
+.word 32
+.word 32
+.word 32
+.word 32

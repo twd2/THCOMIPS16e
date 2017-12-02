@@ -1,50 +1,47 @@
-; initialize global variables
-li r0, 0x0000
-la r4, ctrl_pressed
-sw r4, r0, 0
-la r4, alt_pressed
-sw r4, r0, 0
-la r4, shift_pressed
-sw r4, r0, 0
-la r4, is_extend
-sw r4, r0, 0
-la r4, is_break
-sw r4, r0, 0
-
-_2048_start_game: 
+game_2048:
+	addsp -8
+	swsp r0, 0
+	swsp r1, 1
+	swsp r2, 2
+	swsp r3, 3
+	swsp r4, 4
+	swsp r5, 5
+	swsp r6, 6
+	swsp r7, 7
+_2048_start_game:
 ; load game status from sd card to 0xb000 - 0xb00f
 li r0, 0xb000
-li r1, 4
+li r1, 1
 sw r0, r1, 0
-li r1, 0
+li r1, 1
 sw r0, r1, 1
 li r1, 0
 sw r0, r1, 2
 li r1, 0
 sw r0, r1, 3
-li r1, 4
+li r1, 0
 sw r0, r1, 4
-li r1, 5
+li r1, 0
 sw r0, r1, 5
-li r1, 6
+li r1, 0
 sw r0, r1, 6
-li r1, 7
+li r1, 0
 sw r0, r1, 7
-li r1, 8
+li r1, 0
 sw r0, r1, 8
-li r1, 9
+li r1, 0
 sw r0, r1, 9
-li r1, 10
+li r1, 0
 sw r0, r1, 10
-li r1, 11
+li r1, 0
 sw r0, r1, 11
-li r1, 2
+li r1, 0
 sw r0, r1, 12
-li r1, 2
+li r1, 0
 sw r0, r1, 13
 li r1, 0
 sw r0, r1, 14
-li r1, 0
+li r1, 1
 sw r0, r1, 15
 
 _2048_clear_graphic_memory:
@@ -72,9 +69,9 @@ _2048_new_block:
 		nop
 		addiu r2, 1 ; blank_block_cnt++
 		addu r1, r2, r4
-		li r5, 3
+		li r5, 1
 		and r4, r5
-		bnez r4, _2048_new_block_next
+		beqz r4, _2048_new_block_next
 		nop
 		li r4, 1
 		sw r3, r4, 1 ; blank block -> Colin when (id + cnt) % 4 == 0
@@ -413,400 +410,14 @@ _2048_down:
 
 _2048_game_over:
 ; store game status to sd card
-	$:
-		b $
-		nop
-
-; global variables
-.extern ps2_base, 0xe002
-.extern ctrl_pressed, 0xc000
-.extern alt_pressed, 0xc001
-.extern shift_pressed, 0xc002
-.extern is_extend, 0xc003
-.extern is_break, 0xc004
-getchar:
-	addsp -4
-	swsp r0, 0
-	swsp r1, 1
-	swsp r2, 2
-	swsp r3, 3
-	la r2, ps2_base
-	li r3, 0x0001
-	_getchar_ps2_loop:
-		_getchar_wait_ps2:
-			lw r2, r4, 1 ; ps2 control
-			and r4, r3
-			beqz r4, _getchar_wait_ps2
-			nop
-		lw r2, r0, 0 ; ps2 data
-
-		; is extend?
-		li r1, 0xe0
-		cmp r0, r1
-		bteqz _getchar_extend
-		nop
-
-		; is break?
-		li r1, 0xf0
-		cmp r0, r1
-		bteqz _getchar_break
-		nop
-
-		; ignore extend and break
-		la r1, is_extend
-		lw r1, r1, 0
-		bnez r1, _getchar_clear_flags
-		nop
-		la r1, is_break
-		lw r1, r1, 0
-		bnez r1, _getchar_clear_flags
-		nop
-
-		; keyboard 2 ascii
-		la r1, ps2_scancode
-		addu r0, r1, r0
-		lw r0, r4, 0
-
-_getchar_done:
 	lwsp r0, 0
 	lwsp r1, 1
 	lwsp r2, 2
 	lwsp r3, 3
-	addsp 4
+	lwsp r4, 4
+	lwsp r5, 5
+	lwsp r6, 6
+	lwsp r7, 7
+	addsp 8
 	ret
 	nop
-
-_getchar_extend:
-	li r4, 0
-	la r0, is_extend
-	li r1, 1
-	sw r0, r1, 0
-	b _getchar_done
-	nop
-
-_getchar_break:
-	li r4, 0
-	la r0, is_break
-	li r1, 1
-	sw r0, r1, 0
-	b _getchar_done
-	nop
-
-_getchar_clear_flags:
-	li r4, 0
-	; clear flags
-	la r0, is_extend
-	li r1, 0
-	sw r0, r1, 0
-	la r0, is_break
-	li r1, 0
-	sw r0, r1, 0
-	b _getchar_done
-	nop
-
-_2048_block_name:
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 'C'
-.word 'o'
-.word 'l'
-.word 'i'
-.word 'n'
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 'b'
-.word 'i'
-.word 'l'
-.word 'l'
-.word '1'
-.word '2'
-.word '5'
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 'l'
-.word 'a'
-.word 'z'
-.word 'y'
-.word 'c'
-.word 'a'
-.word 'l'
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word 't'
-.word 'w'
-.word 'd'
-.word '2'
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 'f'
-.word 's'
-.word 'y'
-.word 'g'
-.word 'd'
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word 'w'
-.word 'u'
-.word 'h'
-.word 'z'
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word 'Y'
-.word 'Y'
-.word 'F'
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word '1'
-.word '2'
-.word '8'
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word '2'
-.word '5'
-.word '6'
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word '5'
-.word '1'
-.word '2'
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word '1'
-.word '0'
-.word '2'
-.word '4'
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word 'l'
-.word 's'
-.word 's'
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-
-
-ps2_scancode:
-; scancode lookup table
-; 128 items
-; usage:
-; la r0, ps2_scancode
-; addu r1, r0, r0
-; lw r1, r1, 0
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x09
-.word 0x60
-.word 0x00
-.word 0x01
-.word 0x02
-.word 0x03
-.word 0x04
-.word 0x05
-.word 0x71
-.word 0x31
-.word 0x00
-.word 0x01
-.word 0x02
-.word 0x7A
-.word 0x73
-.word 0x61
-.word 0x77
-.word 0x32
-.word 0x00
-.word 0x00
-.word 0x63
-.word 0x78
-.word 0x64
-.word 0x65
-.word 0x34
-.word 0x33
-.word 0x00
-.word 0x00
-.word 0x20
-.word 0x76
-.word 0x66
-.word 0x74
-.word 0x72
-.word 0x35
-.word 0x00
-.word 0x00
-.word 0x6E
-.word 0x62
-.word 0x68
-.word 0x67
-.word 0x79
-.word 0x36
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x6D
-.word 0x6A
-.word 0x75
-.word 0x37
-.word 0x38
-.word 0x00
-.word 0x00
-.word 0x2C
-.word 0x6B
-.word 0x69
-.word 0x6F
-.word 0x30
-.word 0x39
-.word 0x00
-.word 0x00
-.word 0x2E
-.word 0x2F
-.word 0x6C
-.word 0x3B
-.word 0x70
-.word 0x2D
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x27
-.word 0x00
-.word 0x5B
-.word 0x3D
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x0A
-.word 0x5D
-.word 0x00
-.word 0x5C
-.word 0x00
-.word 0x01
-.word 0x02
-.word 0x03
-.word 0x04
-.word 0x05
-.word 0x06
-.word 0x07
-.word 0x08
-.word 0x00
-.word 0x00
-.word 0x31
-.word 0x00
-.word 0x34
-.word 0x37
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x30
-.word 0x2E
-.word 0x32
-.word 0x35
-.word 0x36
-.word 0x38
-.word 0x00
-.word 0x00
-.word 0x00
-.word 0x2B
-.word 0x33
-.word 0x2D
-.word 0x2A
-.word 0x39
-.word 0x00
-.word 0x00
