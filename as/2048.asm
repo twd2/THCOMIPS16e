@@ -74,7 +74,7 @@ _2048_new_block:
 		bnez r4, _2048_new_block_next
 		nop
 		li r4, 1
-		sw r3, r4, 0 ; blank block -> Colin when (id + cnt) % 4 == 0
+		sw r3, r4, 0 
 		_2048_new_block_next:
 			addiu r1, 1
 			cmpi r1, 16
@@ -177,23 +177,52 @@ _2048_render:
 			b _2048_draw_block
 			nop
 
+_2048_new_game:
+	li r1, 0 ; block id
+	la r2, global_counter
+	lw r2, r2, 0
+	not r2, r2
+	_2048_new_game_loop:
+		li r3, 0xb000 ; load block status
+		addu r1, r3, r3
+		li r4, 0
+		sw r3, r4, 0 
+		li r4, 1
+		sllv r1, r4
+		and r4, r2
+		cmp r4, r5
+		bteqz _2048_new_game_next
+		nop
+		li r4, 1
+		sw r3, r4, 0 
+		_2048_new_game_next:
+			addiu r1, 1
+			cmpi r1, 16
+			bteqz _2048_render
+			nop
+			b _2048_new_game_loop
+			nop
+
 _2048_get_command:
 	call getchar
 	nop
-	cmpi r4, 'w' ; 'w'
+	cmpi r4, 'w' 
 	bteqz _2048_up_relay
 	nop 
-	cmpi r4, 's' ; 's'
+	cmpi r4, 's' 
 	bteqz _2048_down_relay 
 	nop
-	cmpi r4, 'a' ; 'a'
+	cmpi r4, 'a' 
 	bteqz _2048_left_relay
 	nop
-	cmpi r4, 'd' ; 'd'
+	cmpi r4, 'd' 
 	bteqz _2048_right_relay
 	nop
-	cmpi r4, 'q' ; 'q'
+	cmpi r4, 'q' 
 	bteqz _2048_game_over_relay
+	nop
+	cmpi r4, 'n' 
+	bteqz _2048_new_game
 	nop
 	b _2048_get_command
 	nop
