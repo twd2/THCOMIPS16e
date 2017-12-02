@@ -64,7 +64,7 @@ print_word:
     move r1, r0
     li r2, 0xf
     sra r0, r1, 8
-    sra r0, r1, 4
+    sra r0, r0, 4
     and r0, r2
     call print_hex
     nop
