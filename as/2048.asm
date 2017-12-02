@@ -195,23 +195,23 @@ _2048_get_command:
 	b _2048_get_command
 	nop
 	_2048_up_relay:
-		li r1, _2048_up
+		la r1, _2048_up
 		jr r1
 		nop
 	_2048_down_relay:
-		li r1, _2048_down
+		la r1, _2048_down
 		jr r1
 		nop
 	_2048_left_relay:
-		li r1, _2048_left
+		la r1, _2048_left
 		jr r1
 		nop
 	_2048_right_relay:
-		li r1, _2048_right
+		la r1, _2048_right
 		jr r1
 		nop
 	_2048_game_over_relay:
-		li r1, _2048_game_over
+		la r1, _2048_game_over
 		jr r1
 		nop
 
@@ -267,174 +267,18 @@ _2048_left:
 			b _2048_left_loop
 			nop
 		_2048_left_new_block_relay:
-			li r1, _2048_new_block
+			la r1, _2048_new_block
 			jr r1
 			nop
 
 _2048_right:
-	li r0, 1 ; block id
-	_2048_left_loop:
-		li r1, 0xb000 ; load block status
-		addu r0, r1, r2
-		lw r2, r1, 0 ; status
-		beqz r1, _2048_left_next_block
-		li r3, 0
-		sw r2, r3, 0 ; clear origin status
-		move r2, r0 ; next_id
-		_2048_left_next_loop:
-			addiu r2, -1
-			cmpi r2, -1
-			bteqz _2048_left_move
-			nop
-			li r3, 0xb000 ; load block status
-			addu r2, r3, r3
-			lw r3, r3, 0 ; next status
-			beqz r3, _2048_left_next_loop
-			nop
-			cmp r3, r1
-			bteqz _2048_left_merge
-			nop
-		_2048_left_move:
-			addiu r2, 1 ; next id
-			li r3, 0xb000 
-			addu r3, r2, r3 ; next addr
-			sw r3, r1, 0 ; move block
-			b _2048_left_next_block
-			nop
-		_2048_left_merge:
-			li r3, 0xb000 
-			addu r3, r2, r3 ; next addr
-			addiu r1, 1
-			sw r3, r1, 0 ; move block
-		_2048_left_next_block:
-			addiu r0, 4
-			move r1, r0
-			cmpi r1, 17
-			bteqz _2048_left_loop
-			li r0, 2 ; slot
-			cmpi r1, 18
-			bteqz _2048_left_loop
-			li r0, 3 ; slot
-			cmpi r1, 19
-			bteqz _2048_left_new_block_relay ; FIXME: ImmOutOfRangeError: -164
-			li r0, 0 ; slot
-			move r0, r1
-			b _2048_left_loop
-			nop
-		_2048_left_new_block_relay:
-			li r1, _2048_new_block
-			jr r1
-			nop
+
 
 _2048_up:
-	li r0, 1 ; block id
-	_2048_left_loop:
-		li r1, 0xb000 ; load block status
-		addu r0, r1, r2
-		lw r2, r1, 0 ; status
-		beqz r1, _2048_left_next_block
-		li r3, 0
-		sw r2, r3, 0 ; clear origin status
-		move r2, r0 ; next_id
-		_2048_left_next_loop:
-			addiu r2, -1
-			cmpi r2, -1
-			bteqz _2048_left_move
-			nop
-			li r3, 0xb000 ; load block status
-			addu r2, r3, r3
-			lw r3, r3, 0 ; next status
-			beqz r3, _2048_left_next_loop
-			nop
-			cmp r3, r1
-			bteqz _2048_left_merge
-			nop
-		_2048_left_move:
-			addiu r2, 1 ; next id
-			li r3, 0xb000 
-			addu r3, r2, r3 ; next addr
-			sw r3, r1, 0 ; move block
-			b _2048_left_next_block
-			nop
-		_2048_left_merge:
-			li r3, 0xb000 
-			addu r3, r2, r3 ; next addr
-			addiu r1, 1
-			sw r3, r1, 0 ; move block
-		_2048_left_next_block:
-			addiu r0, 4
-			move r1, r0
-			cmpi r1, 17
-			bteqz _2048_left_loop
-			li r0, 2 ; slot
-			cmpi r1, 18
-			bteqz _2048_left_loop
-			li r0, 3 ; slot
-			cmpi r1, 19
-			bteqz _2048_left_new_block_relay ; FIXME: ImmOutOfRangeError: -164
-			li r0, 0 ; slot
-			move r0, r1
-			b _2048_left_loop
-			nop
-		_2048_left_new_block_relay:
-			li r1, _2048_new_block
-			jr r1
-			nop
+
 
 _2048_down:
-	li r0, 1 ; block id
-	_2048_left_loop:
-		li r1, 0xb000 ; load block status
-		addu r0, r1, r2
-		lw r2, r1, 0 ; status
-		beqz r1, _2048_left_next_block
-		li r3, 0
-		sw r2, r3, 0 ; clear origin status
-		move r2, r0 ; next_id
-		_2048_left_next_loop:
-			addiu r2, -1
-			cmpi r2, -1
-			bteqz _2048_left_move
-			nop
-			li r3, 0xb000 ; load block status
-			addu r2, r3, r3
-			lw r3, r3, 0 ; next status
-			beqz r3, _2048_left_next_loop
-			nop
-			cmp r3, r1
-			bteqz _2048_left_merge
-			nop
-		_2048_left_move:
-			addiu r2, 1 ; next id
-			li r3, 0xb000 
-			addu r3, r2, r3 ; next addr
-			sw r3, r1, 0 ; move block
-			b _2048_left_next_block
-			nop
-		_2048_left_merge:
-			li r3, 0xb000 
-			addu r3, r2, r3 ; next addr
-			addiu r1, 1
-			sw r3, r1, 0 ; move block
-		_2048_left_next_block:
-			addiu r0, 4
-			move r1, r0
-			cmpi r1, 17
-			bteqz _2048_left_loop
-			li r0, 2 ; slot
-			cmpi r1, 18
-			bteqz _2048_left_loop
-			li r0, 3 ; slot
-			cmpi r1, 19
-			bteqz _2048_left_new_block_relay ; FIXME: ImmOutOfRangeError: -164
-			li r0, 0 ; slot
-			move r0, r1
-			b _2048_left_loop
-			nop
-		_2048_left_new_block_relay:
-			li r1, _2048_new_block
-			jr r1
-			nop
+
 
 _2048_game_over:
 ; store game status to sd card
