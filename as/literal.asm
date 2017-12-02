@@ -249,6 +249,15 @@ _2048:
 .word '8'
 .word 0
 
+reboot:
+.word 'r'
+.word 'e'
+.word 'b'
+.word 'o'
+.word 'o'
+.word 't'
+.word 0
+
 empty_string:
 .word 0
 

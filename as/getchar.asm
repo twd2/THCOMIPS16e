@@ -8,6 +8,10 @@ getchar:
 	li r3, 0x0001
 	_getchar_ps2_loop:
 		_getchar_wait_ps2:
+            la r0, global_counter
+            lw r0, r1, 0
+            addiu r1, 1
+            sw r0, r1, 0
 			lw r2, r4, 1 ; ps2 control
 			and r4, r3
 			beqz r4, _getchar_wait_ps2

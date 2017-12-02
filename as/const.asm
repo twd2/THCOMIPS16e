@@ -24,3 +24,5 @@
 
 ; stack
 .extern stack_base 0xe000
+
+.extern global_counter, 0xc006

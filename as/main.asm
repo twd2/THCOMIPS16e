@@ -38,11 +38,18 @@ shell_loop:
     beqz r4, do_gpio_off
     nop
 
-    ; command == "gpio off"?
+    ; command == "2048"?
     la r1, _2048
     call strcmp
     nop
     beqz r4, call_2048
+    nop
+
+    ; command == "reboot"?
+    la r1, reboot
+    call strcmp
+    nop
+    beqz r4, do_reboot
     nop
 
     la r1, empty_string
@@ -97,6 +104,12 @@ do_gpio_off:
     li r1, 0x0000 ; off
     sw r0, r1, 0 ; gpio data
     b shell_loop
+    nop
+
+do_reboot:
+    ; goto 0x0000
+    li r0, 0
+    jr r0
     nop
 
 call_2048:

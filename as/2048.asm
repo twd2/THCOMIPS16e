@@ -60,21 +60,21 @@ _2048_clear_graphic_memory:
 
 _2048_new_block:
 	li r1, 0 ; block id
-	li r2, 0 ; blank_block_cnt
+	la r2, global_counter
+	lw r2, r2, 0
 	_2048_new_block_loop:
 		li r3, 0xb000 ; load block status
 		addu r1, r3, r3
 		lw r3, r4, 0 ; status
 		bnez r4, _2048_new_block_next
 		nop
-		addiu r2, 1 ; blank_block_cnt++
 		addu r1, r2, r4
-		li r5, 1
+		li r5, 3
 		and r4, r5
-		beqz r4, _2048_new_block_next
+		bnez r4, _2048_new_block_next
 		nop
 		li r4, 1
-		sw r3, r4, 1 ; blank block -> Colin when (id + cnt) % 4 == 0
+		sw r3, r4, 0 ; blank block -> Colin when (id + cnt) % 4 == 0
 		_2048_new_block_next:
 			addiu r1, 1
 			cmpi r1, 16
