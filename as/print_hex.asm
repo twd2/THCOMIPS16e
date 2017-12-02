@@ -18,9 +18,8 @@ print_hex:
     nop
 
     ; 0~9
-    addiu r0, 0x30
     b _print_hex_out_hex
-    nop
+    addiu r0, 0x30 ; bd
 
 _print_hex_is_hex:
     addiu r0, 0x37 ; r0 += 'A' - 0x0A
@@ -30,6 +29,8 @@ _print_hex_out_hex:
     lwsp r0, 0
     lwsp r7, 1
     addsp 2
+    ret
+    nop
 
 ; print byte r0
 print_byte:
@@ -53,6 +54,8 @@ print_byte:
     lwsp r2, 2
     lwsp r7, 3
     addsp 4
+    ret
+    nop
 
 ; print word r0
 print_word:
@@ -85,3 +88,5 @@ print_word:
     lwsp r2, 2
     lwsp r7, 3
     addsp 4
+    ret
+    nop
