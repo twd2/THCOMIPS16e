@@ -18,9 +18,13 @@ cat gets.asm >> a.asm
 echo >> a.asm
 cat getchar.asm >> a.asm
 echo >> a.asm
-cat delay.asm >> a.asm
-echo >> a.asm
 cat strcmp.asm >> a.asm
+echo >> a.asm
+cat print_hex.asm >> a.asm
+echo >> a.asm
+cat sd.asm >> a.asm
+echo >> a.asm
+cat delay.asm >> a.asm
 echo >> a.asm
 cat literal.asm >> a.asm
 echo >> a.asm

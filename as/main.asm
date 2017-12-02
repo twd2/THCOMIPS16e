@@ -2,6 +2,17 @@ la r0, boot_message
 call puts
 nop
 
+la r6, sd_init
+jalr r7, r6
+nop
+
+la r6, print_word
+jalr r7, r6
+nop
+li r0, 10
+call putchar
+nop
+
 shell_loop:
     la r0, prompt
     call puts
@@ -10,42 +21,36 @@ shell_loop:
     call gets
     nop
 
-    ; command == "server"?
     la r1, server
     call strcmp
     nop
     beqz r4, goto_server
     nop
 
-    ; command == "help"?
     la r1, help
     call strcmp
     nop
     beqz r4, show_help
     nop
 
-    ; command == "gpio on"?
     la r1, gpio_on
     call strcmp
     nop
     beqz r4, do_gpio_on
     nop
 
-    ; command == "gpio off"?
     la r1, gpio_off
     call strcmp
     nop
     beqz r4, do_gpio_off
     nop
 
-    ; command == "2048"?
     la r1, _2048
     call strcmp
     nop
     beqz r4, call_2048
     nop
 
-    ; command == "reboot"?
     la r1, reboot
     call strcmp
     nop
@@ -77,8 +82,8 @@ goto_server:
     la r0, running_server
     call puts
     nop
-    ; goto 0x0003
-    li r0, 0x0003
+    ; goto kernel
+    la r0, KERNEL
     jr r0
     nop
 
@@ -97,6 +102,7 @@ do_gpio_on:
     sw r0, r1, 0 ; gpio data
     b shell_loop
     nop
+
 do_gpio_off:
     la r0, gpio_base
     li r1, 0x0000 ; out

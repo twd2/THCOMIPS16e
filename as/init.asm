@@ -1,4 +1,4 @@
-main:
+init:
 
 ; initialize stack
 la r0, stack_base

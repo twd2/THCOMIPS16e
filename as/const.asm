@@ -14,6 +14,9 @@
 .extern gpio_data, 0xe000
 .extern gpio_direction, 0xe001
 
+; SD
+.extern sd_base, 0xe008
+
 ; global variables
 .extern ctrl_pressed, 0xc000
 .extern alt_pressed, 0xc001
@@ -21,8 +24,7 @@
 .extern is_extend, 0xc003
 .extern is_break, 0xc004
 .extern char_addr, 0xc005
+.extern global_counter, 0xc006
 
 ; stack
-.extern stack_base 0xe000
-
-.extern global_counter, 0xc006
+.extern stack_base, 0xe000

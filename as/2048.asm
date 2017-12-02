@@ -183,12 +183,13 @@ _2048_new_game:
 	lw r2, r2, 0
 	not r2, r2
 	_2048_new_game_loop:
-		li r3, 0xb000 ; load block status
+		li r3, 0xb000
 		addu r1, r3, r3
 		li r4, 0
 		sw r3, r4, 0 
 		li r4, 1
 		sllv r1, r4
+		move r5, r4
 		and r4, r2
 		cmp r4, r5
 		bteqz _2048_new_game_next
