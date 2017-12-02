@@ -453,8 +453,9 @@ def main():
         out_filename = sys.argv[2]
     with open(out_filename, 'wb') as f:
         f.write(buffer)
-        if len(buffer) < 4096:
-            f.write(bytes([0] * (4096 - len(buffer))))
+        remainder = len(buffer) % 4096
+        if remainder:
+            f.write(bytes([0] * (4096 - remainder)))
     with open(out_filename + '.sym', 'w', encoding='utf-8') as f:
         for k, v in sorted(syms.items(), key=lambda t: t[1]):
             f.write('.extern {}, 0x{:04x}\n'.format(k, v))

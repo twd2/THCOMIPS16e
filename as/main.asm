@@ -6,13 +6,6 @@ la r6, sd_init
 jalr r7, r6
 nop
 
-la r6, print_word
-jalr r7, r6
-nop
-li r0, 10
-call putchar
-nop
-
 shell_loop:
     la r0, prompt
     call puts
@@ -55,6 +48,18 @@ shell_loop:
     call strcmp
     nop
     beqz r4, do_reboot
+    nop
+    
+    la r1, memdump
+    call strcmp
+    nop
+    beqz r4, do_memdump
+    nop
+
+    la r1, cmd_badapple
+    call strcmp
+    nop
+    beqz r4, call_badapple
     nop
 
     la r1, empty_string
@@ -120,6 +125,28 @@ do_reboot:
 
 call_2048:
     call game_2048
+    nop
+    call clear_screen
+    nop
+    b shell_loop
+    nop
+
+do_memdump:
+    la r0, dumping_string
+    call puts
+    nop
+    la r6, sd_memdump
+    jalr r7, r6
+    nop
+    la r0, dumped_string
+    call puts
+    nop
+    b shell_loop
+    nop
+
+call_badapple:
+    la r6, badapple
+    jalr r7, r6
     nop
     call clear_screen
     nop

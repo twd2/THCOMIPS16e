@@ -261,6 +261,93 @@ reboot:
 empty_string:
 .word 0
 
+dumping_string:
+.word 'D'
+.word 'u'
+.word 'm'
+.word 'p'
+.word 'i'
+.word 'n'
+.word 'g'
+.word 32
+.word 'm'
+.word 'e'
+.word 'm'
+.word 'o'
+.word 'r'
+.word 'y'
+.word 32
+.word 't'
+.word 'o'
+.word 32
+.word 'S'
+.word 'D'
+.word 32
+.word 'c'
+.word 'a'
+.word 'r'
+.word 'd'
+.word 32
+.word 'a'
+.word 't'
+.word 32
+.word '0'
+.word 'x'
+.word '2'
+.word '0'
+.word '0'
+.word '0'
+.word '0'
+.word '0'
+.word 32
+.word '('
+.word '2'
+.word 'M'
+.word ')'
+.word '.'
+.word '.'
+.word '.'
+.word 0
+
+dumped_string:
+.word 'm'
+.word 'e'
+.word 'm'
+.word 'o'
+.word 'r'
+.word 'y'
+.word 32
+.word 'd'
+.word 'u'
+.word 'm'
+.word 'p'
+.word 'e'
+.word 'd'
+.word '.'
+.word 10
+.word 0
+
+memdump:
+.word 'm'
+.word 'e'
+.word 'm'
+.word 'd'
+.word 'u'
+.word 'm'
+.word 'p'
+.word 0
+
+cmd_badapple:
+.word 'b'
+.word 'a'
+.word 'd'
+.word 'a'
+.word 'p'
+.word 'p'
+.word 'l'
+.word 'e'
+.word 0
+
 ps2_scancode:
 ; scancode lookup table
 ; 128 items

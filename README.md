@@ -43,7 +43,7 @@ NOP
 * [ ] Data Segment
 * [ ] Code Segment
 * [x] 2048 game
-* [ ] badapple animation
+* [x] badapple animation
 
 ## Note
 
