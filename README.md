@@ -42,7 +42,7 @@ NOP
 * [x] SD card read/write
 * [ ] Data Segment
 * [ ] Code Segment
-* [ ] 2048 game
+* [x] 2048 game
 
 ## Note
 
