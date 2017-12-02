@@ -1,3 +1,16 @@
+; initialize global variables
+li r0, 0x0000
+la r4, ctrl_pressed
+sw r4, r0, 0
+la r4, alt_pressed
+sw r4, r0, 0
+la r4, shift_pressed
+sw r4, r0, 0
+la r4, is_extend
+sw r4, r0, 0
+la r4, is_break
+sw r4, r0, 0
+
 _2048_start_game: 
 ; load game status from sd card to 0xb000 - 0xb00f
 li r0, 0xb000
@@ -74,6 +87,7 @@ _2048_new_block:
 			nop
 
 _2048_render:
+	li r0, 0
 	_2048_draw_block:
 		; r0 block id
 		li r1, 0xb000 ; load block status
@@ -166,58 +180,45 @@ _2048_render:
 			b _2048_draw_block
 			nop
 
-
-
 _2048_get_command:
-	li r1, 0xe002 ; ps2 base
-	li r2, 0x0001
-	_2048_gets_wait_ps2:
-		lw r1, r0, 0x01 ; ps2 control
-		and r0, r2
-		beqz r0, _2048_gets_wait_ps2
-		nop
-	lw r1, r0, 0x00 ; ps2 data
-	cmpi r0, 0x1D ; 'w'
+	call getchar
+	nop
+	cmpi r4, 'w' ; 'w'
 	bteqz _2048_up_relay
 	nop 
-	cmpi r0, 0x1B ; 's'
+	cmpi r4, 's' ; 's'
 	bteqz _2048_down_relay 
 	nop
-	cmpi r0, 0x1C ; 'a'
+	cmpi r4, 'a' ; 'a'
 	bteqz _2048_left_relay
 	nop
-	cmpi r0, 0x23 ; 'd'
+	cmpi r4, 'd' ; 'd'
 	bteqz _2048_right_relay
 	nop
-	cmpi r0, 0x15 ; 'q'
+	cmpi r4, 'q' ; 'q'
 	bteqz _2048_game_over_relay
 	nop
 	b _2048_get_command
 	nop
 	_2048_up_relay:
-		la r1, _2048_up
-		jr r1
+		b _2048_up
 		nop
 	_2048_down_relay:
-		la r1, _2048_down
-		jr r1
+		b _2048_down
 		nop
 	_2048_left_relay:
-		la r1, _2048_left
-		jr r1
+		b _2048_left
 		nop
 	_2048_right_relay:
-		la r1, _2048_right
-		jr r1
+		b _2048_right
 		nop
 	_2048_game_over_relay:
-		la r1, _2048_game_over
-		jr r1
+		b _2048_game_over
 		nop
 
 
 _2048_left:
-	li r0, 1 ; block id
+	li r0, 0 ; block id
 	_2048_left_loop:
 		li r1, 0xb000 ; load block status
 		addu r0, r1, r2
@@ -228,7 +229,9 @@ _2048_left:
 		move r2, r0 ; next_id
 		_2048_left_next_loop:
 			addiu r2, -1
-			cmpi r2, -1
+			li r3, 3
+			and r3, r2
+			cmpi r3, 3
 			bteqz _2048_left_move
 			nop
 			li r3, 0xb000 ; load block status
@@ -252,23 +255,14 @@ _2048_left:
 			addiu r1, 1
 			sw r3, r1, 0 ; move block
 		_2048_left_next_block:
-			addiu r0, 4
-			move r1, r0
-			cmpi r1, 17
-			bteqz _2048_left_loop
-			li r0, 2 ; slot
-			cmpi r1, 18
-			bteqz _2048_left_loop
-			li r0, 3 ; slot
-			cmpi r1, 19
-			bteqz _2048_left_new_block_relay ; FIXME: ImmOutOfRangeError: -164
-			li r0, 0 ; slot
-			move r0, r1
+			addiu r0, 1
+			cmpi r0, 16
+			bteqz _2048_left_new_block_relay
+			nop
 			b _2048_left_loop
 			nop
 		_2048_left_new_block_relay:
-			la r1, _2048_new_block
-			jr r1
+			b _2048_new_block
 			nop
 
 _2048_right:
@@ -279,12 +273,101 @@ _2048_up:
 
 _2048_down:
 
+	b _2048_get_command
+	nop
 
 _2048_game_over:
 ; store game status to sd card
 	$:
 		b $
 		nop
+
+; global variables
+.extern ps2_base, 0xe002
+.extern ctrl_pressed, 0xc000
+.extern alt_pressed, 0xc001
+.extern shift_pressed, 0xc002
+.extern is_extend, 0xc003
+.extern is_break, 0xc004
+getchar:
+	addsp -4
+	swsp r0, 0
+	swsp r1, 1
+	swsp r2, 2
+	swsp r3, 3
+	la r2, ps2_base
+	li r3, 0x0001
+	_getchar_ps2_loop:
+		_getchar_wait_ps2:
+			lw r2, r4, 1 ; ps2 control
+			and r4, r3
+			beqz r4, _getchar_wait_ps2
+			nop
+		lw r2, r0, 0 ; ps2 data
+
+		; is extend?
+		li r1, 0xe0
+		cmp r0, r1
+		bteqz _getchar_extend
+		nop
+
+		; is break?
+		li r1, 0xf0
+		cmp r0, r1
+		bteqz _getchar_break
+		nop
+
+		; ignore extend and break
+		la r1, is_extend
+		lw r1, r1, 0
+		bnez r1, _getchar_clear_flags
+		nop
+		la r1, is_break
+		lw r1, r1, 0
+		bnez r1, _getchar_clear_flags
+		nop
+
+		; keyboard 2 ascii
+		la r1, ps2_scancode
+		addu r0, r1, r0
+		lw r0, r4, 0
+
+_getchar_done:
+	lwsp r0, 0
+	lwsp r1, 1
+	lwsp r2, 2
+	lwsp r3, 3
+	addsp 4
+	ret
+	nop
+
+_getchar_extend:
+	li r4, 0
+	la r0, is_extend
+	li r1, 1
+	sw r0, r1, 0
+	b _getchar_done
+	nop
+
+_getchar_break:
+	li r4, 0
+	la r0, is_break
+	li r1, 1
+	sw r0, r1, 0
+	b _getchar_done
+	nop
+
+_getchar_clear_flags:
+	li r4, 0
+	; clear flags
+	la r0, is_extend
+	li r1, 0
+	sw r0, r1, 0
+	la r0, is_break
+	li r1, 0
+	sw r0, r1, 0
+	b _getchar_done
+	nop
 
 _2048_block_name:
 .word 32
@@ -455,3 +538,140 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
+
+ps2_scancode:
+; scancode lookup table
+; 128 items
+; usage:
+; la r0, ps2_scancode
+; addu r1, r0, r0
+; lw r1, r1, 0
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x09
+.word 0x60
+.word 0x00
+.word 0x01
+.word 0x02
+.word 0x03
+.word 0x04
+.word 0x05
+.word 0x71
+.word 0x31
+.word 0x00
+.word 0x01
+.word 0x02
+.word 0x7A
+.word 0x73
+.word 0x61
+.word 0x77
+.word 0x32
+.word 0x00
+.word 0x00
+.word 0x63
+.word 0x78
+.word 0x64
+.word 0x65
+.word 0x34
+.word 0x33
+.word 0x00
+.word 0x00
+.word 0x20
+.word 0x76
+.word 0x66
+.word 0x74
+.word 0x72
+.word 0x35
+.word 0x00
+.word 0x00
+.word 0x6E
+.word 0x62
+.word 0x68
+.word 0x67
+.word 0x79
+.word 0x36
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x6D
+.word 0x6A
+.word 0x75
+.word 0x37
+.word 0x38
+.word 0x00
+.word 0x00
+.word 0x2C
+.word 0x6B
+.word 0x69
+.word 0x6F
+.word 0x30
+.word 0x39
+.word 0x00
+.word 0x00
+.word 0x2E
+.word 0x2F
+.word 0x6C
+.word 0x3B
+.word 0x70
+.word 0x2D
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x27
+.word 0x00
+.word 0x5B
+.word 0x3D
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x0A
+.word 0x5D
+.word 0x00
+.word 0x5C
+.word 0x00
+.word 0x01
+.word 0x02
+.word 0x03
+.word 0x04
+.word 0x05
+.word 0x06
+.word 0x07
+.word 0x08
+.word 0x00
+.word 0x00
+.word 0x31
+.word 0x00
+.word 0x34
+.word 0x37
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x30
+.word 0x2E
+.word 0x32
+.word 0x35
+.word 0x36
+.word 0x38
+.word 0x00
+.word 0x00
+.word 0x00
+.word 0x2B
+.word 0x33
+.word 0x2D
+.word 0x2A
+.word 0x39
+.word 0x00
+.word 0x00
