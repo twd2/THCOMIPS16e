@@ -105,6 +105,38 @@ boot_message:
 .word 10
 .word 0
 
+server:
+.word 's'
+.word 'e'
+.word 'r'
+.word 'v'
+.word 'e'
+.word 'r'
+.word 0
+
+unknown_command:
+.word 'U'
+.word 'n'
+.word 'k'
+.word 'n'
+.word 'o'
+.word 'w'
+.word 'n'
+.word 32
+.word 'c'
+.word 'o'
+.word 'm'
+.word 'm'
+.word 'a'
+.word 'n'
+.word 'd'
+.word 58
+.word 32
+.word 0
+
+empty_string:
+.word 0
+
 ps2_scancode:
 ; scancode lookup table
 ; 128 items

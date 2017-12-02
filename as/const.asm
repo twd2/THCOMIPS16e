@@ -1,3 +1,5 @@
+.org 0x200
+
 ; VGA
 .extern vga_control_base, 0xeffc
 .extern graphics_base, 0xf000

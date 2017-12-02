@@ -308,6 +308,12 @@ def make_mtc0(rx, imm):
     return make2(0b11110, reg(rx), imm, 0b00001)
 ACT['mtc0'] = make_mtc0
 
+def make_syscall(imm):
+    if not -1024 <= imm <= 2047:
+        raise ImmOutOfRangeError(imm)
+    return make0(0b11111, imm)
+ACT['syscall'] = make_syscall
+
 def make__word(imm):
     if not -32768 <= imm <= 65535:
         raise ImmOutOfRangeError(imm)
