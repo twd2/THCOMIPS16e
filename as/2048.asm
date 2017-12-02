@@ -314,12 +314,102 @@ _2048_right:
 
 
 _2048_up:
+	li r0, 0 ; block id
+	_2048_up_loop:
+		li r1, 0xb000 ; load block status
+		addu r0, r1, r2
+		lw r2, r1, 0 ; status
+		beqz r1, _2048_up_next_block
+		li r3, 0
+		sw r2, r3, 0 ; clear origin status
+		move r2, r0 ; next_id
+		_2048_up_next_loop:
+			addiu r2, -4
+			li r3, 16
+			and r3, r2
+			cmpi r3, 16
+			bteqz _2048_up_move
+			nop
+			li r3, 0xb000 ; load block status
+			addu r2, r3, r3
+			lw r3, r3, 0 ; next status
+			beqz r3, _2048_up_next_loop
+			nop
+			cmp r3, r1
+			bteqz _2048_up_merge
+			nop
+		_2048_up_move:
+			addiu r2, 4 ; next id
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			sw r3, r1, 0 ; move block
+			b _2048_up_next_block
+			nop
+		_2048_up_merge:
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			addiu r1, 1
+			sw r3, r1, 0 ; move block
+		_2048_up_next_block:
+			addiu r0, 1
+			cmpi r0, 16
+			bteqz _2048_up_new_block_relay
+			nop
+			b _2048_up_loop
+			nop
+		_2048_up_new_block_relay:
+			b _2048_new_block
+			nop
 
 
 _2048_down:
+	li r0, 15 ; block id
+	_2048_down_loop:
+		li r1, 0xb000 ; load block status
+		addu r0, r1, r2
+		lw r2, r1, 0 ; status
+		beqz r1, _2048_down_next_block
+		li r3, 0
+		sw r2, r3, 0 ; clear origin status
+		move r2, r0 ; next_id
+		_2048_down_next_loop:
+			addiu r2, 4
+			li r3, 16
+			and r3, r2
+			cmpi r3, 16
+			bteqz _2048_down_move
+			nop
+			li r3, 0xb000 ; load block status
+			addu r2, r3, r3
+			lw r3, r3, 0 ; next status
+			beqz r3, _2048_down_next_loop
+			nop
+			cmp r3, r1
+			bteqz _2048_down_merge
+			nop
+		_2048_down_move:
+			addiu r2, -4 ; next id
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			sw r3, r1, 0 ; move block
+			b _2048_down_next_block
+			nop
+		_2048_down_merge:
+			li r3, 0xb000 
+			addu r3, r2, r3 ; next addr
+			addiu r1, 1
+			sw r3, r1, 0 ; move block
+		_2048_down_next_block:
+			addiu r0, -1
+			cmpi r0, -1
+			bteqz _2048_down_new_block_relay
+			nop
+			b _2048_down_loop
+			nop
+		_2048_down_new_block_relay:
+			b _2048_new_block
+			nop
 
-	b _2048_get_command
-	nop
 
 _2048_game_over:
 ; store game status to sd card
