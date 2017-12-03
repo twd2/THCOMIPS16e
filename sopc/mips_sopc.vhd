@@ -64,11 +64,11 @@ architecture behavioral of mips_sopc is
               LOCKED_OUT      : out   std_logic);
     end component;
     
-    component clock_4x is
+    component vga_dcm is
        port ( CLKIN_IN        : in    std_logic; 
               RST_IN          : in    std_logic; 
               CLKFX_OUT       : out   std_logic; 
-              CLKFX180_OUT    : out   std_logic;
+              CLKFX180_OUT    : out   std_logic; 
               CLK0_OUT        : out   std_logic; 
               LOCKED_OUT      : out   std_logic);
     end component;
@@ -386,15 +386,15 @@ architecture behavioral of mips_sopc is
     signal core_test_0: reg_addr_t;
     signal core_test_1: word_t;
     
-    signal CLK, CLK_180, locked, CLK_NX, CLK_NX_180, locked_nx: std_logic;
+    signal CLK_50M_buff, CLK, CLK_180, locked, VGA_CLK, VGA_CLK_180, vga_locked: std_logic;
 begin
-    RST <= not locked or not nRST;
+    RST <= not locked or not vga_locked or not nRST;
 
     SYSBUS_DQ <= SYSBUS_DOUT when SYSBUS_DEN = '1' else (others => 'Z');
     SYSBUS_DIN <= SYSBUS_DQ;
     EXTBUS_DQ <= EXTBUS_DOUT when EXTBUS_DEN = '1' else (others => 'Z');
     EXTBUS_DIN <= EXTBUS_DQ;
-    
+
     clock_manager_inst: clock_manager
     port map
     (
@@ -402,22 +402,22 @@ begin
         RST_IN => not nRST,
         CLKFX_OUT => CLK,
         CLKFX180_OUT => CLK_180,
-        --CLKIN_IBUFG_OUT
-        --CLK0_OUT
+        -- CLKIN_IBUFG_OUT
+        CLK0_OUT => CLK_50M_buff,
         LOCKED_OUT => locked
     );
-    
-    clock_nx_inst: clock_4x
+
+    vga_dcm_inst: vga_dcm
     port map
     (
-        CLKIN_IN => CLK,
+        CLKIN_IN => CLK_50M_buff,
         RST_IN => not nRST,
-        CLKFX_OUT => CLK_NX,
-        CLKFX180_OUT => CLK_NX_180,
+        CLKFX_OUT => VGA_CLK,
+        CLKFX180_OUT => VGA_CLK_180,
         --CLK0_OUT
-        LOCKED_OUT => locked_nx
+        LOCKED_OUT => vga_locked
     );
-    
+
     sysbus_controller_inst: sysbus_controller
     port map
     (
@@ -541,7 +541,7 @@ begin
     vga_controller_inst: vga_controller
     port map
     (
-        VGA_CLK => CLK,
+        VGA_CLK => VGA_CLK,
         WR_CLK => CLK,
         RST => RST,
 
@@ -559,9 +559,7 @@ begin
         BUS_REQ => vga_bus_req,
         BUS_RES => vga_bus_res
     );
-    --vga_graphics_bus_res.done <= '1';
-    --vga_graphics_bus_res.data <= vga_graphics_bus_req.addr;
-    
+
     graphics_memory_inst: graphics_memory
     port map
     (

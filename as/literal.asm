@@ -348,6 +348,53 @@ cmd_badapple:
 .word 'e'
 .word 0
 
+self_test_prefix:
+.word 'R'
+.word 'u'
+.word 'n'
+.word 'n'
+.word 'i'
+.word 'n'
+.word 'g'
+.word 32
+.word 's'
+.word 'e'
+.word 'l'
+.word 'f'
+.word 32
+.word 't'
+.word 'e'
+.word 's'
+.word 't'
+.word 32
+.word 0
+
+self_test_suffix:
+.word '.'
+.word '.'
+.word '.'
+.word 0
+
+self_test_passed:
+.word 'p'
+.word 'a'
+.word 's'
+.word 's'
+.word 'e'
+.word 'd'
+.word 10
+.word 0
+
+self_test_failed:
+.word 'f'
+.word 'a'
+.word 'i'
+.word 'l'
+.word 'e'
+.word 'd'
+.word 10
+.word 0
+
 ps2_scancode:
 ; scancode lookup table
 ; 128 items
