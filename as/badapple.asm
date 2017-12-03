@@ -64,7 +64,18 @@ _badapple_play_loop:
         addiu r2, 1 ; bd
     _badapple_memcpy_done:
     
-    ; TODO: delay
+    ; magic delay!
+    _badapple_delay:
+        li r2, 2
+    _badapple_delay_outer_loop:
+        li r1, 60553
+    _badapple_delay_inner_loop:
+        addiu r1, -1
+        bnez r1, _badapple_delay_inner_loop
+        nop
+        addiu r2, -1
+        bnez r2, _badapple_delay_outer_loop
+        nop
 
     b _badapple_play_loop
     addiu r0, 1 ; bd
