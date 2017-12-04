@@ -700,3 +700,5 @@ _2048_block_name:
 .word 32
 .word 32
 .word 32
+
+__end_of_code__:
