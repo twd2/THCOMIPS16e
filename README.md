@@ -31,15 +31,16 @@ SLLV SRAV
 
 NOP
 
-## To-Do List
+## Features
 
 * [x] Basic ISA
 * [x] Extend ISA
+* [x] Modern Assembler with pseudo-instructions (la, li) support
 * [ ] Interrupt
 * [x] VGA
 * [x] PS/2
 * [x] SD card boot
-* [x] SD card read/write
+* [x] SD card read/write DMA
 * [ ] Data Segment
 * [ ] Code Segment
 * [x] 2048 game
