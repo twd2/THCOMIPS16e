@@ -45,7 +45,7 @@ NOP
 * [ ] Data Segment
 * [ ] Code Segment
 
-**Sofeware**
+**Software**
 
 * [x] Modern Assembler with pseudo-instructions (la, li) support
 * [x] A tiny operating system (shell) with Super Cow Powers
