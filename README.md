@@ -33,9 +33,10 @@ NOP
 
 ## Features
 
+**Hardware**
+
 * [x] Basic ISA
 * [x] Extend ISA
-* [x] Modern Assembler with pseudo-instructions (la, li) support
 * [ ] Interrupt
 * [x] VGA
 * [x] PS/2
@@ -43,8 +44,13 @@ NOP
 * [x] SD card read/write DMA
 * [ ] Data Segment
 * [ ] Code Segment
+
+**Sofeware**
+
+* [x] Modern Assembler with pseudo-instructions (la, li) support
+* [x] A tiny operating system (shell) with Super Cow Powers
 * [x] 2048 game
-* [x] badapple animation
+* [x] BadApple animation
 
 ## Note
 
