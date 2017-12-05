@@ -7,11 +7,11 @@
 -- \   \   \/     Version : 14.7
 --  \   \         Application : xaw2vhdl
 --  /   /         Filename : vga_dcm.vhd
--- /___/   /\     Timestamp : 12/03/2017 16:05:42
+-- /___/   /\     Timestamp : 12/05/2017 17:41:51
 -- \   \  /  \ 
 --  \___\/\___\ 
 --
---Command: xaw2vhdl-intstyle G:/Program/cpld_fpga/THCOMIPS16e/sopc/ipcore_dir/vga_dcm.xaw -st vga_dcm.vhd
+--Command: xaw2vhdl-intstyle C:/Users/twd2/Desktop/thco/THCOMIPS16e/sopc/ipcore_dir/vga_dcm.xaw -st vga_dcm.vhd
 --Design Name: vga_dcm
 --Device: xc3s1200e-4fg320
 --

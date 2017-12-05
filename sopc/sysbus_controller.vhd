@@ -35,6 +35,7 @@ architecture behavioral of sysbus_controller is
     signal uart_read_ready_buff, uart_write_ready_buff: std_logic_vector(1 downto 0);
     signal uart_control_reg: word_t;
     signal uart_nre_buff, uart_nwe_buff: std_logic;
+    signal is_uart_data: std_logic;
 begin
     RAM1_nCE <= '0';
 
@@ -69,24 +70,16 @@ begin
     uart_control_reg <= (13 downto 0 => '0') & uart_read_ready_buff(1) & uart_write_ready_buff(1);
     
     UART_nRE <= uart_nre_buff;
-    
-    --process(CLK, RST)
-    --begin
-    --    if RST = '1' then
-    --        UART_nWE <= '1';
-    --    elsif falling_edge(CLK) then -- FIXME: gated clock
-    --        UART_nWE <= uart_nwe_buff; -- delay 0.5 clock
-    --    end if;
-    --end process;
-    
     UART_nWE <= CLK or uart_nwe_buff;
+    
+    is_uart_data <= '1' when BUS_REQ.addr(14 downto 0) = "011" & x"F00" else '0';
 
-    process(CLK, BUS_REQ, SYSBUS_DIN, uart_control_reg)
+    process(CLK, BUS_REQ, SYSBUS_DIN, uart_control_reg, is_uart_data)
     begin
-        RAM1_nOE <= '1';
-        RAM1_nWE <= '1';
-        uart_nre_buff <= '1';
-        uart_nwe_buff <= '1';
+        RAM1_nOE <= not (not is_uart_data and not BUS_REQ.nread_write);
+        RAM1_nWE <= not (CLK and BUS_REQ.en and BUS_REQ.nread_write);
+        uart_nre_buff <= not (is_uart_data and BUS_REQ.en and not BUS_REQ.nread_write);
+        uart_nwe_buff <= not (BUS_REQ.en and BUS_REQ.nread_write and is_uart_data);
 
         SYSBUS_ADDR <= "0" & BUS_REQ.addr(word_msb - 1 downto 0);
         SYSBUS_DEN <= BUS_REQ.nread_write;
@@ -99,28 +92,8 @@ begin
         BUS_RES.page_fault <= '0';
         BUS_RES.error <= '0';
 
-        if BUS_REQ.en = '1' then
-            if BUS_REQ.addr = x"BF01" then -- UART control reg
-                if BUS_REQ.nread_write = '0' then -- read
-                    BUS_RES.data <= uart_control_reg;
-                else -- write
-                    -- undefined behavior
-                end if;
-            elsif BUS_REQ.addr = x"BF00" then -- UART data reg
-                if BUS_REQ.nread_write = '0' then -- read
-                    uart_nre_buff <= '0';
-                else -- write
-                    uart_nwe_buff <= '0';
-                end if;
-            else -- SRAM1
-                if BUS_REQ.nread_write = '0' then -- read
-                    RAM1_nOE <= '0';
-                    RAM1_nWE <= '1';
-                else -- write
-                    RAM1_nOE <= '1';
-                    RAM1_nWE <= not CLK;
-                end if;
-            end if;
+        if BUS_REQ.addr(14 downto 0) = "011" & x"F01" then -- UART control reg
+            BUS_RES.data <= uart_control_reg;
         end if;
     end process;
 end;
