@@ -33,6 +33,10 @@ begin
     BUS_REQ.byte_mask <= (others => '1');
     BUS_REQ.en <= not RST;
     BUS_REQ.nread_write <= '0';
+    
+    BUS_REQ.is_uart_data <= '0';
+    BUS_REQ.is_uart_control <= '0';
+    
     INS <= BUS_RES.data;
     
     STALL_REQ <= not BUS_RES.done; -- wait BUS_RES.done

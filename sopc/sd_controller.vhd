@@ -158,6 +158,9 @@ begin
         end if;
     end process;
     
+    DMA_BUS_REQ.is_uart_data <= '0';
+    DMA_BUS_REQ.is_uart_control <= '0';
+    
     process(CLK, RST)
     begin
         if RST = '1' then

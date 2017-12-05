@@ -35,7 +35,7 @@ architecture behavioral of sysbus_controller is
     signal uart_read_ready_buff, uart_write_ready_buff: std_logic_vector(1 downto 0);
     signal uart_control_reg: word_t;
     signal uart_nre_buff, uart_nwe_buff: std_logic;
-    signal is_uart_data: std_logic;
+    -- signal is_uart_data: std_logic;
 begin
     RAM1_nCE <= '0';
 
@@ -72,14 +72,14 @@ begin
     UART_nRE <= uart_nre_buff;
     UART_nWE <= CLK or uart_nwe_buff;
     
-    is_uart_data <= '1' when BUS_REQ.addr(14 downto 0) = "011" & x"F00" else '0';
+    -- is_uart_data <= '1' when BUS_REQ.addr(14 downto 0) = "011" & x"F00" else '0';
 
-    process(CLK, BUS_REQ, SYSBUS_DIN, uart_control_reg, is_uart_data)
+    process(CLK, BUS_REQ, SYSBUS_DIN, uart_control_reg)
     begin
-        RAM1_nOE <= not (not is_uart_data and not BUS_REQ.nread_write);
+        RAM1_nOE <= not (not BUS_REQ.is_uart_data and not BUS_REQ.nread_write);
         RAM1_nWE <= not (CLK and BUS_REQ.en and BUS_REQ.nread_write);
-        uart_nre_buff <= not (is_uart_data and BUS_REQ.en and not BUS_REQ.nread_write);
-        uart_nwe_buff <= not (BUS_REQ.en and BUS_REQ.nread_write and is_uart_data);
+        uart_nre_buff <= not (BUS_REQ.is_uart_data and BUS_REQ.en and not BUS_REQ.nread_write);
+        uart_nwe_buff <= not (BUS_REQ.en and BUS_REQ.nread_write and BUS_REQ.is_uart_data);
 
         SYSBUS_ADDR <= "0" & BUS_REQ.addr(word_msb - 1 downto 0);
         SYSBUS_DEN <= BUS_REQ.nread_write;
@@ -92,7 +92,7 @@ begin
         BUS_RES.page_fault <= '0';
         BUS_RES.error <= '0';
 
-        if BUS_REQ.addr(14 downto 0) = "011" & x"F01" then -- UART control reg
+        if BUS_REQ.is_uart_control = '1' then -- UART control reg
             BUS_RES.data <= uart_control_reg;
         end if;
     end process;

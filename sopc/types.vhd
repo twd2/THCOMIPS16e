@@ -19,6 +19,8 @@ package types is
         byte_mask: byte_mask_t;
         en: std_logic;
         nread_write: std_logic;
+        is_uart_data: std_logic; -- to improve timing
+        is_uart_control: std_logic;
     end record;
 
     type bus_response_t is record -- input for host, output for device
@@ -50,6 +52,8 @@ package types is
         mem_write_en: std_logic;
         sw_after_load: std_logic;
         write_mem_data: word_t;
+        is_uart_data: std_logic; -- to improve timing
+        is_uart_control: std_logic;
     end record;
     
     type wb_signal_t is record

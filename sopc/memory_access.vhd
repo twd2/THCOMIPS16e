@@ -66,10 +66,14 @@ begin
             BUS_REQ.byte_mask <= (others => 'X');
             BUS_REQ.en <= '0';
             BUS_REQ.nread_write <= 'X';
+            BUS_REQ.is_uart_data <= 'X';
+            BUS_REQ.is_uart_control <= 'X';
             LOADED_DATA <= (others => 'X');
             if MEM.mem_en = '1' then
                 BUS_REQ.addr <= MEM.alu_result;
                 BUS_REQ.en <= '1';
+                BUS_REQ.is_uart_data <= MEM.is_uart_data;
+                BUS_REQ.is_uart_control <= MEM.is_uart_control;
                 if MEM.mem_write_en = '0' then
                     BUS_REQ.byte_mask <= (others => '1'); -- TODO
                     BUS_REQ.nread_write <= '0';

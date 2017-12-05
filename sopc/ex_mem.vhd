@@ -35,6 +35,8 @@ begin
             MEM_MEM.mem_en <= '0';
             MEM_MEM.mem_write_en <= '0';
             MEM_MEM.write_mem_data <= (others => '0');
+            MEM_MEM.is_uart_data <= '0';
+            MEM_MEM.is_uart_control <= '0';
             MEM_WB.write_en <= '0';
             MEM_WB.write_addr <= (others => '0');
             MEM_WB.write_data <= (others => '0');
@@ -60,6 +62,8 @@ begin
                 MEM_MEM.mem_en <= '0';
                 MEM_MEM.mem_write_en <= 'X';
                 MEM_MEM.write_mem_data <= (others => 'X');
+                MEM_MEM.is_uart_data <= 'X';
+                MEM_MEM.is_uart_control <= 'X';
                 MEM_WB.write_en <= '0';
                 MEM_WB.write_addr <= (others => 'X');
                 MEM_WB.write_data <= (others => 'X');
