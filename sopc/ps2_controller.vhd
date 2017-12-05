@@ -19,11 +19,14 @@ entity ps2_controller is
 end;
 
 architecture behavioral of ps2_controller is
+    constant TIMEOUT_TICKS: integer := 1000000;
+
     type state_type is (s_wait, s_begin, s_data, s_parity, s_end, s_done);
     signal data0, data, ps2_clk_buff, clk1, clk2, parity: std_logic; 
     signal frame: std_logic_vector(7 downto 0); 
     signal state: state_type;
     signal data_cnt : integer range 0 to 7;
+    signal timeout_counter : integer range 0 to TIMEOUT_TICKS;
     
     signal data_buff: word_t;
     signal data_ready: std_logic;
@@ -43,6 +46,7 @@ begin
             parity <= '0';
             data_cnt <= 0;
             data_buff <= (others => '0');
+            timeout_counter <= 0;
         elsif rising_edge(CLK) then
             case state is 
                 when s_begin =>
@@ -52,6 +56,7 @@ begin
                             data_cnt <= 0;
                             parity <= '0';
                         end if;
+                        timeout_counter <= 0;
                     end if;
                 when s_data =>
                     if ps2_clk_buff = '1' then
@@ -62,6 +67,14 @@ begin
                         else 
                             data_cnt <= data_cnt + 1;
                         end if;
+                        timeout_counter <= 0;
+                    else
+                        if timeout_counter = TIMEOUT_TICKS then
+                            state <= s_begin;
+                            timeout_counter <= 0;
+                        else
+                            timeout_counter <= timeout_counter + 1;
+                        end if;
                     end if;
                 when s_parity =>
                     if ps2_clk_buff = '1' then
@@ -69,6 +82,14 @@ begin
                             state <= s_end;
                         else
                             state <= s_begin;
+                        end if;
+                        timeout_counter <= 0;
+                    else
+                        if timeout_counter = TIMEOUT_TICKS then
+                            state <= s_begin;
+                            timeout_counter <= 0;
+                        else
+                            timeout_counter <= timeout_counter + 1;
                         end if;
                     end if;
                 when s_end =>
@@ -78,6 +99,14 @@ begin
                             state <= s_done;
                         else
                             state <= s_begin;
+                        end if;
+                        timeout_counter <= 0;
+                    else
+                        if timeout_counter = TIMEOUT_TICKS then
+                            state <= s_begin;
+                            timeout_counter <= 0;
+                        else
+                            timeout_counter <= timeout_counter + 1;
                         end if;
                     end if;
                 when s_done =>
