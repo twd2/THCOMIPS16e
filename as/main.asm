@@ -1,9 +1,10 @@
+la r6, selftest
+jalr r7, r6
+nop
+
 la r0, boot_message
 call puts
 nop
-
-; call selftest
-; nop
 
 la r6, sd_init
 jalr r7, r6

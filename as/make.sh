@@ -28,6 +28,8 @@ cat delay.asm >> a.asm
 echo >> a.asm
 cat badapple.asm >> a.asm
 echo >> a.asm
+cat selftest.asm >> a.asm
+echo >> a.asm
 cat literal.asm >> a.asm
 echo >> a.asm
 
