@@ -107,7 +107,7 @@ _putchar_out:
 clear_screen:
     addsp -2
     swsp r0, 0
-    swsp r0, 1
+    swsp r1, 1
     la r0, graphics_base
     li r1, 0x0700
     _clear_screen_loop:
@@ -152,5 +152,32 @@ _puts_out:
     lwsp r1, 1
     lwsp r7, 2
     addsp 3
+    ret
+    nop
+
+; print [OK], right aligned
+put_ok:
+    addsp -2
+    swsp r0, 0
+    swsp r1, 1
+    la r1, vga_control_base ; vga control
+    lw r1, r1, 2 ; cursor pos
+    li r0, 0xFF
+    and r1, r0 ; cursor col
+    la r0, char_addr
+    lw r0, r0, 0 ; cursor addr
+    addiu r0, 80 ; next line + col
+    subu r0, r1, r0 ; r0 = next line
+    li r1, 0x0741 ; TODO
+    sw r0, r1, -4
+    li r1, 0x0741 ; TODO
+    sw r0, r1, -3
+    li r1, 0x0741 ; TODO
+    sw r0, r1, -2
+    li r1, 0x0741 ; TODO
+    sw r0, r1, -1
+    lwsp r0, 0
+    lwsp r1, 1
+    addsp 2
     ret
     nop
