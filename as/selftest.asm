@@ -2,6 +2,13 @@ selftest:
     addsp -1
     swsp r7, 0
 
+    la r0, gpio_base
+    li r1, 0x0000 ; out
+    sw r0, r1, 1 ; gpio control
+
+    li r1, 0b1111110011111100 ; 00
+    sw r0, r1, 0 ; gpio data
+
 _test_1:
     la r0, self_test_prefix
     call puts
@@ -14,6 +21,10 @@ _test_1:
     la r0, self_test_suffix
     call puts
     nop
+
+    la r0, gpio_base
+    li r1, 0b1111110001100000 ; 01
+    sw r0, r1, 0 ; gpio data
     
     ; test 1
     ; memory write and read
@@ -58,6 +69,10 @@ _test_2:
     call puts
     nop
 
+    la r0, gpio_base
+    li r1, 0b1111110011011010 ; 02
+    sw r0, r1, 0 ; gpio data
+
     ; test 2
     ; memory write, read and bnez
     ; 0x7000 ~ 0xbeff
@@ -81,6 +96,13 @@ _test_2_done:
     la r0, self_test_passed
     call puts
     nop
+
+    la r0, gpio_base
+    li r1, 0x0000 ; out
+    sw r0, r1, 1 ; gpio control
+
+    li r1, 0x0000 ; off
+    sw r0, r1, 0 ; gpio data
 
     lwsp r7, 0
     addsp 1
