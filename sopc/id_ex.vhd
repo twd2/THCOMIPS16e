@@ -44,6 +44,8 @@ begin
             EX_MEM.mem_en <= '0';
             EX_MEM.mem_write_en <= '0';
             EX_MEM.write_mem_data <= (others => '0');
+            EX_MEM.is_uart_data <= '0';
+            EX_MEM.is_uart_control <= '0';
             EX_WB.write_en <= '0';
             EX_WB.write_addr <= (others => '0');
             EX_WB.write_data <= (others => '0');
@@ -75,6 +77,8 @@ begin
                 EX_MEM.mem_en <= '0';
                 EX_MEM.mem_write_en <= 'X';
                 EX_MEM.write_mem_data <= (others => 'X');
+                EX_MEM.is_uart_data <= 'X';
+                EX_MEM.is_uart_control <= 'X';
                 EX_WB.write_en <= '0';
                 EX_WB.write_addr <= (others => 'X');
                 EX_WB.write_data <= (others => 'X');

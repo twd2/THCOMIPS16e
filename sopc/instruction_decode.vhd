@@ -108,6 +108,8 @@ begin
             MEM.mem_write_en <= '0';
             MEM.write_mem_data <= (others => '0');
             MEM.sw_after_load <= '0';
+            MEM.is_uart_data <= '0';
+            MEM.is_uart_control <= '0';
             WB.write_en <= '0';
             WB.write_addr <= (others => '0');
             WB.write_data <= (others => '0');
@@ -144,6 +146,8 @@ begin
             MEM.mem_en <= '0';
             MEM.mem_write_en <= 'X';
             MEM.write_mem_data <= (others => 'X');
+            MEM.is_uart_data <= 'X';
+            MEM.is_uart_control <= 'X';
             WB.write_en <= '0';
             WB.write_addr <= (others => 'X');
             WB.write_data <= (others => 'X');

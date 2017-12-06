@@ -216,6 +216,8 @@ begin
     pipeline_en <= GRAPHICS_BUS_RES.done and not almost_full;
     GRAPHICS_BUS_REQ.en <= not almost_full;
     GRAPHICS_BUS_REQ.nread_write <= '0';
+    GRAPHICS_BUS_REQ.is_uart_data <= '0';
+    GRAPHICS_BUS_REQ.is_uart_control <= '0';
 
     process(WR_CLK, wr_rst)
     begin

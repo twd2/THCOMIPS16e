@@ -92,6 +92,8 @@ begin
             MEM_O.mem_write_en <= '0';
             MEM_O.write_mem_data <= (others => '0');
             MEM_O.sw_after_load <= '0';
+            MEM_O.is_uart_data <= '0';
+            MEM_O.is_uart_control <= '0';
             WB_O.write_en <= '0';
             WB_O.write_addr <= (others => '0');
             WB_O.write_data <= (others => '0');
@@ -139,6 +141,19 @@ begin
             
             if EX.cp0_read_en = '1' then
                 WB_O.write_data <= CP0_READ_DATA;
+            end if;
+            
+            -- to improve timing
+            if alu_result_buff = x"BF00" then
+                MEM_O.is_uart_data <= '1';
+            else
+                MEM_O.is_uart_data <= '0';
+            end if;
+           
+            if alu_result_buff = x"BF01" then
+                MEM_O.is_uart_control <= '1';
+            else
+                MEM_O.is_uart_control <= '0';
             end if;
 
             -- TODO(twd2)
