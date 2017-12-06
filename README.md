@@ -38,7 +38,7 @@ NOP
 * [x] Basic ISA
 * [x] Extend ISA
 * [ ] Interrupt
-* [x] VGA
+* [x] VGA display 640x480 @ 60Hz
 * [x] PS/2
 * [x] SD card boot
 * [x] SD card read/write DMA
@@ -50,9 +50,16 @@ NOP
 
 * [x] Modern Assembler with pseudo-instructions (la, li) support
 * [x] POST (power-on self-test)
+* [x] PS/2 Keyboard Driver
 * [x] A tiny operating system (shell) with Super Cow Powers
 * [x] 2048 game
 * [x] BadApple animation
+
+## References
+
+* [SD Specifications Part 1 Physical Layer Simplified Specification](https://www.sdcard.org/downloads/pls/)
+* [How to Use MMC/SDC](http://elm-chan.org/docs/mmc/mmc_e.html)
+* [VGA Signal Timing](http://tinyvga.com/vga-timing)
 
 ## Note
 
