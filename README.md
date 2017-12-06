@@ -49,6 +49,7 @@ NOP
 **Software**
 
 * [x] Modern Assembler with pseudo-instructions (la, li) support
+* [x] POST (power-on self-test)
 * [x] A tiny operating system (shell) with Super Cow Powers
 * [x] 2048 game
 * [x] BadApple animation
