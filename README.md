@@ -44,7 +44,7 @@ NOP
 * [x] SD card read/write DMA
 * [ ] Data Segment
 * [ ] Code Segment
-* [ ] Can execute millions of instructions per second
+* [x] Can execute millions of instructions per second
 
 **Software**
 
