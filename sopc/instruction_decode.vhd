@@ -397,12 +397,12 @@ begin
                             EX.operand_1 <= zero_word;
                             WB.cp0_write_en <= '1';
                             WB.cp0_write_addr <= cp0_addr;
-                        when "00010" => -- syscall
-                            MEM.except_type <= "01000000";
-                        when "00011" => -- eret
+                        when "00010" => -- eret
                             MEM.except_type <= "10000000";
                         when others =>
                     end case;
+                when "11111" => -- syscall
+                    MEM.except_type <= "01000000";
                 when others =>
             end case;
         end if;

@@ -9,7 +9,7 @@ entity except_controller is
     (
         RST: in std_logic;
         
-        MEM_EXCEPT_TYPE: in except_type;
+        MEM_EXCEPT_TYPE: in except_type_t;
         MEM_IS_IN_DELAY_SLOT: in std_logic;
         MEM_PC: in word_t;
         MEM_CP0_BITS: in cp0_bits_t;
@@ -64,7 +64,7 @@ begin
                 EXCEPT_WRITE.in_except_handler <= '0';
             elsif MEM_EXCEPT_TYPE(except_type_bit_syscall) = '1' then
                 PC_FLUSH <= '1';
-                PC_FLUSH_PC <= x"0000"; -- TODO: internal interrupt handler
+                PC_FLUSH_PC <= x"0010"; -- TODO: internal interrupt handler
                 IF_ID_FLUSH <= '1';
                 ID_EX_FLUSH <= '1';
                 EX_MEM_FLUSH <= '1';
@@ -72,7 +72,7 @@ begin
                 EXCEPT_WRITE.en <= '1';
             elsif MEM_EXCEPT_TYPE(5 downto 0) /= (5 downto 0 => '0') then
                 PC_FLUSH <= '1';
-                PC_FLUSH_PC <= x"0000"; -- TODO: external interrupt handler
+                PC_FLUSH_PC <= x"0020"; -- TODO: external interrupt handler
                 IF_ID_FLUSH <= '1';
                 ID_EX_FLUSH <= '1';
                 EX_MEM_FLUSH <= '1';
