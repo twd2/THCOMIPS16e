@@ -308,7 +308,11 @@ def make_mtc0(rx, imm):
     return make2(0b11110, reg(rx), imm, 0b00001)
 ACT['mtc0'] = make_mtc0
 
-def make_syscall(imm):
+def make_eret():
+    return make0(0b11110, 0b00010)
+ACT['eret'] = make_eret
+
+def make_syscall(imm=0):
     if not -1024 <= imm <= 2047:
         raise ImmOutOfRangeError(imm)
     return make0(0b11111, imm)
