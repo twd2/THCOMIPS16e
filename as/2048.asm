@@ -119,7 +119,8 @@ _2048_render:
             sll r4, r2, 6
             sll r5, r2, 4
             addu r4, r5, r2 ; r2 = r2 * 80
-            addu r2, r3, r2 ; r2: addr
+            addu r2, r3, r2 
+            addiu r2, 12 ; r2: addr
         _2048_color:
             li r3, 0
             li r4, 0
@@ -142,7 +143,7 @@ _2048_render:
                 nop
                 _2048_next_line:
                     addiu r3, 1
-                    li r4, 1
+                    li r4, 0
                     cmpi r3, 7
                     bteqz _2048_draw_horizontal_line
                     nop
