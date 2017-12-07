@@ -680,6 +680,36 @@ sent:
 .word 'x'
 .word 0
 
+timer_message:
+.word 'T'
+.word 'h'
+.word 'i'
+.word 's'
+.word 32
+.word 'i'
+.word 's'
+.word 32
+.word 'a'
+.word 32
+.word 'c'
+.word 'l'
+.word 'o'
+.word 'c'
+.word 'k'
+.word 32
+.word 'i'
+.word 'n'
+.word 't'
+.word 'e'
+.word 'r'
+.word 'r'
+.word 'u'
+.word 'p'
+.word 't'
+.word '.'
+.word 10
+.word 0
+
 ps2_scancode:
 ; scancode lookup table
 ; 128 items

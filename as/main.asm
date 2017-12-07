@@ -13,6 +13,10 @@ la r6, sd_init
 jalr r7, r6
 nop
 
+; enable exception
+li r0, 0x0001
+mtc0 r0, status
+
 shell_loop:
     la r0, prompt
     call puts
@@ -159,3 +163,11 @@ call_badapple:
     nop
     b shell_loop
     nop
+
+syscall_handler:
+    mtc0 r0, tmp0
+    mfc0 r0, epc
+    addiu r0, 1 ; skip syscall instruction
+    mtc0 r0, epc
+    mfc0 r0, tmp0
+    eret

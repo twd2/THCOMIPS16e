@@ -1,4 +1,4 @@
-.org 0x280
+.org 0x2a0
 
 ; VGA
 .extern vga_control_base, 0xeffc
@@ -17,6 +17,11 @@
 ; SD
 .extern sd_base, 0xe008
 
+; Timer
+.extern timer_base, 0xe004
+.extern timer_reserved, 0xe004
+.extern timer_control, 0xe005
+
 ; global variables
 .extern ctrl_pressed, 0xc000
 .extern alt_pressed, 0xc001
@@ -26,6 +31,7 @@
 .extern char_addr, 0xc005
 .extern global_counter, 0xc006
 .extern gets_result, 0xc007
+.extern uptime_counter, 0xc008
 
 ; stack
 .extern stack_base, 0xe000

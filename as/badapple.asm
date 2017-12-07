@@ -10,6 +10,12 @@ badapple:
     swsp r5, 5
     swsp r6, 6
     swsp r7, 7
+
+    mfc0 r0, status
+    li r1, 0xfffe
+    and r0, r1
+    mtc0 r0, status ; disable exception
+
     li r0, 0 ; frame counter
     la r5, vga_control_base
     sw r5, r0, 3 ; turn off cursor
@@ -98,6 +104,11 @@ _badapple_play_loop:
     addiu r0, 1 ; bd
 
 _badapple_done:
+    mfc0 r0, status
+    li r1, 0x0001
+    or r0, r1
+    mtc0 r0, status ; enable exception
+
     lwsp r0, 0
     lwsp r1, 1
     lwsp r2, 2

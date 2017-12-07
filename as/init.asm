@@ -18,6 +18,8 @@ la r4, is_break
 sw r4, r0, 0
 la r4, char_addr
 sw r4, r0, 0
+la r4, uptime_counter
+sw r4, r0, 0
 
 call clear_screen
 nop

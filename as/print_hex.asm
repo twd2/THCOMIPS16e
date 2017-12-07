@@ -90,3 +90,39 @@ print_word:
     addsp 4
     ret
     nop
+
+; to hex, r0
+to_hex:
+    addsp -1
+    swsp r1, 0
+    li r1, 0x0a
+    subu r0, r1, r1
+    beqz r1, _to_hex_is_hex
+    li r1, 0x0b ; bd
+    subu r0, r1, r1
+    beqz r1, _to_hex_is_hex
+    li r1, 0x0c ; bd
+    subu r0, r1, r1
+    beqz r1, _to_hex_is_hex
+    li r1, 0x0d ; bd
+    subu r0, r1, r1
+    beqz r1, _to_hex_is_hex
+    li r1, 0x0e ; bd
+    subu r0, r1, r1
+    beqz r1, _to_hex_is_hex
+    li r1, 0x0f ; bd
+    subu r0, r1, r1
+    beqz r1, _to_hex_is_hex
+    nop
+
+    ; 0~9
+    b _to_hex_out_hex
+    addiu r0, 0x30 ; bd
+
+_to_hex_is_hex:
+    addiu r0, 0x37 ; r0 += 'A' - 0x0A
+_to_hex_out_hex:
+    lwsp r1, 0
+    addsp 1
+    ret
+    nop
