@@ -239,10 +239,13 @@ _2048_new_game:
         _2048_new_game_next:
             addiu r1, 1
             cmpi r1, 16
-            bteqz _2048_render
+            bteqz _2048_render_relay
             nop
             b _2048_new_game_loop
             nop
+    _2048_render_relay:
+        b _2048_render
+        nop
 
 _2048_get_command:
     call getchar

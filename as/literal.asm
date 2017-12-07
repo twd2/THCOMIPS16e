@@ -969,15 +969,15 @@ _2048_welcome:
 .word 'o'
 .word 'm'
 .word 'e'
-.word ' '
+.word 32
 .word 't'
 .word 'o'
-.word ' '
+.word 32
 .word '2'
 .word '0'
 .word '4'
 .word '8'
-.word ' '
+.word 32
 .word 'g'
 .word 'a'
 .word 'm'
@@ -988,39 +988,39 @@ _2048_help:
 .word '['
 .word 'N'
 .word ']'
-.word ':'
-.word ' '
+.word 58
+.word 32
 .word 'n'
 .word 'e'
 .word 'w'
-.word ' '
+.word 32
 .word 'g'
 .word 'a'
 .word 'm'
 .word 'e'
-.word ','
-.word ' '
+.word 44
+.word 32
 .word '['
 .word 'Q'
 .word ']'
-.word ':'
-.word ' '
+.word 58
+.word 32
 .word 's'
 .word 't'
 .word 'o'
 .word 'r'
 .word 'e'
-.word ' '
+.word 32
 .word 'a'
 .word 'n'
 .word 'd'
-.word ' '
+.word 32
 .word 'q'
 .word 'u'
 .word 'i'
 .word 't'
-.word ','
-.word ' '
+.word 44
+.word 32
 .word '['
 .word 'W'
 .word ']'
@@ -1036,8 +1036,8 @@ _2048_help:
 .word '['
 .word 'D'
 .word ']'
-.word ':'
-.word ' '
+.word 58
+.word 32
 .word 'u'
 .word 'p'
 .word '\'
