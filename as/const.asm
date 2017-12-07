@@ -25,6 +25,7 @@
 .extern is_break, 0xc004
 .extern char_addr, 0xc005
 .extern global_counter, 0xc006
+.extern gets_result, 0xc007
 
 ; stack
 .extern stack_base, 0xe000
