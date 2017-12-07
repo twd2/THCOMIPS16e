@@ -328,6 +328,16 @@ architecture behavioral of mips_sopc is
         douta : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
       );
     END component;
+    
+    component timer is
+        port
+        (
+            CLK: in std_logic;
+            RST: in std_logic;
+            
+            IRQ: out std_logic
+        );
+    end component;
 
     signal RST: std_logic;
     
@@ -387,6 +397,7 @@ architecture behavioral of mips_sopc is
     signal core_test_1: word_t;
     
     signal CLK_50M_buff, CLK, CLK_180, locked, VGA_CLK, VGA_CLK_180, vga_locked: std_logic;
+    signal irq: std_logic_vector(5 downto 0);
 begin
     RST <= not locked or not vga_locked or not nRST;
 
@@ -700,7 +711,7 @@ begin
         DATA_BUS_REQ => data_bus_req,
         DATA_BUS_RES => data_bus_res,
         
-        IRQ => (others => '0'),
+        IRQ => irq,
         
         testen => core_testen,
         test_0 => core_test_0,
@@ -710,4 +721,13 @@ begin
     testen <= core_testen;
     test_0 <= core_test_0;
     test_1 <= core_test_1(15 downto 4) & sd_dbg;
+    
+    timer_inst: timer
+    port map
+    (
+        CLK => CLK,
+        RST => RST,
+        
+        IRQ => irq(0)
+    );
 end;

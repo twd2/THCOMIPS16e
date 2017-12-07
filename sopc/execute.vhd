@@ -84,7 +84,8 @@ begin
     
     process(MEM)
     begin
-        if CP0_BITS.interrupt_enable = '1' and CP0_BITS.in_except_handler = '0' then
+        if MEM.except_type(except_type_bit_eret) = '1' or
+           (CP0_BITS.interrupt_enable = '1' and CP0_BITS.in_except_handler = '0') then
             except_type <= MEM.except_type(7 downto 6) & (IRQ and not CP0_BITS.interrupt_mask);
         else
             except_type <= except_none;
