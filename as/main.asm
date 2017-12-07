@@ -2,6 +2,9 @@ la r6, selftest
 jalr r7, r6
 nop
 
+call put_ok
+nop
+
 la r0, boot_message
 call puts
 nop
