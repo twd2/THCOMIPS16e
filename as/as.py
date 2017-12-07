@@ -422,9 +422,13 @@ def asm(code):
                     inst[i] = parse_imm(arg)
     print(inst_list)
 
+    addr_to_sym = dict((v, k) for k, v in syms.items())
+
     # pass 3: generate target code
     mc = []
     for inst in inst_list:
+        if len(mc) in addr_to_sym:
+            print('In symbol {}'.format(addr_to_sym[len(mc)]))
         if inst[0].lower() not in ACT:
             raise UnknownInstructionError(inst[0])
         try:

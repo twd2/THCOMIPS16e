@@ -160,21 +160,52 @@ put_ok:
     addsp -2
     swsp r0, 0
     swsp r1, 1
-    la r1, vga_control_base ; vga control
+    la r1, vga_control_base
     lw r1, r1, 2 ; cursor pos
-    li r0, 0xFF
+    li r0, 0xff
     and r1, r0 ; cursor col
     la r0, char_addr
     lw r0, r0, 0 ; cursor addr
     addiu r0, 80 ; next line + col
     subu r0, r1, r0 ; r0 = next line
-    li r1, 0x0741 ; TODO
+    li r1, 0x075b ; [
     sw r0, r1, -4
-    li r1, 0x0741 ; TODO
+    li r1, 0x024f ; O
     sw r0, r1, -3
-    li r1, 0x0741 ; TODO
+    li r1, 0x024b ; K
     sw r0, r1, -2
-    li r1, 0x0741 ; TODO
+    li r1, 0x075d ; ]
+    sw r0, r1, -1
+    lwsp r0, 0
+    lwsp r1, 1
+    addsp 2
+    ret
+    nop
+
+; print [FAIL], right aligned
+put_fail:
+    addsp -2
+    swsp r0, 0
+    swsp r1, 1
+    la r1, vga_control_base
+    lw r1, r1, 2 ; cursor pos
+    li r0, 0xff
+    and r1, r0 ; cursor col
+    la r0, char_addr
+    lw r0, r0, 0 ; cursor addr
+    addiu r0, 80 ; next line + col
+    subu r0, r1, r0 ; r0 = next line
+    li r1, 0x075b ; [
+    sw r0, r1, -6
+    li r1, 0x0446 ; F
+    sw r0, r1, -5
+    li r1, 0x0441 ; A
+    sw r0, r1, -4
+    li r1, 0x0449 ; I
+    sw r0, r1, -3
+    li r1, 0x044c ; L
+    sw r0, r1, -2
+    li r1, 0x075d ; ]
     sw r0, r1, -1
     lwsp r0, 0
     lwsp r1, 1

@@ -52,6 +52,9 @@ _test_1_read_loop:
 
 _test_1_read_done:
 
+    call put_ok
+    nop
+
     la r0, self_test_passed
     call puts
     nop
@@ -93,6 +96,9 @@ _test_2_loop:
     addiu r0, 1 ; bd
 _test_2_done:
 
+    call put_ok
+    nop
+
     la r0, self_test_passed
     call puts
     nop
@@ -111,6 +117,8 @@ _test_2_done:
 
 _selftest_failed:
     move r1, r0 ; save r1
+    call put_fail
+    nop
     la r0, self_test_failed
     call puts
     nop
