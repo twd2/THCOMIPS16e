@@ -10,8 +10,6 @@ cat init.asm >> a.asm
 echo >> a.asm
 cat main.asm >> a.asm
 echo >> a.asm
-cat 2048.asm >> a.asm
-echo >> a.asm
 cat putchar.asm >> a.asm
 echo >> a.asm
 cat gets.asm >> a.asm
@@ -24,9 +22,11 @@ cat sd.asm >> a.asm
 echo >> a.asm
 cat print_hex.asm >> a.asm
 echo >> a.asm
-cat badapple.asm >> a.asm
-echo >> a.asm
 cat selftest.asm >> a.asm
+echo >> a.asm
+cat 2048.asm >> a.asm
+echo >> a.asm
+cat badapple.asm >> a.asm
 echo >> a.asm
 cat delay.asm >> a.asm
 echo >> a.asm

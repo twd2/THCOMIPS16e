@@ -157,9 +157,10 @@ _puts_out:
 
 ; print [OK], right aligned
 put_ok:
-    addsp -2
+    addsp -3
     swsp r0, 0
     swsp r1, 1
+    swsp r2, 2
     la r1, vga_control_base
     lw r1, r1, 2 ; cursor pos
     li r0, 0xff
@@ -168,6 +169,8 @@ put_ok:
     lw r0, r0, 0 ; cursor addr
     addiu r0, 80 ; next line + col
     subu r0, r1, r0 ; r0 = next line
+    la r2, graphics_base
+    addu r0, r2, r0
     li r1, 0x075b ; [
     sw r0, r1, -4
     li r1, 0x024f ; O
@@ -178,15 +181,17 @@ put_ok:
     sw r0, r1, -1
     lwsp r0, 0
     lwsp r1, 1
-    addsp 2
+    lwsp r2, 2
+    addsp 3
     ret
     nop
 
 ; print [FAIL], right aligned
 put_fail:
-    addsp -2
+    addsp -3
     swsp r0, 0
     swsp r1, 1
+    swsp r2, 2
     la r1, vga_control_base
     lw r1, r1, 2 ; cursor pos
     li r0, 0xff
@@ -195,6 +200,8 @@ put_fail:
     lw r0, r0, 0 ; cursor addr
     addiu r0, 80 ; next line + col
     subu r0, r1, r0 ; r0 = next line
+    la r2, graphics_base
+    addu r0, r2, r0
     li r1, 0x075b ; [
     sw r0, r1, -6
     li r1, 0x0446 ; F
@@ -209,6 +216,7 @@ put_fail:
     sw r0, r1, -1
     lwsp r0, 0
     lwsp r1, 1
-    addsp 2
+    lwsp r2, 2
+    addsp 3
     ret
     nop
