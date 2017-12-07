@@ -65,7 +65,7 @@ _2048_render:
         li r4, 0
         _2048_draw_welcome_loop:
             cmpi r4, 21
-            bteqz _2048_draw_block
+            bteqz _2048_draw_help
             nop
             lw r2, r5, 0
             or r5, r3
@@ -74,6 +74,25 @@ _2048_render:
             addiu r2, 1
             addiu r4, 1
             b _2048_draw_welcome_loop
+            nop    
+    _2048_draw_help:
+        la r1, graphics_base
+        li r2, 2320 ; 7 * 4 * 80
+        addu r1, r2, r1
+        la r2, _2048_help
+        li r3, 0x0700
+        li r4, 0
+        _2048_draw_help_loop:
+            cmpi r4, 71
+            bteqz _2048_draw_block
+            nop
+            lw r2, r5, 0
+            or r5, r3
+            sw r1, r5, 0
+            addiu r1, 1
+            addiu r2, 1
+            addiu r4, 1
+            b _2048_draw_help_loop
             nop    
     _2048_draw_block:
         ; r0 block id
