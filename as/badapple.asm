@@ -14,6 +14,11 @@ badapple:
     la r5, vga_control_base
     sw r5, r0, 3 ; turn off cursor
     la r5, sd_base ; SD controller base
+
+    li r2, 0x0001 ; interrupt bit
+    lw r5, r1, 6
+    or r1, r2
+    sw r5, r1, 6 ; clear interrupt bit
 _badapple_play_loop:
     li r1, 6560 ; 6560 frames totally
     cmp r0, r1
@@ -41,7 +46,7 @@ _badapple_play_loop:
     sw r5, r1, 7 ; start command
     
     ; wait for SD controller
-    li r2, 0x0001 ; interrupt bit
+    li r2, 0x0001 ; interrupt bit 
     _badapple_wait_irq:
         lw r5, r1, 6
         move r3, r1
