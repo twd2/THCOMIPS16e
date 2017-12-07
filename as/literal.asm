@@ -843,6 +843,20 @@ _2048_block_name:
 .word 32
 .word 32
 
+
+.word 32
+.word 32
+.word 32
+.word 'L'
+.word 'i'
+.word 'o'
+.word 'n'
+.word 'S'
+.word 'R'
+.word 32
+.word 32
+.word 32
+
 .word 32
 .word 32
 .word 32
@@ -902,19 +916,6 @@ _2048_block_name:
 .word 'Y'
 .word 'Y'
 .word 'F'
-.word 32
-.word 32
-.word 32
-.word 32
-.word 32
-
-.word 32
-.word 32
-.word 32
-.word 32
-.word '2'
-.word '5'
-.word '6'
 .word 32
 .word 32
 .word 32
