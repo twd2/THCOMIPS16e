@@ -12,6 +12,7 @@ package types is
     type reg_file_t is array(reg_count - 1 downto 0) of word_t;
     subtype cp0_addr_t is std_logic_vector(2 downto 0);
     type cp0_reg_t is array(cp0_reg_count - 1 downto 0) of word_t;
+    subtype except_type_t is std_logic_vector(7 downto 0);
     
     type bus_request_t is record -- output for host, input for device
         addr: word_t;
@@ -36,6 +37,7 @@ package types is
         pc: word_t;
         op: op_t;
         funct: funct_t;
+        is_in_delay_slot: std_logic;
     end record;
     
     type ex_signal_t is record
@@ -54,6 +56,7 @@ package types is
         write_mem_data: word_t;
         is_uart_data: std_logic; -- to improve timing
         is_uart_control: std_logic;
+        except_type: except_type_t;
     end record;
     
     type wb_signal_t is record
@@ -85,7 +88,7 @@ package types is
         colored_char: word_t;
         color: word_t;
     end record;
-    
+
     type tasks_t is array(integer range <>) of font_task_t;
 
     type cp0_bits_t is record
@@ -95,11 +98,11 @@ package types is
         epc: word_t;
         ecs: word_t;
     end record;
-    
+
     type cp0_except_write_t is record
         en: std_logic;
         in_except_handler: std_logic;
-        cause: std_logic_vector(7 downto 0);
+        cause: except_type_t;
         epc: word_t;
         ecs: word_t;
     end record;

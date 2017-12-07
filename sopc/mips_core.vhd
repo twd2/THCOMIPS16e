@@ -210,6 +210,7 @@ architecture behavioral of mips_core is
             EX_READ_DATA: out word_t;
 
             EX_BITS: out cp0_bits_t;
+            MEM_BITS: out cp0_bits_t;
             
             -- mem
             MEM_WRITE_EN: in std_logic;
@@ -217,6 +218,28 @@ architecture behavioral of mips_core is
             MEM_WRITE_DATA: in word_t;
             
             EXCEPT_WRITE: in cp0_except_write_t
+        );
+    end component;
+    
+    component except_controller is
+        port
+        (
+            RST: in std_logic;
+            
+            MEM_EXCEPT_TYPE: in except_type_t;
+            MEM_IS_IN_DELAY_SLOT: in std_logic;
+            MEM_PC: in word_t;
+            MEM_CP0_BITS: in cp0_bits_t;
+
+            PC_FLUSH: out std_logic;
+            PC_FLUSH_PC: out word_t;
+
+            IF_ID_FLUSH: out std_logic;
+            ID_EX_FLUSH: out std_logic;
+            EX_MEM_FLUSH: out std_logic;
+            MEM_WB_FLUSH: out std_logic;
+            
+            EXCEPT_WRITE: out cp0_except_write_t
         );
     end component;
 
@@ -307,7 +330,9 @@ architecture behavioral of mips_core is
             EX_WRITE_ADDR: in reg_addr_t;
             
             BRANCH_EN: out std_logic;
-            BRANCH_PC: out word_t
+            BRANCH_PC: out word_t;
+            
+            IS_IN_DELAY_SLOT: in std_logic
         );
     end component;
     
@@ -325,12 +350,14 @@ architecture behavioral of mips_core is
             ID_MEM: in mem_signal_t;
             ID_WB: in wb_signal_t;
             ID_IS_LOAD: in std_logic;
+            ID_IS_BRANCH: in std_logic;
             
             EX_COMMON: out common_signal_t;
             EX_EX: out ex_signal_t;
             EX_MEM: out mem_signal_t;
             EX_WB: out wb_signal_t;
-            EX_IS_LOAD: out std_logic
+            EX_IS_LOAD: out std_logic;
+            EX_IS_BRANCH: out std_logic
         );
     end component;
 
@@ -358,6 +385,8 @@ architecture behavioral of mips_core is
             -- CP0 interface
             CP0_READ_ADDR: out cp0_addr_t;
             CP0_READ_DATA: in word_t;
+            CP0_BITS: in cp0_bits_t;
+            IRQ: in std_logic_vector(5 downto 0);
             
             -- divider interface
             -- data signals
@@ -433,7 +462,9 @@ architecture behavioral of mips_core is
             BUS_REQ: out bus_request_t;
             BUS_RES: in bus_response_t;
 
-            LOADED_DATA: out word_t
+            LOADED_DATA: out word_t;
+        
+            EXCEPT_TYPE: out except_type_t
         );
     end component;
 
@@ -468,6 +499,14 @@ architecture behavioral of mips_core is
     
     signal cp0_bits: cp0_bits_t;
     signal cp0_except_write: cp0_except_write_t;
+    
+    signal pc_flush: std_logic;
+    signal pc_flush_pc: word_t;
+
+    signal if_id_flush: std_logic;
+    signal id_ex_flush: std_logic;
+    signal ex_mem_flush: std_logic;
+    signal mem_wb_flush: std_logic;
     
     signal if_stall_req: std_logic;
     signal id_stall_req: std_logic;
@@ -507,6 +546,7 @@ architecture behavioral of mips_core is
     signal ex_mem: mem_signal_t;
     signal ex_wb: wb_signal_t;
     signal ex_is_load: std_logic;
+    signal ex_is_branch: std_logic;
     signal ex_hi, ex_lo: word_t;
     -- EX outputs
     signal ex_common_o: common_signal_t;
@@ -515,6 +555,7 @@ architecture behavioral of mips_core is
     -- EX CP0 interface
     signal ex_cp0_read_addr: cp0_addr_t;
     signal ex_cp0_read_data: word_t;
+    signal ex_cp0_bits: cp0_bits_t;
     -- EX divider interface
     signal ex_div_dividend: word_t;
     signal ex_div_div: word_t;
@@ -532,6 +573,9 @@ architecture behavioral of mips_core is
     signal mem_common_o: common_signal_t;
     signal mem_wb_o: wb_signal_t;
     signal mem_loaded_data: word_t;
+    signal mem_except_type: except_type_t;
+    -- for interrupt
+    signal mem_cp0_bits: cp0_bits_t;
 
     -- WB inputs
     signal wb_common: common_signal_t;
@@ -721,7 +765,8 @@ begin
         EX_READ_ADDR => ex_cp0_read_addr,
         EX_READ_DATA => ex_cp0_read_data,
 
-        EX_BITS => cp0_bits,
+        EX_BITS => ex_cp0_bits,
+        MEM_BITS => mem_cp0_bits,
         
         -- mem
         MEM_WRITE_EN => mem_wb_o.cp0_write_en,
@@ -731,8 +776,26 @@ begin
         EXCEPT_WRITE => cp0_except_write
     );
     
-    cp0_except_write.en <= '0';
-    -- TODO
+    except_controller_inst: except_controller
+    port map
+    (
+        RST => comb_rst,
+        
+        MEM_EXCEPT_TYPE => mem_except_type,
+        MEM_IS_IN_DELAY_SLOT => mem_common.is_in_delay_slot,
+        MEM_PC => mem_common.pc,
+        MEM_CP0_BITS => mem_cp0_bits,
+
+        PC_FLUSH => pc_flush,
+        PC_FLUSH_PC => pc_flush_pc,
+
+        IF_ID_FLUSH => if_id_flush,
+        ID_EX_FLUSH => id_ex_flush,
+        EX_MEM_FLUSH => ex_mem_flush,
+        MEM_WB_FLUSH => mem_wb_flush,
+        
+        EXCEPT_WRITE => cp0_except_write
+    );
     
     program_counter_inst: program_counter
     port map
@@ -742,8 +805,8 @@ begin
 
         STALL => stall,
         
-        FLUSH => '0',
-        FLUSH_PC => (others => '0'),
+        FLUSH => pc_flush,
+        FLUSH_PC => pc_flush_pc,
         
         PC => if_pc,
         PC_4 => if_pc_4,
@@ -777,7 +840,7 @@ begin
         RST => RST,
         
         STALL => stall,
-        FLUSH => '0', -- TODO
+        FLUSH => if_id_flush,
         
         IF_PC => if_pc_o,
         IF_INS => if_ins,
@@ -816,7 +879,9 @@ begin
         EX_WRITE_ADDR => ex_wb.write_addr,
 		  
         BRANCH_EN => id_branch_en,
-        BRANCH_PC => id_branch_pc
+        BRANCH_PC => id_branch_pc,
+        
+        IS_IN_DELAY_SLOT => ex_is_branch
     );
     
     id_ex_reg_inst: id_ex_reg
@@ -826,19 +891,21 @@ begin
         RST => RST,
         
         STALL => stall,
-        FLUSH => '0', -- TODO
+        FLUSH => id_ex_flush,
 
         ID_COMMON => id_common,
         ID_EX => id_ex,
         ID_MEM => id_mem,
         ID_WB => id_wb,
         ID_IS_LOAD => id_is_load,
+        ID_IS_BRANCH => id_branch_en,
         
         EX_COMMON => ex_common,
         EX_EX => ex_ex,
         EX_MEM => ex_mem,
         EX_WB => ex_wb,
-        EX_IS_LOAD => ex_is_load
+        EX_IS_LOAD => ex_is_load,
+        EX_IS_BRANCH => ex_is_branch
     );
     
     execute_inst: execute
@@ -863,6 +930,8 @@ begin
         
         CP0_READ_ADDR => ex_cp0_read_addr,
         CP0_READ_DATA => ex_cp0_read_data,
+        CP0_BITS => ex_cp0_bits,
+        IRQ => IRQ,
  
         DIV_DIVIDEND => ex_div_dividend,
         DIV_DIV => ex_div_div,
@@ -901,7 +970,7 @@ begin
         RST => RST,
         
         STALL => stall,
-        FLUSH => '0', -- TODO
+        FLUSH => ex_mem_flush,
 
         EX_COMMON => ex_common_o,
         EX_MEM => ex_mem_o,
@@ -928,7 +997,9 @@ begin
         
         BUS_REQ => DATA_BUS_REQ,
         BUS_RES => DATA_BUS_RES,
-        LOADED_DATA => mem_loaded_data
+        LOADED_DATA => mem_loaded_data,
+        
+        EXCEPT_TYPE => mem_except_type
     );
     
     mem_wb_reg_inst: mem_wb_reg
@@ -938,7 +1009,7 @@ begin
         RST => RST,
         
         STALL => stall,
-        FLUSH => '0', -- TODO
+        FLUSH => mem_wb_flush,
 
         MEM_COMMON => mem_common_o,
         MEM_WB => mem_wb_o,

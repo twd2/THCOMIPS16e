@@ -271,7 +271,9 @@ architecture behavioral of mips_sopc is
             PS2_BUS_REQ: out bus_request_t;
             PS2_BUS_RES: in bus_response_t;
             SD_BUS_REQ: out bus_request_t;
-            SD_BUS_RES: in bus_response_t
+            SD_BUS_RES: in bus_response_t;
+            TIMER_BUS_REQ: out bus_request_t;
+            TIMER_BUS_RES: in bus_response_t
         );
     end component;
 
@@ -328,6 +330,19 @@ architecture behavioral of mips_sopc is
         douta : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
       );
     END component;
+    
+    component timer is
+        port
+        (
+            CLK: in std_logic;
+            RST: in std_logic;
+            
+            BUS_REQ: in bus_request_t;
+            BUS_RES: out bus_response_t;
+            
+            IRQ: out std_logic
+        );
+    end component;
 
     signal RST: std_logic;
     
@@ -379,6 +394,8 @@ architecture behavioral of mips_sopc is
     signal ps2_bus_res: bus_response_t;
     signal sd_bus_req: bus_request_t;
     signal sd_bus_res: bus_response_t;
+    signal timer_bus_req: bus_request_t;
+    signal timer_bus_res: bus_response_t;
 
     signal sd_dbg: std_logic_vector(3 downto 0);
     
@@ -387,6 +404,7 @@ architecture behavioral of mips_sopc is
     signal core_test_1: word_t;
     
     signal CLK_50M_buff, CLK, CLK_180, locked, VGA_CLK, VGA_CLK_180, vga_locked: std_logic;
+    signal irq: std_logic_vector(5 downto 0);
 begin
     RST <= not locked or not vga_locked or not nRST;
 
@@ -654,7 +672,9 @@ begin
         PS2_BUS_REQ => ps2_bus_req,
         PS2_BUS_RES => ps2_bus_res,
         SD_BUS_REQ => sd_bus_req,
-        SD_BUS_RES => sd_bus_res
+        SD_BUS_RES => sd_bus_res,
+        TIMER_BUS_REQ => timer_bus_req,
+        TIMER_BUS_RES => timer_bus_res
     );
     
     extbus_arbiter: bus_arbiter
@@ -700,7 +720,7 @@ begin
         DATA_BUS_REQ => data_bus_req,
         DATA_BUS_RES => data_bus_res,
         
-        IRQ => (others => '0'),
+        IRQ => irq,
         
         testen => core_testen,
         test_0 => core_test_0,
@@ -710,4 +730,16 @@ begin
     testen <= core_testen;
     test_0 <= core_test_0;
     test_1 <= core_test_1(15 downto 4) & sd_dbg;
+    
+    timer_inst: timer
+    port map
+    (
+        CLK => CLK,
+        RST => RST,
+        
+        BUS_REQ => timer_bus_req,
+        BUS_RES => timer_bus_res,
+        
+        IRQ => irq(0)
+    );
 end;

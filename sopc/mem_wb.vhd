@@ -28,7 +28,8 @@ begin
         if RST = '1' then
             WB_COMMON.pc <= (others => '0');
             WB_COMMON.op <= (others => '0');
-            WB_COMMON.funct <= (others => '0'); 
+            WB_COMMON.funct <= (others => '0');
+            WB_COMMON.is_in_delay_slot <= '0';
             WB_WB.write_en <= '0';
             WB_WB.write_addr <= (others => '0');
             WB_WB.write_data <= (others => '0');
@@ -49,7 +50,8 @@ begin
             if FLUSH = '1' or STALL(stage_wb downto stage_mem) = "01" then
                 WB_COMMON.pc <= (others => '0');
                 WB_COMMON.op <= (others => '0');
-                WB_COMMON.funct <= (others => '0'); 
+                WB_COMMON.funct <= (others => '0');
+                WB_COMMON.is_in_delay_slot <= '0';
                 WB_WB.write_en <= '0';
                 WB_WB.write_addr <= (others => 'X');
                 WB_WB.write_data <= (others => 'X');

@@ -35,4 +35,8 @@ package constants is
     
     constant cp0_bit_interrupt_enable: integer := 0;
     constant cp0_bit_in_except_handler: integer := 1;
+    
+    constant except_none: std_logic_vector := "00000000";
+    constant except_type_bit_eret: integer := 7;
+    constant except_type_bit_syscall: integer := 6;
 end;

@@ -22,7 +22,9 @@ entity memory_access is
         BUS_REQ: out bus_request_t;
         BUS_RES: in bus_response_t;
 
-        LOADED_DATA: out word_t
+        LOADED_DATA: out word_t;
+        
+        EXCEPT_TYPE: out except_type_t
     );
 end;
 
@@ -35,6 +37,7 @@ begin
             COMMON_O.pc <= (others => '0');
             COMMON_O.op <= (others => '0');
             COMMON_O.funct <= (others => '0');
+            COMMON_O.is_in_delay_slot <= '0';
             WB_O.write_en <= '0';
             WB_O.write_addr <= (others => '0');
             WB_O.write_data <= (others => '0');
@@ -57,6 +60,7 @@ begin
             BUS_REQ.en <= '0';
             BUS_REQ.nread_write <= '0';
             LOADED_DATA <= (others => '0');
+            EXCEPT_TYPE <= except_none;
         else
             STALL_REQ <= '0';
             COMMON_O <= COMMON;
@@ -91,6 +95,8 @@ begin
                 end if;
             end if;
             -- TODO(twd2): check BUS_RES.tlb_miss, page_fault or error
+            
+            EXCEPT_TYPE <= MEM.except_type;
         end if;
     end process;
 end;

@@ -29,9 +29,9 @@ Target Device                       : 3s1200efg320-4
 *                        Optimizations                                  *
 =========================================================================
 ---- Statistics
-   Number of registers added by Replication                  | 17              
+   Number of registers added by Replication                  | 25              
 
-   Overall change in number of design objects                | +17              
+   Overall change in number of design objects                | +25              
 
 
 ---- Details
@@ -40,6 +40,7 @@ New or modified components                             | Optimization           
 -------------------------------------------------------|--------------------------|----------------------
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_0| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_1| Replication              | Fanout Optimization
+mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_10| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_2| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_3| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_4| Replication              | Fanout Optimization
@@ -48,13 +49,20 @@ mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_6| Replication            
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_7| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_8| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_en_REPLICA_9| Replication              | Fanout Optimization
-mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_write_en_REPLICA_10| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_write_en_REPLICA_11| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_write_en_REPLICA_12| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_write_en_REPLICA_13| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_write_en_REPLICA_14| Replication              | Fanout Optimization
 mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_write_en_REPLICA_15| Replication              | Fanout Optimization
-mips_core_inst/program_counter_inst/pc_reg_0_BRB13_REPLICA_16| Replication              | Fanout Optimization
+mips_core_inst/ex_mem_reg_inst/MEM_MEM.mem_write_en_REPLICA_16| Replication              | Fanout Optimization
+sd_controller_inst/DMA_BUS_REQ.addr_15_REPLICA_17      | Replication              | Fanout Optimization
+sd_controller_inst/DMA_BUS_REQ.addr_15_REPLICA_18      | Replication              | Fanout Optimization
+sd_controller_inst/DMA_BUS_REQ.addr_15_REPLICA_19      | Replication              | Fanout Optimization
+sd_controller_inst/DMA_BUS_REQ.addr_15_REPLICA_20      | Replication              | Fanout Optimization
+sd_controller_inst/DMA_BUS_REQ.addr_15_REPLICA_21      | Replication              | Fanout Optimization
+sd_controller_inst/DMA_BUS_REQ.addr_15_REPLICA_22      | Replication              | Fanout Optimization
+sd_controller_inst/DMA_BUS_REQ.addr_15_REPLICA_23      | Replication              | Fanout Optimization
+sd_controller_inst/DMA_BUS_REQ.addr_15_REPLICA_24      | Replication              | Fanout Optimization
 
    Flops added for Enable Generation                       
 -------------------------
