@@ -271,7 +271,9 @@ architecture behavioral of mips_sopc is
             PS2_BUS_REQ: out bus_request_t;
             PS2_BUS_RES: in bus_response_t;
             SD_BUS_REQ: out bus_request_t;
-            SD_BUS_RES: in bus_response_t
+            SD_BUS_RES: in bus_response_t;
+            TIMER_BUS_REQ: out bus_request_t;
+            TIMER_BUS_RES: in bus_response_t
         );
     end component;
 
@@ -335,6 +337,9 @@ architecture behavioral of mips_sopc is
             CLK: in std_logic;
             RST: in std_logic;
             
+            BUS_REQ: in bus_request_t;
+            BUS_RES: out bus_response_t;
+            
             IRQ: out std_logic
         );
     end component;
@@ -389,6 +394,8 @@ architecture behavioral of mips_sopc is
     signal ps2_bus_res: bus_response_t;
     signal sd_bus_req: bus_request_t;
     signal sd_bus_res: bus_response_t;
+    signal timer_bus_req: bus_request_t;
+    signal timer_bus_res: bus_response_t;
 
     signal sd_dbg: std_logic_vector(3 downto 0);
     
@@ -665,7 +672,9 @@ begin
         PS2_BUS_REQ => ps2_bus_req,
         PS2_BUS_RES => ps2_bus_res,
         SD_BUS_REQ => sd_bus_req,
-        SD_BUS_RES => sd_bus_res
+        SD_BUS_RES => sd_bus_res,
+        TIMER_BUS_REQ => timer_bus_req,
+        TIMER_BUS_RES => timer_bus_res
     );
     
     extbus_arbiter: bus_arbiter
@@ -727,6 +736,9 @@ begin
     (
         CLK => CLK,
         RST => RST,
+        
+        BUS_REQ => timer_bus_req,
+        BUS_RES => timer_bus_res,
         
         IRQ => irq(0)
     );
