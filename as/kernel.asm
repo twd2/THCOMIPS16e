@@ -115,7 +115,7 @@ START:
 	LI R0 0x07
 	MTIH R0
 	;初始化栈地址
-	li r0, 0xc000
+	li r0, 0xe000
 	MTSP R0
 	NOP
 	
@@ -141,6 +141,10 @@ START:
 	LI R0 0x004F
 	SW R6 R0 0x0000
 	NOP
+
+	; log
+	call put_sent
+	nop
 	
 	MFPC R7 
 	ADDIU R7 0x0003  
@@ -151,6 +155,10 @@ START:
 	LI R0 0x004B
 	SW R6 R0 0x0000
 	NOP
+
+	; log
+	call put_sent
+	nop
 	
 	MFPC R7 
 	ADDIU R7 0x0003  
@@ -161,6 +169,10 @@ START:
 	LI R0 0x000A
 	SW R6 R0 0x0000
 	NOP
+
+	; log
+	call put_sent
+	nop
 	
 	MFPC R7 
 	ADDIU R7 0x0003  
@@ -172,7 +184,9 @@ START:
 	SW R6 R0 0x0000
 	NOP
 	
-
+	; log
+	call put_sent
+	nop
 	
 
 	
@@ -189,9 +203,13 @@ BEGIN:          ;检测命令
 	SLL R6 R6 8 
 	LW R6 R1 0x0000
 	LI R6 0x00ff 
-  AND R1 R6 
+	AND R1 R6 
 	NOP	
 	
+	; log
+	move r0, R1
+	call put_received
+	nop
 
 	;检测是否为R命令		
 	LI R0 0x0052
@@ -292,6 +310,12 @@ LOOP:
 	LI R6 0x00BF 
 	SLL R6 R6 8 ;R6=BF00	
 	SW R6 R3 0x0000	
+
+	; log
+	move r0, R3
+	call put_sent
+	nop
+
 	;发送高八位
 	SRA R3 R3 8
 	MFPC R7
@@ -302,6 +326,11 @@ LOOP:
 	LI R6 0x00BF 
 	SLL R6 R6 8 ;R6=0xBF00	
 	SW R6 R3 0x0000	
+
+	; log
+	move r0, R3
+	call put_sent
+	nop
 	
 	ADDIU R1 -1
 	NOP
@@ -330,6 +359,11 @@ SHOWMEM:  ;查看内存
 	LI R6 0x00FF
 	AND R5 R6
 	NOP	
+
+	; log
+	move r0, R5
+	call put_received
+	nop
 	
 	;读取地址高位到r1
 	MFPC R7
@@ -344,7 +378,10 @@ SHOWMEM:  ;查看内存
 	AND R1 R6
 	NOP	
 	
-	
+	; log
+	move r0, R1
+	call put_received
+	nop
 	
 	;R1存储地址
 	SLL R1 R1 8
@@ -362,6 +399,12 @@ SHOWMEM:  ;查看内存
 	LI R6 0x00FF
 	AND R5 R6
 	NOP	
+
+	; log
+	move r0, R5
+	call put_received
+	nop
+
 	;读取显示次数高位到R2
 	MFPC R7
 	ADDIU R7 0x0003	
@@ -374,6 +417,12 @@ SHOWMEM:  ;查看内存
 	LI R6 0x00FF
 	AND R2 R6
 	NOP	
+
+	; log
+	move r0, R2
+	call put_received
+	nop
+
 	;R2保存内存个数
 	SLL R2 R2 8
 	OR R2 R5
@@ -394,6 +443,12 @@ MEMLOOP:
 	LI R6 0x00BF 
 	SLL R6 R6 8 ;R6=0xBF00	
 	SW R6 R3 0x0000	
+
+	; log
+	move r0, R3
+	call put_sent
+	nop
+
 	;发送高八位
 
 	SRA R3 R3 8
@@ -405,6 +460,11 @@ MEMLOOP:
 	LI R6 0x00BF 
 	SLL R6 R6 8 ;R6=0xBF00	
 	SW R6 R3 0x0000	
+
+	; log
+	move r0, R3
+	call put_sent
+	nop
 	
 	ADDIU R1 0x0001   ;R1=地址加加加
 	ADDIU R2 -1
@@ -430,6 +490,12 @@ ASM:
 	LI R6 0x00FF
 	AND R5 R6
 	NOP	
+
+	; log
+	move r0, R5
+	call put_received
+	nop
+
 	;读取地址高位到r1
 	MFPC R7
 	ADDIU R7 0x0003	
@@ -442,6 +508,11 @@ ASM:
 	LI R6 0x00FF
 	AND R1 R6
 	NOP	
+
+	; log
+	move r0, R1
+	call put_received
+	nop
 	
 	;R1存储地址
 	SLL R1 R1 8
@@ -469,6 +540,11 @@ ASM:
 	LI R6 0x00FF
 	AND R5 R6
 	NOP	
+
+	; log
+	move r0, R5
+	call put_received
+	nop
 	
 
 	;读取数据高位到R2
@@ -483,6 +559,12 @@ ASM:
 	LI R6 0x00FF
 	AND R2 R6
 	NOP	
+
+	; log
+	move r0, R2
+	call put_received
+	nop
+
 	;R2保存数据
 	SLL R2 R2 8
 	OR R2 R5
@@ -515,6 +597,12 @@ UASM:
 	LI R6 0x00FF
 	AND R5 R6
 	NOP	
+
+	; log
+	move r0, R5
+	call put_received
+	nop
+
 	;读取地址高位到r1
 	MFPC R7
 	ADDIU R7 0x0003	
@@ -528,7 +616,10 @@ UASM:
 	AND R1 R6
 	NOP	
 	
-	
+	; log
+	move r0, R1
+	call put_received
+	nop
 	
 	;R1存储地址
 	SLL R1 R1 8
@@ -546,6 +637,12 @@ UASM:
 	LI R6 0x00FF
 	AND R5 R6
 	NOP	
+
+	; log
+	move r0, R5
+	call put_received
+	nop
+
 	;读取显示次数高位到R2
 	MFPC R7
 	ADDIU R7 0x0003	
@@ -558,6 +655,12 @@ UASM:
 	LI R6 0x00FF
 	AND R2 R6
 	NOP	
+
+	; log
+	move r0, R2
+	call put_received
+	nop
+
 	;R2保存内存个数
 	SLL R2 R2 8
 	OR R2 R5
@@ -578,6 +681,12 @@ UASMLOOP:
 	LI R6 0x00BF 
 	SLL R6 R6 8 ;R6=0xBF00	
 	SW R6 R3 0x0000	
+
+	; log
+	move r0, R3
+	call put_sent
+	nop
+
 	;发送高八位
 
 	SRA R3 R3 8
@@ -589,6 +698,11 @@ UASMLOOP:
 	LI R6 0x00BF 
 	SLL R6 R6 8 ;R6=0xBF00	
 	SW R6 R3 0x0000	
+
+	; log
+	move r0, R3
+	call put_sent
+	nop
 	
 	ADDIU R1 0x0001   ;R1=地址加加加
 	ADDIU R2 -1
@@ -613,6 +727,12 @@ COMPILE:
 	LI R6 0x00FF
 	AND R5 R6
 	NOP	
+
+	; log
+	move r0, R5
+	call put_received
+	nop
+
 	;读取内存高位到R2
 	MFPC R7
 	ADDIU R7 0x0003	
@@ -625,6 +745,12 @@ COMPILE:
 	LI R6 0x00FF
 	AND R2 R6
 	NOP	
+
+	; log
+	move r0, R2
+	call put_received
+	nop
+
 	;R2保存内存地址  传给r6
 	SLL R2 R2 8
 	OR R2 R5
@@ -697,6 +823,12 @@ COMPILE:
 	LI R6 0x00BF 
 	SLL R6 R6 8 ;R6=0xBF00	
 	SW R6 R1 0x0000		
+
+	; log
+	move r0, R1
+	call put_sent
+	nop
+
 	B BEGIN
 	NOP	
 		

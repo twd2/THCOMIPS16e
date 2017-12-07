@@ -654,6 +654,32 @@ self_test_failed:
 .word 10
 .word 0
 
+received:
+.word 'R'
+.word 'e'
+.word 'c'
+.word 'e'
+.word 'i'
+.word 'v'
+.word 'e'
+.word 'd'
+.word 58
+.word 32
+.word '0'
+.word 'x'
+.word 0
+
+sent:
+.word 'S'
+.word 'e'
+.word 'n'
+.word 't'
+.word 58
+.word 32
+.word '0'
+.word 'x'
+.word 0
+
 ps2_scancode:
 ; scancode lookup table
 ; 128 items

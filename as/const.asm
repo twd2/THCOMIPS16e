@@ -1,4 +1,4 @@
-.org 0x200
+.org 0x280
 
 ; VGA
 .extern vga_control_base, 0xeffc
