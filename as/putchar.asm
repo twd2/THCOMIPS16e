@@ -155,6 +155,52 @@ _puts_out:
     ret
     nop
 
+; r0 is data
+put_received:
+    addsp -3
+    swsp r0, 0
+    swsp r1, 1
+    swsp r7, 2
+    move r1, r0
+    li r0, 'R'
+    call putchar
+    nop
+    move r0, r1
+    call print_byte
+    nop
+    li r0, 32
+    call putchar
+    nop
+    lwsp r0, 0
+    lwsp r1, 1
+    lwsp r7, 2
+    addsp 3
+    ret
+    nop
+
+; r0 is data
+put_sent:
+    addsp -3
+    swsp r0, 0
+    swsp r1, 1
+    swsp r7, 2
+    move r1, r0
+    li r0, 'S'
+    call putchar
+    nop
+    move r0, r1
+    call print_byte
+    nop
+    li r0, 32
+    call putchar
+    nop
+    lwsp r0, 0
+    lwsp r1, 1
+    lwsp r7, 2
+    addsp 3
+    ret
+    nop
+
 ; print [OK], right aligned
 put_ok:
     addsp -3
