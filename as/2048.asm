@@ -102,7 +102,7 @@ _2048_render:
         move r2, r1
         beqz r1, _2048_calc_addr
         li r1, 0 ; slot
-        la r1, _2048_color
+        la r1, _2048_color_const
         addu r1, r2, r1
         lw r1, r1, 0 ; r1: block color
         _2048_calc_addr:

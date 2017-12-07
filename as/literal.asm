@@ -1057,4 +1057,19 @@ _2048_help:
 .word 'h'
 .word 't'
 
+_2048_color:
+.word 0
+.word 0xf700
+.word 0xe700
+.word 0xd700
+.word 0xc700
+.word 0xb700
+.word 0xa700
+.word 0x9700
+.word 0x5700
+.word 0x3700
+.word 0x2700
+.word 0x1700
+
+
 __end_of_code__:
