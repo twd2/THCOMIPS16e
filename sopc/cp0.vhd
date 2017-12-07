@@ -21,6 +21,7 @@ entity cp0 is
         EX_READ_DATA: out word_t;
 
         EX_BITS: out cp0_bits_t;
+        MEM_BITS: out cp0_bits_t;
         
         -- mem
         MEM_WRITE_EN: in std_logic;
@@ -32,7 +33,7 @@ entity cp0 is
 end;
 
 architecture behavioral of cp0 is
-    signal cp0_reg, ex_cp0_reg: cp0_reg_t;
+    signal cp0_reg, ex_cp0_reg, mem_cp0_reg: cp0_reg_t;
     signal read_addr_i, write_addr_i,
            mem_write_addr_i, ex_read_addr_i: integer range 0 to cp0_reg_count - 1;
 begin
@@ -71,8 +72,7 @@ begin
     end process;
     
     -- for EX stage
-    
-    forward_proc:
+    ex_forward_proc:
     process(cp0_reg, write_addr_i, WRITE_DATA, mem_write_addr_i, MEM_WRITE_DATA)
     begin
         ex_cp0_reg <= cp0_reg;
@@ -95,4 +95,24 @@ begin
     EX_BITS.ecs <= ex_cp0_reg(cp0_addr_ecs);
     
     EX_READ_DATA <= ex_cp0_reg(ex_read_addr_i);
+    
+    -- for MEM stage
+    mem_forward_proc:
+    process(cp0_reg, write_addr_i, WRITE_DATA)
+    begin
+        mem_cp0_reg <= cp0_reg;
+        if WRITE_EN = '1' then
+            mem_cp0_reg(write_addr_i) <= WRITE_DATA;
+        end if;
+
+        -- override
+        mem_cp0_reg(cp0_addr_status)(15 downto 8) <= (others => '0');
+        mem_cp0_reg(cp0_addr_cause)(15 downto 8) <= (others => '0');
+    end process;
+    
+    MEM_BITS.interrupt_enable <= mem_cp0_reg(cp0_addr_status)(cp0_bit_interrupt_enable);
+    MEM_BITS.in_except_handler <= mem_cp0_reg(cp0_addr_status)(cp0_bit_in_except_handler);
+    MEM_BITS.interrupt_mask <= mem_cp0_reg(cp0_addr_status)(7 downto 2);
+    MEM_BITS.epc <= mem_cp0_reg(cp0_addr_epc);
+    MEM_BITS.ecs <= mem_cp0_reg(cp0_addr_ecs);
 end;

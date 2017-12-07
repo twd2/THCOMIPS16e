@@ -36,7 +36,9 @@ entity instruction_decode is
         EX_WRITE_ADDR: in reg_addr_t;
         
         BRANCH_EN: out std_logic;
-        BRANCH_PC: out word_t
+        BRANCH_PC: out word_t;
+        
+        IS_IN_DELAY_SLOT: in std_logic
     );
 end;
 
@@ -98,6 +100,7 @@ begin
             COMMON.pc <= (others => '0');
             COMMON.op <= (others => '0');
             COMMON.funct <= (others => '0');
+            COMMON.is_in_delay_slot <= '0';
             EX.cp0_read_en <= '0';
             EX.cp0_read_addr <= (others => '0');
             EX.alu_op <= alu_nop;
@@ -110,6 +113,7 @@ begin
             MEM.sw_after_load <= '0';
             MEM.is_uart_data <= '0';
             MEM.is_uart_control <= '0';
+            MEM.except_type <= except_none;
             WB.write_en <= '0';
             WB.write_addr <= (others => '0');
             WB.write_data <= (others => '0');
@@ -137,6 +141,7 @@ begin
             COMMON.pc <= PC;
             COMMON.op <= op_buff;
             COMMON.funct <= (others => 'X'); -- TODO
+            COMMON.is_in_delay_slot <= IS_IN_DELAY_SLOT;
             EX.cp0_read_en <= '0';
             EX.cp0_read_addr <= (others => 'X');
             EX.alu_op <= alu_nop;
@@ -148,6 +153,7 @@ begin
             MEM.write_mem_data <= (others => 'X');
             MEM.is_uart_data <= 'X';
             MEM.is_uart_control <= 'X';
+            MEM.except_type <= except_none;
             WB.write_en <= '0';
             WB.write_addr <= (others => 'X');
             WB.write_data <= (others => 'X');
@@ -384,13 +390,17 @@ begin
                             EX.cp0_read_addr <= cp0_addr;
                             WB.write_en <= '1';
                             WB.write_addr <= rx;
-                        when "00001" => --mtc0
+                        when "00001" => -- mtc0
                             read_en_1_buff <= '0';
                             EX.alu_op <= alu_or;
                             EX.operand_0 <= READ_DATA_0;
                             EX.operand_1 <= zero_word;
                             WB.cp0_write_en <= '1';
                             WB.cp0_write_addr <= cp0_addr;
+                        when "00010" => -- syscall
+                            MEM.except_type <= "01000000";
+                        when "00011" => -- eret
+                            MEM.except_type <= "10000000";
                         when others =>
                     end case;
                 when others =>

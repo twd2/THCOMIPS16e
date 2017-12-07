@@ -24,10 +24,12 @@ entity execute is
         LO: in word_t;
 
         MEM_LOADED_DATA: in word_t;
-        
+
         -- CP0 interface
         CP0_READ_ADDR: out cp0_addr_t;
         CP0_READ_DATA: in word_t;
+        CP0_BITS: in cp0_bits_t;
+        IRQ: in std_logic_vector(5 downto 0);
 
         -- divider interface
         -- data signals
@@ -65,6 +67,7 @@ architecture behavioral of execute is
     end component;
 
     signal alu_result_buff: word_t;
+    signal except_type: except_type_t;
 begin
     alu_inst: alu
     port map
@@ -78,6 +81,15 @@ begin
     );
     
     CP0_READ_ADDR <= EX.cp0_read_addr;
+    
+    process(MEM)
+    begin
+        if CP0_BITS.interrupt_enable = '1' and CP0_BITS.in_except_handler = '0' then
+            except_type <= MEM.except_type(7 downto 6) & (IRQ and not CP0_BITS.interrupt_mask);
+        else
+            except_type <= except_none;
+        end if;
+    end process;
 
     process(RST, alu_result_buff, COMMON, EX, MEM, WB,
             HI, LO, DIV_DONE, DIV_QUOTIENT, DIV_REMAINDER)
@@ -87,6 +99,7 @@ begin
             COMMON_O.pc <= (others => '0');
             COMMON_O.op <= (others => '0');
             COMMON_O.funct <= (others => '0');
+            COMMON_O.is_in_delay_slot <= '0';
             MEM_O.alu_result <= (others => '0');
             MEM_O.mem_en <= '0';
             MEM_O.mem_write_en <= '0';
@@ -94,6 +107,7 @@ begin
             MEM_O.sw_after_load <= '0';
             MEM_O.is_uart_data <= '0';
             MEM_O.is_uart_control <= '0';
+            MEM_O.except_type <= except_none;
             WB_O.write_en <= '0';
             WB_O.write_addr <= (others => '0');
             WB_O.write_data <= (others => '0');
@@ -155,8 +169,12 @@ begin
             else
                 MEM_O.is_uart_control <= '0';
             end if;
-
-            -- TODO(twd2)
+            
+            MEM_O.except_type <= except_type;
+            -- if an exception occurred, this instruction is cancelled.
+            if except_type /= except_none then
+                MEM_O.mem_en <= '0';
+            end if;
         end if;
     end process;
 end;
