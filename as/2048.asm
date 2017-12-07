@@ -99,9 +99,12 @@ _2048_render:
         li r1, 0xb000 ; load block status
         addu r0, r1, r1
         lw r1, r1, 0
+        move r2, r1
         beqz r1, _2048_calc_addr
         li r1, 0 ; slot
-        li r1, 0x0700 ; r1: block color
+        la r1, _2048_color
+        addu r1, r2, r1
+        lw r1, r1, 0 ; r1: block color
         _2048_calc_addr:
             move r2, r0
             move r3, r0
@@ -117,6 +120,34 @@ _2048_render:
             sll r5, r2, 4
             addu r4, r5, r2 ; r2 = r2 * 80
             addu r2, r3, r2 ; r2: addr
+        _2048_color:
+            li r3, 1
+            li r4, 1
+            _2048_color_loop:
+                sll r5, r3, 6
+                sll r6, r3, 4
+                addu r5, r6, r5 ; r5 = r3 * 80
+                addu r5, r2, r5
+                addu r5, r4, r5 
+                la r6, graphics_base
+                addu r5, r6, r5
+                li r6, 32
+                or r6, r1
+                sw r5, r6, 0
+                addiu r4, 1
+                cmpi r4, 13
+                bteqz _2048_next_line
+                nop
+                b _2048_color_loop
+                nop
+                _2048_next_line:
+                    addiu r3, 1
+                    li r4, 1
+                    cmpi r3, 6
+                    bteqz _2048_draw_horizontal_line
+                    nop
+                    b _2048_color_loop
+                    nop
         _2048_draw_horizontal_line:
             la r3, graphics_base
             li r4, 196
