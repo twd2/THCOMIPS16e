@@ -56,6 +56,25 @@ _2048_new_block:
 
 _2048_render:
     li r0, 0
+    _2048_draw_welcome:
+        la r1, graphics_base
+        li r2, 2240 ; 7 * 4 * 80
+        addu r1, r2, r1
+        la r2, _2048_welcome
+        li r3, 0x0700
+        li r4, 0
+        _2048_draw_welcome_loop:
+            cmpi r4, 21
+            bteqz _2048_draw_block
+            nop
+            lw r2, r5, 0
+            or r5, r3
+            sw r1, r5, 0
+            addiu r1, 1
+            addiu r2, 1
+            addiu r4, 1
+            b _2048_draw_welcome_loop
+            nop    
     _2048_draw_block:
         ; r0 block id
         li r1, 0xb000 ; load block status
