@@ -1057,7 +1057,7 @@ _2048_help:
 .word 'h'
 .word 't'
 
-_2048_color:
+_2048_color_const:
 .word 0
 .word 0xf700
 .word 0xe700
