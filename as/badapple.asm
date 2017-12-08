@@ -14,7 +14,11 @@ badapple:
     mfc0 r0, status
     li r1, 0xfffe
     and r0, r1
-    mtc0 r0, status ; disable exception
+    ; mtc0 r0, status ; disable exception
+
+    la r0, is_in_badapple
+    li r1, 1
+    sw r0, r1, 0
 
     li r0, 0 ; frame counter
     la r5, vga_control_base
@@ -58,17 +62,21 @@ _badapple_play_loop:
         move r3, r1
         and r3, r2
         ; check PS/2 here to quit
-        la r6, ps2_base
-        lw r6, r6, 1
-        li r7, 0x0001
-        and r6, r7
-        beqz r6, _badapple_wait_continue
-        nop
-        call getchar
-        nop
-        cmpi r4, 'q'
-        bteqz _badapple_done
-        nop
+        ; la r6, ps2_base
+        ; lw r6, r6, 1
+        ; li r7, 0x0001
+        ; and r6, r7
+        ; beqz r6, _badapple_wait_continue
+        ; nop
+        ; call getchar
+        ; nop
+        ; cmpi r4, 'q'
+        ; bteqz _badapple_done
+        ; nop
+        ; check is_in_badapple to quie
+        la r6, is_in_badapple
+        lw r6, r6, 0
+        beqz r6, _badapple_done
     _badapple_wait_continue:
         beqz r3, _badapple_wait_irq
         nop
@@ -104,6 +112,10 @@ _badapple_play_loop:
     addiu r0, 1 ; bd
 
 _badapple_done:
+    la r0, is_in_badapple
+    li r1, 0
+    sw r0, r1, 0
+
     mfc0 r0, status
     li r1, 0x0001
     or r0, r1

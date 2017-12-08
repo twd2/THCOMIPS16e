@@ -1,8 +1,17 @@
-_danmuku:
+danmuku:
+    addsp -8
+    swsp r0, 0
+    swsp r1, 1
+    swsp r2, 2
+    swsp r3, 3
+    swsp r4, 4
+    swsp r5, 5
+    swsp r6, 6
+    swsp r7, 7
+
     la r0, danmuku_read_done
     lw r0, r0, 0
-    cmpi r0, 1 ; read_done = 1
-    bteqz _damuku_draw
+    bnez r0, _danmuku_draw
     nop
 
 _danmuku_gets:
@@ -12,13 +21,24 @@ _danmuku_gets:
     and r0, r1
     beqz r0, _danmuku_done
     nop
-    call getchar
+    la r6, getchar
+    jalr r7, r6
     nop
+
+    la r6, gpio_data
+    sw r6, r4, 0
+
     la r0, danmuku_read_cnt
     la r1, danmuku_addr
-    lw, r0, r2, 0 ; r2 cnt
+    lw r0, r2, 0 ; r2 cnt
     addu r1, r2, r1
+    cmpi r4, 0x1B ; ESC 
+    bteqz _danmuku_exit_badapple
+    nop
     sw r1, r4, 0 ; save char
+    cmpi r4, 0
+    bteqz _danmuku_done
+    nop
     addiu r2, 1 ; cnt++
     sw r0, r2, 0 ; save cnt
     cmpi r4, 10 ; '\n' 
@@ -45,13 +65,18 @@ _danmuku_draw:
     lw r0, r1, 0 ; r1 cnt
     addiu r1, 1 ; cnt++
     sw r0, r1, 0 ; save cnt
-    cmpi r1, 30 ; cnt == 30
+    cmpi r1, 20 ; cnt == 30
     bteqz _danmuku_new_pos
     nop
     la r0, danmuku_addr
     la r1, danmuku_pos
+    lw r1, r1, 0
     li r2, 0x0700 ; color
     li r3, 0
+    lw r0, r4, 0 ; char
+    cmpi r4, 10
+    bteqz _danmuku_new_danmu ; is empty string
+    nop
     _danmuku_draw_loop:
         addu r0, r3, r4
         lw r4, r4, 0 ; char
@@ -60,7 +85,8 @@ _danmuku_draw:
         nop
         or r4, r2
         la r5, graphics_base
-        addiu r5, 160 ; 2 * 80
+        addiu r5, 80
+        addiu r5, 80 ; 2 * 80
         addu r5, r1, r5 ; += pos
         addu r5, r3, r5
         sw r5, r4, 0
@@ -99,4 +125,11 @@ _danmuku_done:
     lwsp r6, 6
     lwsp r7, 7
     addsp 8
-    eret
+    ret
+    nop
+
+_danmuku_exit_badapple:
+    la r0, is_in_badapple
+    li r1, 0
+    b _danmuku_done
+    sw r0, r1, 0 ; bd

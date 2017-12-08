@@ -263,7 +263,7 @@ _2048_get_command:
     cmpi r4, 'd' 
     bteqz _2048_right_relay
     nop
-    cmpi r4, 'q' 
+    cmpi r4, 0x1B
     bteqz _2048_game_over_relay
     nop
     cmpi r4, 'n' 

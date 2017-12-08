@@ -36,7 +36,8 @@
 .extern danmuku_pos, 0xc00a
 .extern danmuku_read_done, 0xc00b
 .extern danmuku_read_cnt, 0xc00c
-.extern danmuku_addr, 0xc00d
+.extern danmuku_addr, 0xc00d ; size=80
+.extern is_in_badapple, 0xc05d
 
 ; stack
 .extern stack_base, 0xe000

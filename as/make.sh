@@ -28,6 +28,8 @@ cat 2048.asm >> a.asm
 echo >> a.asm
 cat badapple.asm >> a.asm
 echo >> a.asm
+cat danmuku.asm >> a.asm
+echo >> a.asm
 cat timer.asm >> a.asm
 echo >> a.asm
 cat delay.asm >> a.asm

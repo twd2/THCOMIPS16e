@@ -20,6 +20,18 @@ la r4, char_addr
 sw r4, r0, 0
 la r4, uptime_counter
 sw r4, r0, 0
+la r4, danmuku_cnt
+sw r4, r0, 0
+la r4, danmuku_pos
+sw r4, r0, 0
+la r4, danmuku_read_done
+sw r4, r0, 0
+la r4, danmuku_read_cnt
+sw r4, r0, 0
+la r4, danmuku_addr
+sw r4, r0, 0
+la r4, is_in_badapple
+sw r4, r0, 0
 
 call clear_screen
 nop

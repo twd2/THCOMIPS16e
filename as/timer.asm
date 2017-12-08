@@ -76,6 +76,16 @@ timer_interrupt_handler:
     or r0, r4
     sw r2, r0, -1
 
+    la r0, is_in_badapple
+    lw r0, r0, 0
+    beqz r0, _timer_skip_danmuku
+    nop
+
+    call danmuku
+    nop
+
+_timer_skip_danmuku:
+
     ; clear timer interrupt bit
     la r0, timer_base
     lw r0, r7, 1 ; control
