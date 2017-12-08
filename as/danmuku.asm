@@ -69,6 +69,9 @@ _danmuku_draw:
         nop
 
 _danmuku_new_pos:
+    la r0, danmuku_cnt
+    li r1, 0 ; cnt = 0
+    sw r0, r1, 0 ; save cnt
     la r0, danmuku_pos
     lw r0, r1, 0 ; r1 pos
     addiu r1, 1 ; pos++
