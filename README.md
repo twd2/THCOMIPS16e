@@ -37,13 +37,11 @@ NOP
 
 * [x] Basic ISA
 * [x] Extend ISA
-* [ ] Interrupt
+* [x] Interrupt
 * [x] VGA display 640x480 @ 60Hz
 * [x] PS/2
 * [x] SD card boot
 * [x] SD card read/write DMA
-* [ ] Data Segment
-* [ ] Code Segment
 * [x] Can execute millions of instructions per second
 
 **Software**
