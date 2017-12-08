@@ -7,7 +7,7 @@
 -- \   \   \/     Version : 14.7
 --  \   \         Application : xaw2vhdl
 --  /   /         Filename : clock_manager.vhd
--- /___/   /\     Timestamp : 12/06/2017 19:37:42
+-- /___/   /\     Timestamp : 12/08/2017 18:35:42
 -- \   \  /  \ 
 --  \___\/\___\ 
 --
