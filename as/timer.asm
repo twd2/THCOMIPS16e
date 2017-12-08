@@ -1,7 +1,4 @@
-
 timer_interrupt_handler:
-    ; NOTE: we do not save register T, so do not use cmp, cmpi here.
-
     ; uptime_counter += 1
     la r0, uptime_counter
     lw r0, r1, 0
@@ -84,6 +81,9 @@ timer_interrupt_handler:
     lw r0, r7, 1 ; control
     sw r0, r7, 1 ; clear interrupt
 
+    lwsp r0, 8
+    cmpi r0, 0 ; restore T
+
     lwsp r0, 0
     lwsp r1, 1
     lwsp r2, 2
@@ -92,5 +92,5 @@ timer_interrupt_handler:
     lwsp r5, 5
     lwsp r6, 6
     lwsp r7, 7
-    addsp 8
+    addsp 9
     eret

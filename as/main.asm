@@ -165,9 +165,10 @@ call_badapple:
     nop
 
 syscall_handler:
-    mtc0 r0, tmp0
+    mtc0 r0, tmp0 ; save r0
     mfc0 r0, epc
     addiu r0, 1 ; skip syscall instruction
+    ; TODO: what if a branch/jump followed by a syscall?
     mtc0 r0, epc
-    mfc0 r0, tmp0
+    mfc0 r0, tmp0 ; restore r0
     eret

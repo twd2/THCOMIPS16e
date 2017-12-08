@@ -122,8 +122,8 @@ def make3(op, rx, ry, rz, remain):
     return ((op & 0b11111) << 11) | ((rx & 0b111) << 8) | ((ry & 0b111) << 5) | ((rz & 0b111) << 2) | (remain & 0b11)
 
 def make_addiu(rx, imm):
-    # if not -128 <= imm <= 127:
-    #     raise ImmOutOfRangeError(imm)
+    if not -128 <= imm <= 255:
+        raise ImmOutOfRangeError(imm)
     return make1(0b01001, reg(rx), imm & 0b11111111)
 ACT['addiu'] = make_addiu
 
@@ -401,6 +401,8 @@ def asm(code):
             else:
                 inst_list.append(l)
 
+    print('{} instructions. Resolving symbols...'.format(len(inst_list)))
+
     # pass 2: symbol/imm resolve
     for pc, inst in enumerate(inst_list):
         op = inst[0].lower()
@@ -426,13 +428,15 @@ def asm(code):
                     inst[i] = parse_imm(arg)
     print(inst_list)
 
+    print('{} instructions. Generating target code...'.format(len(inst_list)))
+
     addr_to_sym = dict((v, k) for k, v in syms.items())
 
     # pass 3: generate target code
     mc = []
     for inst in inst_list:
         if len(mc) in addr_to_sym:
-            print('In symbol {}'.format(addr_to_sym[len(mc)]))
+            print('In symbol {}...'.format(addr_to_sym[len(mc)]))
         if inst[0].lower() not in ACT:
             raise UnknownInstructionError(inst[0])
         try:
@@ -461,6 +465,7 @@ def main():
         out_filename = sys.argv[2]
     with open(out_filename, 'wb') as f:
         f.write(buffer)
+        # 4K words padding
         remainder = len(buffer) % 4096
         if remainder:
             f.write(bytes([0] * (4096 - remainder)))
