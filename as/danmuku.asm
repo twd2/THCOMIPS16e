@@ -10,7 +10,7 @@ _danmuku_gets:
     lw r0, r0, 1
     li r1, 0x0001
     and r0, r1
-    beqz r1, _danmuku_done
+    beqz r0, _danmuku_done
     nop
     call getchar
     nop
@@ -21,7 +21,7 @@ _danmuku_gets:
     sw r1, r4, 0 ; save char
     addiu r2, 1 ; cnt++
     sw r0, r2, 0 ; save cnt
-    cmpi r4, '10' 
+    cmpi r4, 10 ; '\n' 
     bteqz _danmuku_read_done
     nop
     b _danmuku_done
@@ -50,7 +50,7 @@ _danmuku_draw:
 	nop
 	la r0, danmuku_addr
 	la r1, danmuku_pos
-	li r2, 0x0700
+	li r2, 0x0700 ; color
 	li r3, 0
 	_danmuku_draw_loop:
 		addu r0, r3, r4
@@ -61,7 +61,7 @@ _danmuku_draw:
 		or r4, r2
 		la r5, graphics_base
 		addiu r5, 160 ; 2 * 80
-		addu r5, r1, r5 
+		addu r5, r1, r5 ; += pos
 		addu r5, r3, r5
 		sw r5, r4, 0
 		addiu r3, 1
@@ -71,8 +71,8 @@ _danmuku_draw:
 _danmuku_new_pos:
 	la r0, danmuku_pos
 	lw r0, r1, 0 ; r1 pos
-	addiu r1, 1 ; r1++
-	sw r0, r1, 0 ; save r1
+	addiu r1, 1 ; pos++
+	sw r0, r1, 0 ; save pos
 	cmpi r1, 70
 	bteqz _danmuku_new_danmu
 	nop
@@ -85,8 +85,6 @@ _danmuku_new_danmu:
 	sw r0, r1, 0 ; read_done = 0
 	la r0, danmuku_read_cnt	
 	sw r0, r1, 0 ; cnt = 0
-	b _danmuku_done
-	nop
 
 _danmuku_done:
     lwsp r0, 0
