@@ -32,6 +32,11 @@
 .extern global_counter, 0xc006
 .extern gets_result, 0xc007
 .extern uptime_counter, 0xc008
+.extern danmuku_cnt, 0xc009
+.extern danmuku_pos, 0xc00a
+.extern danmuku_read_done, 0xc00b
+.extern danmuku_read_cnt, 0xc00c
+.extern danmuku_addr, 0xc00d
 
 ; stack
 .extern stack_base, 0xe000
