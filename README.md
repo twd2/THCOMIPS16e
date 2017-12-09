@@ -52,6 +52,7 @@ NOP
 * [x] A tiny operating system (shell) with Super Cow Powers
 * [x] 2048 game
 * [x] BadApple animation
+* [x] Danmuku (using clock interruption)
 
 ## References
 
