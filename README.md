@@ -40,7 +40,7 @@ NOP
 * [x] Interrupt
 * [x] Extensible internal bus design
 * [x] VGA display 640x480 @ 60Hz
-* [x] PS/2 keyboard
+* [x] PS/2
 * [x] SD card boot
 * [x] SD card read/write DMA
 * [x] GPIO
