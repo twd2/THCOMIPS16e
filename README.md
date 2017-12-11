@@ -38,10 +38,12 @@ NOP
 * [x] Basic ISA
 * [x] Extend ISA
 * [x] Interrupt
+* [x] Extensible internal bus design
 * [x] VGA display 640x480 @ 60Hz
 * [x] PS/2
 * [x] SD card boot
 * [x] SD card read/write DMA
+* [x] GPIO
 * [x] Can execute millions of instructions per second
 
 **Software**
