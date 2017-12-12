@@ -119,28 +119,28 @@
 
 \section{系统概要}
 
-我们实现了一个支持中断与异常、五级流水线、兼容THCO MIPS16e指令集架构的计算机系统。
+整体上，我们实现了一个支持中断与异常、五级流水线、兼容THCO MIPS16e指令集架构的计算机系统。
 
 具体而言，在硬件方面，我们的计算机系统具有如下特性：
 \begin{itemize}
-\item \textbf{处理器} 最高可以运行在40MHz，可达40MIPS，CPI=1.01。字长16位。
-\item \textbf{内存} 由于16位地址总线宽度限制，内存寻址只支持64K字，即128KiB。
+\item \textbf{处理器} 最高可以运行在40MHz，最高可达40MIPS，CPI=1.01。字长16位。
+\item \textbf{内存} 按字编址，每个字的宽度为16位。由于16位地址总线宽度限制，内存寻址只支持64K字，即128KiB。
 \item \textbf{显示控制器} 支持640x480 @ 60Hz（工业标准）的VGA信号输出，可以显示80x30个ASCII字符，每个字符支持4种前景色和4种背景色组合。
 \item \textbf{PS/2接口} 该接口可以配合驱动程序来支持PS/2键盘和鼠标。
-\item \textbf{SD卡存储} 这一次，我们突破了以往对于SD卡使用的限制，成功实现了用市面流行的SDHC储存卡存储数据的功能。支持DMA，减轻处理器压力。
-\item \textbf{GPIO} 结合驱动程序，可以实现SPI总线协议、I2C总线协议、软件串口和点亮数码管等功能，扩展性较好。
+\item \textbf{SD卡存储} 这一次，我们突破了以往对于SD卡使用的限制，成功实现了用市面流行的SDHC储存卡存储数据的功能，存储的数据量远远大于板载的Flash，并且SD卡易于更换。此外，SD卡控制器支持DMA，减轻处理器压力。
+\item \textbf{GPIO} 结合驱动程序，可以实现SPI总线协议、$I^2C$总线协议、软件串口和点亮数码管等功能，扩展性较好。
 \end{itemize}
 
 在软件方面，我们的计算机系统有如下软件设施：
 \begin{itemize}
-\item \textbf{汇编器} 实验材料中提供的汇编器不易于使用，我们重新用Python 3实现了一个。支持伪指令（如la以及li），以及立即数大小检查和报错。
-\item \textbf{PS/2键盘驱动} 目前，我们只实现了PS/2键盘的驱动程序。能够接收键盘发来的数据，并识别通码和断码，转换为ASCII码。
-\item \textbf{shell} 支持从键盘读取命令然后执行相应的代码段。
+\item \textbf{汇编器} 实验材料中提供的汇编器不易于使用，我们重新用Python 3实现了一个。支持伪指令（如la以及li）的处理，以及立即数大小检查和报错。
+\item \textbf{PS/2键盘驱动} 目前，我们只实现了PS/2键盘的驱动程序。驱动程序能够接收键盘发来的数据，并识别通码和断码，转换为ASCII码。
+\item \textbf{shell} 支持从键盘读取命令然后调用相应的代码段。
 \item \textbf{2048小游戏} 通过字符画的形式实现了一个类似于2048的小游戏，支持保存和加载游戏局面。
 \item \textbf{BadApple!!动画播放} 通过读取SD卡中存储的每一帧图像信息并显示到屏幕来播放动画，用来验证SD卡和显示控制器的功能。
 \item \textbf{弹幕} 支持在播放动画的时候显示弹幕，用时钟中断实现，用来验证处理器的中断和异常功能是否实现正确。
 \item \textbf{内存转储} 支持将内存转储到SD卡，进行进一步的debug工作，也用来验证SD卡的写入功能。
-\item \textbf{上电自检程序} 开机的时候会被执行，主要用来检测内存是否有错误，或者系统时钟频率是否过高（导致内存访问出错）。
+\item \textbf{上电自检程序} 开机的时候会被首先执行，主要用来检测内存是否有错误，或者系统时钟频率是否过高（导致内存访问出错）。检测出错误后会在数码管上显示错误码并在屏幕上（如果显示控制器此时工作正常）显示错误信息和红色[FAIL]字样，然后停机。
 \end{itemize}
 
 \section{组内分工}
@@ -148,38 +148,42 @@
 \begin{multicols}{2}
 \subsubsection*{谭闻德}
 \begin{itemize}
-	\item 数据通路的绘制
+	\item 整体数据通路的绘制
 	\item 完整流水线搭建
 	\item 前期系统仿真
 	\item Store After Load优化的构思
 	\item 内部总线设计
 	\item GPIO控制器设计与实现
-	\item VGA控制器设计与实现
+	\item 显示控制器设计与实现
 	\item SD卡控制器设计与实现
 	\item 汇编器的设计与实现
 	\item POST（上电自检）程序的汇编实现
 	\item PS/2驱动程序的汇编实现
 	\item BadApple!!动画播放程序的汇编实现
 	\item shell的汇编实现
+	\item 系统集成、调试与测试
+	\item 整体文档的撰写
 \end{itemize}
 \columnbreak
 \subsubsection*{刘明华}
 \begin{itemize}
-	\item 数据通路的绘制
+	\item 整体数据通路的绘制
 	\item 控制信号表的总结
 	\item 指令译码模块的实现
 	\item Store After Load优化的实现
-	\item VGA控制器的实现
+	\item 显示控制器的实现
 	\item PS/2控制器设计与实现
 	\item PS/2驱动程序、读取和显示字符串函数的汇编实现
 	\item 2048游戏的汇编实现
 	\item BadApple!!的弹幕程序的汇编实现
+	\item PS/2控制器、PS/2驱动程序、2048游戏和弹幕程序的文档的撰写
 \end{itemize}
 \end{multicols}
 
 \chapter{设计与实现}
 
 \section{总体架构}
+	\par 计算机系统是硬件和软件的完美结合，所以我们的系统也包括硬件和软件部分。
 
 \section{硬件部分}
 
@@ -193,33 +197,41 @@
 		\label{datapath}
 	\end{figure}
 
+\subsection{内部总线设计}
+	\par 首先，介绍内部总线设计。内部总线是本系统的最关键的部分，因为它连接了处理器、内存以及其他所有模块，允许模块间相互通信、传输数据。
+	\par \textbf{总线分派器}的功能是解析请求方发来的地址，并选择相应的设备，同时实现了IO地址映射。
+	\par \textbf{总线仲裁器}的功能是根据某个优先级，确定当前设备处理哪一个请求。我们的实现中，为实现简单，采用固定优先级的做法，优先级为：SD卡控制器DMA请求>处理器访存阶段请求>处理器取指令阶段请求。优先级可能有其他设置，但取指令阶段请求一定为最低优先级，否则其他部分或全部请求将永远被阻塞。
+	\par 实际上，总线分派器和总线仲裁器的本质都是数据选择器，总线分派器选择设备的响应并发给请求方，总线仲裁器选择请求并发给接在总线上的设备。
+	\par 总线分派器和总线仲裁器组合使用，可以灵活地组成各种结构，我们本次实现将处理器、内存和其他外设组成了交叉互联的结构，允许它们互相访问。
+
+\subsection{处理器}
+	\par 处理器的内部设计在图\ref{datapath}中已经有清晰的体现，处理器对外的接口有外部中断请求线6根、指令内部总线接口和数据内部总线接口。
+	
+	\par 控制信号表如图\ref{control}所示。	
+	
 	\begin{center}
 	\begin{figure}[H]
 			\centering
 			\setlength{\leftskip}{-40pt}
 			\includegraphics[width=1.2\textwidth]{control.pdf}
 			\caption{控制信号表}
+			\label{control}
 		\end{figure}
 	\end{center}
 
-
-
-\subsection{内部总线设计}
-	\par TODO。
-
-\subsection{处理器}
-	\par TODO。
-
 \subsection{SRAM与UART}
-	\par TODO。
+	\par 这个模块的作用是将物理总线包装一层，并和内部总线连接，连接在物理总线上面的设备有（处理器片外的）SRAM和（处理器片外的）串口控制器。根据地址的不同，选择不同的设备（SRAM或者串口控制器）访问，SRAM使用\texttt{$\mathtt{\overline{OE}}\mbox{和}\mathtt{\overline{WE}}$}信号控制，串口使用\texttt{wrn}以及\texttt{rdn}信号控制。
+	\par 若地址为\texttt{0xBF00}，则让串口控制器驱动物理总线，即置\texttt{wrn}或\texttt{rdn}为有效；否则，让SRAM工作，即置\texttt{$\mathtt{\overline{OE}}\mbox{或}\mathtt{\overline{WE}}$}为有效。
+	
+	\par 此外，串口控制器有\texttt{data_ready}、\texttt{tbre}以及\texttt{tsre}控制信号，我们把它们映射到地址\texttt{0xBF01}对应的字，作为串口控制寄存器。
 
 \subsection{显示控制器}
 	\par TODO。
 
 \subsection{PS/2控制器}
-	PS/2控制器主要用于接受键盘传来的信号，将其进行解析后响应总线发来的读取请求。其中地址0xE003映射到PS/2的控制信号，程序可以通过访问此地址得知当前键盘是否有未读取的新数据；地址0xE002映射到PS/2的数据，程序可以通过访问此地址获取未读取过的键盘扫描码。
+	PS/2控制器主要用于接受键盘传来的信号，将其进行解析后响应总线发来的读取请求。其中，地址0xE003映射到PS/2控制器的控制寄存器，程序可以通过访问此地址得知当前键盘是否有未读取的新数据；地址0xE002映射到PS/2控制器的数据缓冲寄存器，程序可以通过访问此地址获取最新的键盘扫描码。
 
-	为了过滤P2/2信号中的毛刺，我们对信号进行了抽样，其中抽样频率为系统的主频。并通过“打两拍”的方法得到滤波后的PS/2时钟信号和数据信号。
+	为了过滤PS/2信号中的毛刺，我们对信号进行了抽样，其中抽样频率为系统的主频。并通过“打两拍”的方法得到滤波后的PS/2时钟信号和数据信号。
 
 	我们使用了一个六个状态的状态机来对滤波后的信号进行解析，分别读取其起始位、八位数据位、校验位和结束位。并在每个状态设置了一个计时器，当一个状态停留过久时，会自动回到初始的等待状态，以避免信号丢包带来的状态错乱。
 
@@ -351,6 +363,15 @@
 
 \subsection{汇编器}
 	\par TODO。
+	
+\subsection{汇编程序调用约定}
+	\par 在编写汇编程序时，我们约定：
+	\begin{itemize}
+		\item 寄存器r7存放返回值
+		\item 寄存器r0~r7均由\textbf{被调用者}保存
+		\item r0、r1、r2以及r3分别为第一、第二、第三和第四个参数
+		\item 如果有返回值，存放在r4内，此时r4由\textbf{调用者}保存
+	\end{itemize}
 
 \subsection{PS/2键盘驱动}
 	在项目中，我们用汇编语言实现了\texttt{getchar}和\texttt{gets}函数，支持阻塞地从键盘读取字符或字符串。
@@ -376,7 +397,7 @@
 		\end{figure}
 	\end{center}
 
-2048是一款休闲益智游戏。玩家每次控制所有方块向同一个方向运动，两个种类相同的方块撞在一起之后合并成为更高级的块。每次操作之后会在空白的方格处随机生成一个较弱的块。游戏胜利的条件是得到一个叫做“lss”的方块，而如果16个格子全部填满并且相邻的格子都不相同，也就是无法移动的话，那么恭喜你，gameover。
+2048是一款休闲益智游戏。玩家每次控制所有方块向同一个方向运动，两个种类相同的方块撞在一起之后合并成为更高级的块。每次操作之后会在空白的方格处随机生成一个较弱的块。游戏胜利的条件是得到一个叫做“lss”的方块，而如果16个格子全部填满并且相邻的格子都不相同，也就是无法移动的话，那么恭喜你，gameover。此外，两个“lss”方块合并后会有奇特效果。
 
 在本项目中我们用汇编语言实现了一个2048游戏，支持随机开始新局面、从SD卡读盘、存盘到SD卡并退出等功能。具体来说一个游戏局面由16个方块对应的状态所构成，每次游戏开始时我们从SD卡加载游戏局面到内存。而在游戏过程中，程序将循环执行渲染局面、阻塞地等待并读取用户输入、根据用户的输入执行相应的处理。
 
@@ -386,7 +407,7 @@
 
 若用户输入的命令\texttt{Esc}，我们则将当前游戏局面存盘到SD卡，再结束程序。
 
-而渲染一个局面时，我们需要显示欢迎语、游戏说明以及每一个方块的边框、文字，并进行着色。由于我们的显存存储的是$30\times80$个ascii字符及其对应的前景色和背景色，故在游戏中每一个方块由$7\times14$个字符构成。其中每一种方块的背景色、文字均作为常量存储在内存中。在程序中我们只需循环计算每个方块的位置，并在显存中写入其所对应的$7\times14$个字符的内容和颜色即可。
+而渲染一个局面时，我们需要显示欢迎语、游戏说明以及每一个方块的边框、文字，并进行着色。由于我们的显存存储的是80x30个ASCII字符及其对应的前景色和背景色，故在游戏中每一个方块由$7\times14$个字符构成。其中每一种方块的背景色、文字均作为常量存储在内存中。在程序中我们只需循环计算每个方块的位置，并在显存中写入其所对应的$7\times14$个字符的内容和颜色即可。
 
 值得一提的是，汇编程序不仅在编写上反人类，而且缺乏有效的调试手段。在调试过程中，一个困扰我们许久的bug是程序跳转指令的立即数长度有限，而我们的编译器又没有进行溢出检查，导致程序跳到奇怪的地方。
 
@@ -403,13 +424,12 @@
 但是由于动画播放要求是连续流畅的且中断处理程序不支持被二次中断，故弹幕程序中的读取用户的键盘输入，以及循环显示评论都不能简单地使用堵塞的实现方式。具体来说我们将读取字符串操作变成了很多次中断来实现，每次先检查缓存区是否有新输入，如果有则调用\texttt{getchar}函数读取一个字符，并将其存入内存；若当前没有新输入，则直接结束中断。而在显示评论时，原来的循环刷新也要被改写成每次只刷新一次。因为被分成若干次调用，程序原来存放在寄存器中的计数器以及循环变量等都需要存放在内存中，并需记录程序当前执行到哪一个步骤。
 
 
-
 \subsection{内存转储}
 	\par TODO。
 
 \section{内存地址分配}
 
-内存地址的分配需要软件和硬件配合来完成，我们的计算机系统中的内存分TODO
+内存地址的分配需要软件和硬件配合来完成，我们的计算机系统中的内存分配如表\ref{mmap}所示。
 
 \begin{table}[h]
 \centering
@@ -418,19 +438,55 @@
 \textbf{起始地址} & \textbf{结束地址} & \textbf{存储内容} \\
 \midrule[1.2pt]
 \texttt{0x0000} & \texttt{0x3FFF} & 内核代码 \\ \hline
-\texttt{0x4000} & \texttt{0x7FFF} & 用户代码 \\
+\texttt{0x4000} & \texttt{0x7FFF} & 用户代码 \\ \hline
+\texttt{0x8000} & \texttt{0xBEFF} & 数据段 \\ \hline
+\texttt{0xBF00} & \texttt{0xBF00} & 串口控制器 数据寄存器 \\ \hline
+\texttt{0xBF01} & \texttt{0xBF01} & 串口控制器 控制寄存器 \\ \hline
+\texttt{0xBF02} & \texttt{0xDFFF} & 堆和栈 \\ \hline
+\texttt{0xE000} & \texttt{0xFFFF} & IO内存映射区域 \\ \hline
+\texttt{0xE000} & \texttt{0xE000} & GPIO控制器 数据寄存器 \\ \hline
+\texttt{0xE001} & \texttt{0xE001} & GPIO控制器 方向寄存器 \\ \hline
+\texttt{0xE002} & \texttt{0xE002} & PS/2控制器 数据寄存器 \\ \hline
+\texttt{0xE003} & \texttt{0xE003} & PS/2控制器 控制寄存器 \\ \hline
+\texttt{0xE004} & \texttt{0xE004} & 定时器 保留寄存器（暂未使用） \\ \hline
+\texttt{0xE005} & \texttt{0xE005} & 定时器 控制寄存器 \\ \hline
+\texttt{0xE006} & \texttt{0xE007} & 保留，未映射 \\ \hline
+\texttt{0xE008} & \texttt{0xE008} & SD卡控制器 扇区号低16位 \\ \hline
+\texttt{0xE009} & \texttt{0xE009} & SD卡控制器 扇区号高16位 \\ \hline
+\texttt{0xE00A} & \texttt{0xE00A} & SD卡控制器 DMA内存地址低16位 \\ \hline
+\texttt{0xE00B} & \texttt{0xE00B} & SD卡控制器 DMA内存地址高16位 \\ \hline
+\texttt{0xE00C} & \texttt{0xE00C} & SD卡控制器 扇区数低16位 \\ \hline
+\texttt{0xE00D} & \texttt{0xE00D} & SD卡控制器 扇区数高16位 \\ \hline
+\texttt{0xE00E} & \texttt{0xE00E} & SD卡控制器 响应寄存器 \\ \hline
+\texttt{0xE00F} & \texttt{0xE00F} & SD卡控制器 请求寄存器 \\ \hline
+\texttt{0xE010} & \texttt{0xEFFB} & 保留，未映射 \\ \hline
+\texttt{0xEFFC} & \texttt{0xEFFC} & 显示存储器 显存偏移地址低16位 \\ \hline
+\texttt{0xEFFD} & \texttt{0xEFFD} & 显示存储器 显存偏移地址高16位 \\ \hline
+\texttt{0xEFFE} & \texttt{0xEFFE} & 显示存储器 光标位置 \\ \hline
+\texttt{0xEFFF} & \texttt{0xEFFF} & 显示存储器 光标闪烁计数器溢出值 \\ \hline
+\texttt{0xF000} & \texttt{0xFFFF} & 显示存储器 \\
 \bottomrule[1.2pt]
 \end{tabular}
 \caption{内存地址映射}
+\label{mmap}
 \end{table}
 
-
-\chapter{展望}
-
-	\par TODO。
+\chapter{未来可能的扩展空间}
+	\par 进一步，我们还可以用汇编语言实现FAT16、ext2等文件系统，进而支持从外部存储器（SD卡）动态加载并运行程序。此外，还可以利用时钟中断实现上下文切换，进而实现多线程等功能。利用处理器对于外部中断的支持以及串口控制器和SD卡控制器的中断请求线，还可以实现异步IO，提高系统性能。
 
 \chapter{参考文献}
 
-1234
+[1] 计算机硬件系统实验教程 \\
+[2] 自己动手写CPU \\
+[3] CPU自制入门 \\
+[4] SD Specifications Part 1 Physical Layer Simplified Specification: \url{https://www.sdcard.org/downloads/pls/} \\
+[5] How to Use MMC/SDC: \url{http://elm-chan.org/docs/mmc/mmc\_e.html} \\
+[6] VGA Signal Timing: \url{http://tinyvga.com/vga-timing} \\
+[7] Computer Organization and Design The Hardware/Software Interface Fifth Edition \\
+[8] Computer Systems: A Programmer's Perspective Third Edition \\
+[9] See MIPS Run Linux Second Edition \\
+[10] FPGA设计实战演练（高级技巧篇） \\
+[11] 深入浅出玩转FPGA 第3版 \\
+[12] FPGA设计实战演练（逻辑篇） \\
 
 \end{document}
