@@ -176,7 +176,7 @@
 	\item PS/2驱动程序、读取和显示字符串函数的汇编实现
 	\item 2048游戏的汇编实现
 	\item BadApple!!的弹幕程序的汇编实现
-	\item PS/2控制器、PS/2驱动程序、2048游戏和弹幕程序的文档的撰写
+	\item 文档的撰写与排版
 \end{itemize}
 \end{multicols}
 
@@ -223,7 +223,7 @@
 	\par 这个模块的作用是将物理总线包装一层，并和内部总线连接，连接在物理总线上面的设备有（处理器片外的）SRAM和（处理器片外的）串口控制器。根据地址的不同，选择不同的设备（SRAM或者串口控制器）访问，SRAM使用\texttt{$\mathtt{\overline{OE}}\mbox{和}\mathtt{\overline{WE}}$}信号控制，串口使用\texttt{wrn}以及\texttt{rdn}信号控制。
 	\par 若地址为\texttt{0xBF00}，则让串口控制器驱动物理总线，即置\texttt{wrn}或\texttt{rdn}为有效；否则，让SRAM工作，即置\texttt{$\mathtt{\overline{OE}}\mbox{或}\mathtt{\overline{WE}}$}为有效。
 	
-	\par 此外，串口控制器有\texttt{data_ready}、\texttt{tbre}以及\texttt{tsre}控制信号，我们把它们映射到地址\texttt{0xBF01}对应的字，作为串口控制寄存器。
+	\par 此外，串口控制器有\texttt{data\_ready}、\texttt{tbre}以及\texttt{tsre}控制信号，我们把它们映射到地址\texttt{0xBF01}对应的字，作为串口控制寄存器。
 
 \subsection{显示控制器}
 	\par TODO。
@@ -476,17 +476,28 @@
 
 \chapter{参考文献}
 
-[1] 计算机硬件系统实验教程 \\
-[2] 自己动手写CPU \\
-[3] CPU自制入门 \\
-[4] SD Specifications Part 1 Physical Layer Simplified Specification: \url{https://www.sdcard.org/downloads/pls/} \\
-[5] How to Use MMC/SDC: \url{http://elm-chan.org/docs/mmc/mmc\_e.html} \\
-[6] VGA Signal Timing: \url{http://tinyvga.com/vga-timing} \\
-[7] Computer Organization and Design The Hardware/Software Interface Fifth Edition \\
-[8] Computer Systems: A Programmer's Perspective Third Edition \\
-[9] See MIPS Run Linux Second Edition \\
-[10] FPGA设计实战演练（高级技巧篇） \\
-[11] 深入浅出玩转FPGA 第3版 \\
-[12] FPGA设计实战演练（逻辑篇） \\
+$[1]$ 计算机硬件系统实验教程 
+
+$[2] $ 自己动手写CPU 
+
+$[3] $ CPU自制入门 
+
+$[4] $ SD Specifications Part 1 Physical Layer Simplified Specification: \url{https://www.sdcard.org/downloads/pls/} 
+
+$[5] $ How to Use MMC/SDC: \url{http://elm-chan.org/docs/mmc/mmc\_e.html} 
+
+$[6] $ VGA Signal Timing: \url{http://tinyvga.com/vga-timing} 
+
+$[7] $ Computer Organization and Design The Hardware/Software Interface Fifth Edition 
+
+$[8] $ Computer Systems: A Programmer's Perspective Third Edition 
+
+$[9] $ See MIPS Run Linux Second Edition 
+
+$[10]$  FPGA设计实战演练（高级技巧篇） 
+
+$[11]$  深入浅出玩转FPGA 第3版 
+
+$[12]$  FPGA设计实战演练（逻辑篇） 
 
 \end{document}
