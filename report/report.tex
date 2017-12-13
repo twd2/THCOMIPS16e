@@ -133,7 +133,7 @@
 
 在软件方面，我们的计算机系统有如下软件设施：
 \begin{itemize}
-\item \textbf{汇编器} 实验材料中提供的汇编器不易于使用，我们重新用Python 3实现了一个。支持伪指令（如la以及li）的处理，以及立即数大小检查和报错。
+\item \textbf{汇编器} 实验材料中提供的汇编器不易于使用，我们用Python 3重新实现了一个。支持伪指令（如la以及li）的处理，以及立即数大小检查和报错。
 \item \textbf{PS/2键盘驱动} 目前，我们只实现了PS/2键盘的驱动程序。驱动程序能够接收键盘发来的数据，并识别通码和断码，转换为ASCII码。
 \item \textbf{shell} 支持从键盘读取命令然后调用相应的代码段。
 \item \textbf{2048小游戏} 通过字符画的形式实现了一个类似于2048的小游戏，支持保存和加载游戏局面。
@@ -184,30 +184,31 @@
 
 \section{总体架构}
 	\par 计算机系统是硬件和软件的完美结合，所以我们的系统也包括硬件和软件部分。
+	\par 硬件和软件由指令集联系在一起，我们实现的指令有（不含汇编器支持的伪指令）：\texttt{addiu}、\texttt{addiu3}、\texttt{addu}、\texttt{subu}、\texttt{addsp}、\texttt{and}、\texttt{or}、\texttt{not}、\texttt{move}、\texttt{b}、\texttt{beqz}、\texttt{bnez}、\texttt{bteqz}、\texttt{cmp}、\texttt{cmpi}、\texttt{jr}、\texttt{li}、\texttt{lw}、\texttt{sw}、\texttt{lw\_sp}、\texttt{sw\_sp}、\texttt{mtsp}、\texttt{mtih}、\texttt{mfih}、\texttt{mtc0}、\texttt{mfc0}、\texttt{mfpc}、\texttt{sll}、\texttt{sra}、\texttt{sllv}、\texttt{srav}以及\texttt{nop}。
 
 \section{硬件部分}
 
-	整体数据通路如图\ref{datapath}所示。
+	整体数据通路和架构如图\ref{datapath}所示。
 
 	\begin{figure}[H]
 		\centering
 		\setlength{\leftskip}{-40pt}
 		\includegraphics[width=1.2\textwidth]{datapath}
-		\caption{数据通路}
+		\caption{数据通路和架构图}
 		\label{datapath}
 	\end{figure}
 
 \subsection{内部总线设计}
 	\par 首先，介绍内部总线设计。内部总线是本系统的最关键的部分，因为它连接了处理器、内存以及其他所有模块，允许模块间相互通信、传输数据。
 	\par \textbf{总线分派器}的功能是解析请求方发来的地址，并选择相应的设备，同时实现了IO地址映射。
-	\par \textbf{总线仲裁器}的功能是根据某个优先级，确定当前设备处理哪一个请求。我们的实现中，为实现简单，采用固定优先级的做法，优先级为：SD卡控制器DMA请求>处理器访存阶段请求>处理器取指令阶段请求。优先级可能有其他设置，但取指令阶段请求一定为最低优先级，否则其他部分或全部请求将永远被阻塞。
-	\par 实际上，总线分派器和总线仲裁器的本质都是数据选择器，总线分派器选择设备的响应并发给请求方，总线仲裁器选择请求并发给接在总线上的设备。
+	\par \textbf{总线仲裁器}的功能是根据某个优先级，确定当前设备处理哪一个请求。我们的实现中，为实现简单，采用固定优先级的做法，优先级为：SD卡控制器DMA请求>处理器访存阶段请求>处理器取指令阶段请求。优先级可能有其他设置，但取指令阶段的请求一定为最低优先级，否则其他部分或全部请求将永远被阻塞。
+	\par 实际上，总线分派器和总线仲裁器的本质都是数据选择器，总线分派器选择设备的响应并发给请求方，总线仲裁器选择请求并发送给接在总线上的设备。
 	\par 总线分派器和总线仲裁器组合使用，可以灵活地组成各种结构，我们本次实现将处理器、内存和其他外设组成了交叉互联的结构，允许它们互相访问。
 
 \subsection{处理器}
-	\par 处理器的内部设计在图\ref{datapath}中已经有清晰的体现，处理器对外的接口有外部中断请求线6根、指令内部总线接口和数据内部总线接口。
+	\par 处理器的内部设计在图\ref{datapath}中已经有清晰的体现，处理器对外的接口有外部中断请求线6根、指令总线接口和数据总线接口。指令总线接口和数据总线接口都连接到内部总线。
 	
-	\par 控制信号表如图\ref{control}所示。	
+	\par 控制器中的控制信号的设置如图\ref{control}所示。	
 	
 	\begin{center}
 	\begin{figure}[H]
@@ -223,7 +224,9 @@
 	\par 这个模块的作用是将物理总线包装一层，并和内部总线连接，连接在物理总线上面的设备有（处理器片外的）SRAM和（处理器片外的）串口控制器。根据地址的不同，选择不同的设备（SRAM或者串口控制器）访问，SRAM使用\texttt{$\mathtt{\overline{OE}}\mbox{和}\mathtt{\overline{WE}}$}信号控制，串口使用\texttt{wrn}以及\texttt{rdn}信号控制。
 	\par 若地址为\texttt{0xBF00}，则让串口控制器驱动物理总线，即置\texttt{wrn}或\texttt{rdn}为有效；否则，让SRAM工作，即置\texttt{$\mathtt{\overline{OE}}\mbox{或}\mathtt{\overline{WE}}$}为有效。
 	
-	\par 此外，串口控制器有\texttt{data_ready}、\texttt{tbre}以及\texttt{tsre}控制信号，我们把它们映射到地址\texttt{0xBF01}对应的字，作为串口控制寄存器。
+	\par 此外，串口控制器有\texttt{data\_ready}、\texttt{tbre}以及\texttt{tsre}控制信号，我们把它们映射到地址\texttt{0xBF01}对应的字，作为串口控制寄存器。
+	
+	\par 从后文可以看出，其他IO都被映射到了\texttt{0xE000}以上的地址，这里把串口控制器的地址映射到\texttt{0xBF00}和\texttt{0xBF01}是出于兼容性的考虑。
 
 \subsection{显示控制器}
 	\par TODO。
@@ -368,8 +371,8 @@
 	\par 在编写汇编程序时，我们约定：
 	\begin{itemize}
 		\item 寄存器r7存放返回值
-		\item 寄存器r0~r7均由\textbf{被调用者}保存
-		\item r0、r1、r2以及r3分别为第一、第二、第三和第四个参数
+		\item 寄存器r0$\sim$r7均由\textbf{被调用者}保存
+		\item r0、r1、r2以及r3分别为第一、第二、第三和第四个参数（如果存在）
 		\item 如果有返回值，存放在r4内，此时r4由\textbf{调用者}保存
 	\end{itemize}
 
@@ -423,9 +426,8 @@
 
 但是由于动画播放要求是连续流畅的且中断处理程序不支持被二次中断，故弹幕程序中的读取用户的键盘输入，以及循环显示评论都不能简单地使用堵塞的实现方式。具体来说我们将读取字符串操作变成了很多次中断来实现，每次先检查缓存区是否有新输入，如果有则调用\texttt{getchar}函数读取一个字符，并将其存入内存；若当前没有新输入，则直接结束中断。而在显示评论时，原来的循环刷新也要被改写成每次只刷新一次。因为被分成若干次调用，程序原来存放在寄存器中的计数器以及循环变量等都需要存放在内存中，并需记录程序当前执行到哪一个步骤。
 
-
 \subsection{内存转储}
-	\par TODO。
+	\par 这个程序相对比较简单。由于SD卡控制器支持DMA，所以这个程序只需要向SD卡控制器发送请求，把内存初始地址设为0、扇区数设为$64K * 2B / 512B = 256$，然后轮询方式等待SD卡操作完成即可。
 
 \section{内存地址分配}
 
@@ -440,30 +442,30 @@
 \texttt{0x0000} & \texttt{0x3FFF} & 内核代码 \\ \hline
 \texttt{0x4000} & \texttt{0x7FFF} & 用户代码 \\ \hline
 \texttt{0x8000} & \texttt{0xBEFF} & 数据段 \\ \hline
-\texttt{0xBF00} & \texttt{0xBF00} & 串口控制器 数据寄存器 \\ \hline
-\texttt{0xBF01} & \texttt{0xBF01} & 串口控制器 控制寄存器 \\ \hline
+\texttt{0xBF00} & \texttt{0xBF00} & 串口控制器~数据寄存器 \\ \hline
+\texttt{0xBF01} & \texttt{0xBF01} & 串口控制器~控制寄存器 \\ \hline
 \texttt{0xBF02} & \texttt{0xDFFF} & 堆和栈 \\ \hline
 \texttt{0xE000} & \texttt{0xFFFF} & IO内存映射区域 \\ \hline
-\texttt{0xE000} & \texttt{0xE000} & GPIO控制器 数据寄存器 \\ \hline
-\texttt{0xE001} & \texttt{0xE001} & GPIO控制器 方向寄存器 \\ \hline
-\texttt{0xE002} & \texttt{0xE002} & PS/2控制器 数据寄存器 \\ \hline
-\texttt{0xE003} & \texttt{0xE003} & PS/2控制器 控制寄存器 \\ \hline
-\texttt{0xE004} & \texttt{0xE004} & 定时器 保留寄存器（暂未使用） \\ \hline
-\texttt{0xE005} & \texttt{0xE005} & 定时器 控制寄存器 \\ \hline
+\texttt{0xE000} & \texttt{0xE000} & GPIO控制器~数据寄存器 \\ \hline
+\texttt{0xE001} & \texttt{0xE001} & GPIO控制器~方向寄存器 \\ \hline
+\texttt{0xE002} & \texttt{0xE002} & PS/2控制器~数据寄存器 \\ \hline
+\texttt{0xE003} & \texttt{0xE003} & PS/2控制器~控制寄存器 \\ \hline
+\texttt{0xE004} & \texttt{0xE004} & 定时器~保留寄存器（暂未使用） \\ \hline
+\texttt{0xE005} & \texttt{0xE005} & 定时器~控制寄存器 \\ \hline
 \texttt{0xE006} & \texttt{0xE007} & 保留，未映射 \\ \hline
-\texttt{0xE008} & \texttt{0xE008} & SD卡控制器 扇区号低16位 \\ \hline
-\texttt{0xE009} & \texttt{0xE009} & SD卡控制器 扇区号高16位 \\ \hline
-\texttt{0xE00A} & \texttt{0xE00A} & SD卡控制器 DMA内存地址低16位 \\ \hline
-\texttt{0xE00B} & \texttt{0xE00B} & SD卡控制器 DMA内存地址高16位 \\ \hline
-\texttt{0xE00C} & \texttt{0xE00C} & SD卡控制器 扇区数低16位 \\ \hline
-\texttt{0xE00D} & \texttt{0xE00D} & SD卡控制器 扇区数高16位 \\ \hline
-\texttt{0xE00E} & \texttt{0xE00E} & SD卡控制器 响应寄存器 \\ \hline
-\texttt{0xE00F} & \texttt{0xE00F} & SD卡控制器 请求寄存器 \\ \hline
+\texttt{0xE008} & \texttt{0xE008} & SD卡控制器~扇区号低16位 \\ \hline
+\texttt{0xE009} & \texttt{0xE009} & SD卡控制器~扇区号高16位 \\ \hline
+\texttt{0xE00A} & \texttt{0xE00A} & SD卡控制器~DMA内存地址低16位 \\ \hline
+\texttt{0xE00B} & \texttt{0xE00B} & SD卡控制器~DMA内存地址高16位 \\ \hline
+\texttt{0xE00C} & \texttt{0xE00C} & SD卡控制器~扇区数低16位 \\ \hline
+\texttt{0xE00D} & \texttt{0xE00D} & SD卡控制器~扇区数高16位 \\ \hline
+\texttt{0xE00E} & \texttt{0xE00E} & SD卡控制器~响应寄存器 \\ \hline
+\texttt{0xE00F} & \texttt{0xE00F} & SD卡控制器~请求寄存器 \\ \hline
 \texttt{0xE010} & \texttt{0xEFFB} & 保留，未映射 \\ \hline
-\texttt{0xEFFC} & \texttt{0xEFFC} & 显示存储器 显存偏移地址低16位 \\ \hline
-\texttt{0xEFFD} & \texttt{0xEFFD} & 显示存储器 显存偏移地址高16位 \\ \hline
-\texttt{0xEFFE} & \texttt{0xEFFE} & 显示存储器 光标位置 \\ \hline
-\texttt{0xEFFF} & \texttt{0xEFFF} & 显示存储器 光标闪烁计数器溢出值 \\ \hline
+\texttt{0xEFFC} & \texttt{0xEFFC} & 显示存储器~显存偏移地址低16位 \\ \hline
+\texttt{0xEFFD} & \texttt{0xEFFD} & 显示存储器~显存偏移地址高16位 \\ \hline
+\texttt{0xEFFE} & \texttt{0xEFFE} & 显示存储器~光标位置 \\ \hline
+\texttt{0xEFFF} & \texttt{0xEFFF} & 显示存储器~光标闪烁计数器溢出值 \\ \hline
 \texttt{0xF000} & \texttt{0xFFFF} & 显示存储器 \\
 \bottomrule[1.2pt]
 \end{tabular}
@@ -471,8 +473,10 @@
 \label{mmap}
 \end{table}
 
+	\par 值得说明的是，我们把IO都被映射到了\texttt{0xE000}以上的地址，这是为了译码的时候方便（地址为\texttt{0xE000}以上的地址当且仅当其最高三位都为1）。
+
 \chapter{未来可能的扩展空间}
-	\par 进一步，我们还可以用汇编语言实现FAT16、ext2等文件系统，进而支持从外部存储器（SD卡）动态加载并运行程序。此外，还可以利用时钟中断实现上下文切换，进而实现多线程等功能。利用处理器对于外部中断的支持以及串口控制器和SD卡控制器的中断请求线，还可以实现异步IO，提高系统性能。
+	\par 进一步，我们还可以用汇编语言实现FAT16、ext2等文件系统，进而支持从外部存储器（SD卡）动态加载并运行程序。此外，还可以利用时钟中断实现上下文切换，进而实现多线程等现代操作系统所具有的特性。利用处理器对于外部中断的支持以及串口控制器和SD卡控制器的中断请求线，还可以实现异步IO，提高系统性能。此外，对于SD卡控制器，还可以加入更多的错误处理机制，而不是遇到错误就停机。
 
 \chapter{参考文献}
 
