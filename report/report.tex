@@ -184,14 +184,15 @@
 \chapter{设计与实现}
 
 \section{总体架构}
-	\par 计算机系统是硬件和软件的完美结合，所以我们的系统也包括硬件和软件部分。
-	\par 硬件和软件由指令集联系在一起，我们实现的指令有（不含汇编器支持的伪指令）：\texttt{addiu}、\texttt{addiu3}、\texttt{addu}、\texttt{subu}、\texttt{addsp}、\texttt{and}、\texttt{or}、\texttt{not}、\texttt{move}、\texttt{b}、\texttt{beqz}、\texttt{bnez}、\texttt{bteqz}、\texttt{cmp}、\texttt{cmpi}、\texttt{jr}、\texttt{li}、\texttt{lw}、\texttt{sw}、\texttt{lw\_sp}、\texttt{sw\_sp}、\texttt{mtsp}、\texttt{mtih}、\texttt{mfih}、\texttt{mtc0}、\texttt{mfc0}、\texttt{mfpc}、\texttt{sll}、\texttt{sra}、\texttt{sllv}、\texttt{srav}以及\texttt{nop}。
+	计算机系统是硬件和软件的完美结合，所以我们的系统也包括硬件和软件部分。
+	
+	硬件和软件由指令集联系在一起，我们实现的指令有（不含汇编器支持的伪指令）：\texttt{addiu}、\texttt{addiu3}、\texttt{addu}、\texttt{subu}、\texttt{addsp}、\texttt{and}、\texttt{or}、\texttt{not}、\texttt{move}、\texttt{b}、\texttt{beqz}、\\\texttt{bnez}、 \texttt{bteqz}、\texttt{cmp}、\texttt{cmpi}、\texttt{jr}、\texttt{li}、\texttt{lw}、\texttt{sw}、\texttt{lw\_sp}、\texttt{sw\_sp}、\texttt{mtsp}、\texttt{mtih}、\texttt{mfih}、\\\texttt{mtc0}、\texttt{mfc0}、\texttt{mfpc}、\texttt{sll}、\texttt{sra}、\texttt{sllv}、\texttt{srav}以及\texttt{nop}。
 
 \section{硬件部分}
 
 	整体数据通路和架构如图\ref{datapath}所示。
 
-	\begin{figure}[H]
+	\begin{figure}[h]
 		\centering
 		\setlength{\leftskip}{-40pt}
 		\includegraphics[width=1.2\textwidth]{datapath}
@@ -212,7 +213,7 @@
 	\par 控制器中的控制信号的设置如图\ref{control}所示。	
 	
 	\begin{center}
-	\begin{figure}[H]
+	\begin{figure}[h]
 			\centering
 			\setlength{\leftskip}{-40pt}
 			\includegraphics[width=1.2\textwidth]{control.pdf}
@@ -452,7 +453,7 @@
 
 内存地址的分配需要软件和硬件配合来完成，我们的计算机系统中的内存分配如表\ref{mmap}所示。
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{c|c|c}
 \toprule[1.2pt]
