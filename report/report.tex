@@ -119,7 +119,7 @@
 
 \section{系统概要}
 
-整体上，我们实现了一个支持中断与异常、五级流水线、兼容THCO MIPS16e指令集架构的计算机系统。
+整体上，我们实现了一个支持中断与异常（支持精确异常）、五级流水线、兼容THCO MIPS16e指令集架构的计算机系统。
 
 具体而言，在硬件方面，我们的计算机系统具有如下特性：
 \begin{itemize}
@@ -187,7 +187,7 @@
 \section{总体架构}
 	计算机系统是硬件和软件的完美结合，所以我们的系统也包括硬件和软件部分。
 	
-	硬件和软件由指令集联系在一起，我们实现的指令有（不含汇编器支持的伪指令）：\texttt{addiu}、\texttt{addiu3}、\texttt{addu}、\texttt{subu}、\texttt{addsp}、\texttt{and}、\texttt{or}、\texttt{not}、\texttt{move}、\texttt{b}、\texttt{beqz}、\\\texttt{bnez}、 \texttt{bteqz}、\texttt{cmp}、\texttt{cmpi}、\texttt{jr}、\texttt{li}、\texttt{lw}、\texttt{sw}、\texttt{lw\_sp}、\texttt{sw\_sp}、\texttt{mtsp}、\texttt{mtih}、\texttt{mfih}、\\\texttt{mtc0}、\texttt{mfc0}、\texttt{mfpc}、\texttt{sll}、\texttt{sra}、\texttt{sllv}、\texttt{srav}以及\texttt{nop}。
+	硬件和软件由指令集联系在一起，我们实现的指令有（不含汇编器支持的伪指令）：\texttt{addiu}、\texttt{addiu3}、\texttt{addu}、\texttt{subu}、\texttt{addsp}、\texttt{and}、\texttt{or}、\texttt{not}、\texttt{move}、\texttt{b}、\texttt{beqz}、\\\texttt{bnez}、 \texttt{bteqz}、\texttt{cmp}、\texttt{cmpi}、\texttt{jr}、\texttt{li}、\texttt{lw}、\texttt{sw}、\texttt{lw\_sp}、\texttt{sw\_sp}、\texttt{mtsp}、\texttt{mtih}、\texttt{mfih}、\\\texttt{mtc0}、\texttt{mfc0}、\texttt{mfpc}、\texttt{sll}、\texttt{sra}、\texttt{sllv}、\texttt{srav}、\texttt{syscall}、\texttt{eret}以及\texttt{nop}。
 
 \section{硬件部分}
 
@@ -202,14 +202,14 @@
 	\end{figure}
 
 \subsection{内部总线设计}
-	\par 首先，介绍内部总线设计。内部总线是本系统的最关键的部分，因为它连接了处理器、内存以及其他所有模块，允许模块间相互通信、传输数据。
+	\par 首先，介绍内部总线设计。内部总线是本系统的最关键的部分，因为它连接了处理器、内存以及其他所有模块，允许模块间相互通信、传输数据。参考文献[3]中对于总线设计有所介绍，但我们的实现不完全相同。
 	\par \textbf{总线分派器}的功能是解析请求方发来的地址，并选择相应的设备，同时实现了IO地址映射。
 	\par \textbf{总线仲裁器}的功能是根据某个优先级，确定当前设备处理哪一个请求。我们的实现中，为实现简单，采用固定优先级的做法，优先级为：SD卡控制器DMA请求>处理器访存阶段请求>处理器取指令阶段请求。优先级可能有其他设置，但取指令阶段的请求一定为最低优先级，否则其他部分或全部请求将永远被阻塞。
 	\par 实际上，总线分派器和总线仲裁器的本质都是数据选择器，总线分派器选择设备的响应并发给请求方，总线仲裁器选择请求并发送给接在总线上的设备。
 	\par 总线分派器和总线仲裁器组合使用，可以灵活地组成各种结构，我们本次实现将处理器、内存和其他外设组成了交叉互联的结构，允许它们互相访问。
 
 \subsection{处理器}
-	\par 处理器的内部设计在图\ref{datapath}中已经有清晰的体现，处理器对外的接口有外部中断请求线6根、指令总线接口和数据总线接口。指令总线接口和数据总线接口都连接到内部总线。
+	\par 处理器的内部设计在图\ref{datapath}中已经有清晰的体现，处理器对外的接口有外部中断请求线6根、指令总线接口和数据总线接口，指令总线接口和数据总线接口都连接到内部总线。处理器流水线的架构主要参考[2, 3]。
 	
 	\par 控制器中的控制信号的设置如图\ref{control}所示。	
 	
@@ -232,11 +232,11 @@
 	\par 从后文可以看出，其他IO都被映射到了\texttt{0xE000}以上的地址，这里把串口控制器的地址映射到\texttt{0xBF00}和\texttt{0xBF01}是出于兼容性的考虑。
 
 \subsection{显示控制器}
-	\par 此模块分为两个子模块，总线接口部分和VGA接口部分。
-	\par 总线接口部分和内部总线连接，处在主时钟域。
-	\par VGA接口部分连接到VGA接口，处在VGA的时钟域。
-	\par 这两个部分通过FIFO联系起来，传递像素数据。
-	\par TODO。
+	\par 此模块分为两个子模块：总线接口部分和VGA接口部分，分处不同的时钟域。这两个部分通过FIFO联系起来，传递像素数据。FIFO是FPGA提供的IP核，可以直接生成，它类似于一个队列，支持两个端口异步访问，一个端口用于写入，一个端口用于读取。
+	\par 总线接口部分和内部总线连接，处在主时钟域，它负责通过内部总线从显示存储器读取字符，然后通过查询字库ROM以及颜色译码将其转换为像素点的颜色数据，最后写入FIFO。不使用FIFO而使用双口RAM也可以实现同样的功能，但是资源开销会增加为原来的大约150倍。对于单独一个像素点，读取字符和查询字库共计需要两个时钟周期，但我们希望一个周期就能够写入一个像素点，为了解决这个问题，我们实现了一个小的流水线，成功提高了吞吐量。
+	\par VGA接口部分连接到外部VGA接口，处在VGA的时钟域。这部分相对简单，只需要从FIFO读取像素颜色数据，同时根据参考文献[6]提供的VGA时序表，生成对应分辨率的行同步信号、场同步信号以及颜色信号即可。为了提高系统稳定性，我们在一场显示完之后还使其与FIFO、总线接口部分进行同步，确保不会由于意外情况而出现显示错乱。
+	\par 此外，显示字符的时候我们还提供对于闪烁光标的支持，光标位置寄存器存储光标当前的位置，光标闪烁则是由一个计数器实现，计数器溢出时切换光标的状态，计数器溢出值存储在光标闪烁计数器溢出值寄存器内，这样可以支持软件调整光标的闪烁频率、设置关闭光标或者设置一直显示光标。
+	\par 如此设计，还可以提供对于多分辨率的支持，因为系统主时钟和VGA时钟无关。
 
 \subsection{PS/2控制器}
 	PS/2控制器主要用于接受PS/2接口传来的信号，将其进行解析后存入缓冲器，同时响应总线发来的读取请求。其中，地址\texttt{0xE003}映射到PS/2控制器的控制寄存器，程序可以通过访问此地址得知当前是否有未读取的新数据；地址\texttt{0xE002}映射到PS/2控制器的数据缓冲寄存器，程序可以通过访问此地址获取最后一次读到的数据。
@@ -510,35 +510,35 @@
 	\par 值得说明的是，我们把IO都被映射到了\texttt{0xE000}以上的地址，这是为了总线分派器译码的时候方便（地址为\texttt{0xE000}以上的地址当且仅当其最高三位都为1）。
 
 \chapter{未来可能的扩展空间}
-	\par 可以将汇编器用汇编指令重新实现一遍，使其能够运行在系统自身，从而实现\textbf{自举}（bootstrap）。进一步，我们还可以用汇编语言实现FAT16、ext2等文件系统，进而支持从外部存储器（SD卡）动态加载并运行程序。此外，还可以利用时钟中断实现上下文切换，进而实现多线程等现代操作系统所具有的特性。利用处理器对于外部中断的支持以及串口控制器和SD卡控制器的中断请求线，还可以实现异步IO，提高系统性能。此外，对于SD卡控制器，还可以加入更多的错误处理机制，而不是遇到错误就停机。
+	\par 可以将汇编器用汇编指令重新实现一遍，使其能够运行在系统自身，从而实现\textbf{自举}（bootstrap）。进一步，我们还可以用汇编语言实现FAT16、ext2等文件系统，进而支持从外部存储器（SD卡）动态加载并运行程序。此外，还可以利用时钟中断实现上下文切换，进而实现多线程等现代操作系统所具有的特性。利用处理器对于外部中断的支持以及串口控制器和SD卡控制器的中断请求线，还可以实现异步IO，提高系统性能。此外，对于SD卡控制器，还可以加入更多的错误处理机制，而不是遇到错误就停机。对于显示控制器而言，可以允许软件动态修改分辨率，从而支持不同大小的画面显示，另外还可以提供一个帧缓冲区，支持图形界面，但是这需要先增大系统地址线的宽度。
 
 \chapter{致谢}
 	\par 感谢李山山老师、刘卫东老师和助教们的大力支持！
 
 \chapter{参考文献}
 
-$[1]$ 计算机硬件系统实验教程 
+$[1]$ 计算机硬件系统实验教程
 
-$[2] $ 自己动手写CPU 
+$[2] $ 自己动手写CPU
 
-$[3] $ CPU自制入门 
+$[3] $ CPU自制入门
 
-$[4] $ SD Specifications Part 1 Physical Layer Simplified Specification: \url{https://www.sdcard.org/downloads/pls/} 
+$[4] $ SD Specifications Part 1 Physical Layer Simplified Specification: \url{https://www.sdcard.org/downloads/pls/}
 
-$[5] $ How to Use MMC/SDC: \url{http://elm-chan.org/docs/mmc/mmc\_e.html} 
+$[5] $ How to Use MMC/SDC: \url{http://elm-chan.org/docs/mmc/mmc\_e.html}
 
-$[6] $ VGA Signal Timing: \url{http://tinyvga.com/vga-timing} 
+$[6] $ VGA Signal Timing: \url{http://tinyvga.com/vga-timing}
 
-$[7] $ Computer Organization and Design The Hardware/Software Interface Fifth Edition 
+$[7] $ Computer Organization and Design The Hardware/Software Interface Fifth Edition
 
-$[8] $ Computer Systems: A Programmer's Perspective Third Edition 
+$[8] $ Computer Systems: A Programmer's Perspective Third Edition
 
-$[9] $ See MIPS Run Linux Second Edition 
+$[9] $ See MIPS Run Second Edition
 
-$[10]$  FPGA设计实战演练（高级技巧篇） 
+$[10]$  FPGA设计实战演练（高级技巧篇）
 
-$[11]$  深入浅出玩转FPGA 第3版 
+$[11]$  深入浅出玩转FPGA 第3版
 
-$[12]$  FPGA设计实战演练（逻辑篇） 
+$[12]$  FPGA设计实战演练（逻辑篇）
 
 \end{document}
