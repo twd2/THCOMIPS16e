@@ -64,4 +64,6 @@ NOP
 
 ## Note
 
+For detailed design, see: report/report.pdf
+
 *Because this is a course project, any plagiarism will be reported to the professor and TAs.*
