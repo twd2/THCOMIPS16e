@@ -465,7 +465,7 @@ def main():
         out_filename = sys.argv[2]
     with open(out_filename, 'wb') as f:
         f.write(buffer)
-        # 4K words padding
+        # 4K bytes padding
         remainder = len(buffer) % 4096
         if remainder:
             f.write(bytes([0] * (4096 - remainder)))
